@@ -1,8 +1,0 @@
-/home/shakuevda/Desktop/UMAS_GUI/build/CMakeFiles/install/strip.dir
-/home/shakuevda/Desktop/UMAS_GUI/build/CMakeFiles/install/local.dir
-/home/shakuevda/Desktop/UMAS_GUI/build/CMakeFiles/install.dir
-/home/shakuevda/Desktop/UMAS_GUI/build/CMakeFiles/list_install_components.dir
-/home/shakuevda/Desktop/UMAS_GUI/build/CMakeFiles/rebuild_cache.dir
-/home/shakuevda/Desktop/UMAS_GUI/build/CMakeFiles/edit_cache.dir
-/home/shakuevda/Desktop/UMAS_GUI/build/CMakeFiles/UMAS_GUI.dir
-/home/shakuevda/Desktop/UMAS_GUI/build/CMakeFiles/UMAS_GUI_autogen.dir

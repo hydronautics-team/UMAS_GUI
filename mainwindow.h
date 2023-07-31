@@ -5,6 +5,11 @@
 #include <QTimer>
 #include <QDebug>
 
+#include <QtCharts/QChart>
+#include <QtCharts/QChartView>
+#include <QtCharts/QScatterSeries>
+
+#include <QButtonGroup>
 
 #include "remote_control/remote_control.h"
 
@@ -27,6 +32,9 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+
+    QButtonGroup *mode;
+    QButtonGroup *modeAutomated;
 
 };
 #endif // MAINWINDOW_H

@@ -11,6 +11,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Charts)
+
+include_directories("${PROJECT_SOURCE_DIR}/compass")
+include_directories("${PROJECT_SOURCE_DIR}/remote_control")
+
 
 set(PROJECT_SOURCES
         main.cpp
@@ -19,6 +24,11 @@ set(PROJECT_SOURCES
         mainwindow.ui
         remote_control/remote_control.h
         remote_control/remote_control.cpp
+        map/map.h
+        map/map.cpp
+        compass/compass.cpp
+        compass/compass.h
+        compass/compass.ui
 )
 
 
@@ -47,7 +57,8 @@ endif()
 
 target_link_libraries(UMAS_GUI PRIVATE
     sfml-graphics sfml-window sfml-system
-    Qt${QT_VERSION_MAJOR}::Widgets)
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Charts)
 
 set_target_properties(UMAS_GUI PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
