@@ -4,6 +4,7 @@ Compass::Compass(QWidget *parent) :
     QFrame(parent) {
     setupUi(this);
     setYaw(0);
+    setYawDesirable(0);
 }
 
 void Compass::paintEvent(QPaintEvent *e) {
@@ -17,6 +18,12 @@ void Compass::paintEvent(QPaintEvent *e) {
     painter.save();
     painter.rotate(yaw);
     painter.drawConvexPolygon(arrowCompass, 6);
+    painter.restore();
+    painter.save();
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(Qt::red);
+    painter.rotate(yawDesirable);
+    painter.drawConvexPolygon(arrowDesirable, 4);
     painter.restore();
     painter.save();
     painter.drawEllipse(-60, -60, 120, 120);
@@ -41,5 +48,10 @@ void Compass::paintEvent(QPaintEvent *e) {
 
 void Compass::setYaw(double yawNew) {
     yaw = yawNew;
+    update();
+}
+
+void Compass::setYawDesirable(double yawDesirableNew) {
+    yawDesirable = yawDesirableNew;
     update();
 }

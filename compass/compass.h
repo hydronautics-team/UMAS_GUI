@@ -16,12 +16,14 @@ public:
 
 public slots:
     void setYaw(double yawNew);
+    void setYawDesirable(double yawDesirableNew);
 
 protected:
     void paintEvent(QPaintEvent *e);
 
 private:
     double yaw;
+    double yawDesirable;
     QPoint arrowCompass[6] = {
         QPoint(0, 50),
         QPoint(0, -50),
@@ -30,11 +32,11 @@ private:
         QPoint(-3, -40),
         QPoint(0, -50),
     };
-    QPoint arrowDesirable[3] = {
+    QPoint arrowDesirable[4] = {
         QPoint(0, -70),
         QPoint(5, -85),
         QPoint(-5, -85),
-        //QPoint(0, -50)
+        QPoint(0, -70)
     };
 };
 
