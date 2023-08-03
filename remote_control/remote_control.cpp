@@ -5,6 +5,10 @@ RemoteControl::RemoteControl(int joy_id, int update_time, QObject *parent) : QOb
     id = 0;
     periodUpdateMsec = 30;
 
+    updateTimer = new QTimer(this);
+    connect(updateTimer, &QTimer::timeout, this, &RemoteControl::updateImpact);
+    updateTimer->start(periodUpdateMsec);
+
     impactAxisMarch = sf::Joystick::Y;
     impactAxisDepth = sf::Joystick::Z;
     impactAxisRoll = sf::Joystick::PovX;
@@ -12,29 +16,40 @@ RemoteControl::RemoteControl(int joy_id, int update_time, QObject *parent) : QOb
     impactAxisYaw = sf::Joystick::R;
 }
 
+void RemoteControl::updateImpact() {
+    sf::Joystick::update();
 
-float RemoteControl::getMarch(){
-    return(sf::Joystick::getAxisPosition(id, impactAxisMarch));
+    if (sf::Joystick::isConnected(id)) {
+        setMarch();
+        setDepth();
+        setRoll();
+        setPitch();
+        setYaw();
+    }
 }
 
-float RemoteControl::getDepth(){
-    return(sf::Joystick::getAxisPosition(id, impactAxisDepth));
+void RemoteControl::setMarch(){
+    interface.setMarch(sf::Joystick::getAxisPosition(id, impactAxisMarch));
 }
 
-float RemoteControl::getRoll(){
-    return(sf::Joystick::getAxisPosition(id, impactAxisRoll));
+void RemoteControl::setDepth(){
+    interface.setDepth(sf::Joystick::getAxisPosition(id, impactAxisDepth));
 }
 
-float RemoteControl::getPitch(){
-    return(sf::Joystick::getAxisPosition(id, impactAxisPitch));
+void RemoteControl::setRoll(){
+    interface.setRoll(sf::Joystick::getAxisPosition(id, impactAxisRoll));
 }
 
-float RemoteControl::getYaw(){
-    return(sf::Joystick::getAxisPosition(id, impactAxisYaw));
+void RemoteControl::setPitch(){
+    interface.setPitch(sf::Joystick::getAxisPosition(id, impactAxisPitch));
+}
+
+void RemoteControl::setYaw(){
+    interface.setYaw(sf::Joystick::getAxisPosition(id, impactAxisYaw));
 }
 
 RemoteControl::~RemoteControl(){
-
+    qDebug()<<"RemoteControl deleted";
 }
 
 

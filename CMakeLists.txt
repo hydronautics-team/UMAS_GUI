@@ -15,7 +15,9 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Charts)
 
 include_directories("${PROJECT_SOURCE_DIR}/compass")
 include_directories("${PROJECT_SOURCE_DIR}/remote_control")
-
+include_directories("${PROJECT_SOURCE_DIR}/uv")
+include_directories("${PROJECT_SOURCE_DIR}/interface")
+include_directories("${PROJECT_SOURCE_DIR}/map")
 
 set(PROJECT_SOURCES
         main.cpp
@@ -29,6 +31,15 @@ set(PROJECT_SOURCES
         compass/compass.cpp
         compass/compass.h
         compass/compass.ui
+        uv/uv_state.cpp
+        uv/uv_state.h
+        interface/i_control_data.cpp
+        interface/i_control_data.h
+        interface/i_basic_data.cpp
+        interface/i_basic_data.h
+        interface/i_user_interface_data.cpp
+        interface/i_user_interface_data.h
+
 )
 
 

@@ -11,7 +11,10 @@
 
 #include <QButtonGroup>
 
-#include "remote_control/remote_control.h"
+#include "remote_control.h"
+#include "uv_state.h"
+#include "i_user_interface_data.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -28,13 +31,17 @@ public:
     void timerUpdateImpact(int periodUpdateMsec);
 
 private slots:
-    void UpdateImpact();
+    void updateUi_fromControl();
 
 private:
     Ui::MainWindow *ui;
 
     QButtonGroup *mode;
     QButtonGroup *modeAutomated;
+
+    IUserInterfaceData uv_interface;
+    RemoteControl joystick;
+
 
 };
 #endif // MAINWINDOW_H

@@ -7,7 +7,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    RemoteControl joystick;
     MainWindow::timerUpdateImpact(joystick.periodUpdateMsec);
 
     ui->pushButton_modeManual->setCheckable(true);
@@ -42,16 +41,16 @@ void MainWindow::timerUpdateImpact(int periodUpdateMsec){
     QTimer *updateTimer = new QTimer(this);
     connect(
         updateTimer, SIGNAL(timeout()),
-        this, SLOT(UpdateImpact())
+        this, SLOT(updateUi_fromControl())
         );
     updateTimer->start(periodUpdateMsec);
 }
 
-void MainWindow::UpdateImpact(){
-    RemoteControl joystick;
-    sf::Joystick::update();
-    ui->label_impactDataDepth->setText(QString::number(joystick.getMarch()));
-    ui->label_impactDataRoll->setText(QString::number(joystick.getRoll()));
-    ui->label_impactDataPitch->setText(QString::number(joystick.getPitch()));
-    ui->label_impactDataYaw->setText(QString::number(joystick.getYaw()));
+void MainWindow::updateUi_fromControl(){
+    ControlData control = uv_interface.getControlData();
+
+    ui->label_impactDataDepth->setText(QString::number(control.march));
+    ui->label_impactDataRoll->setText(QString::number(control.roll));
+    ui->label_impactDataPitch->setText(QString::number(control.pitch));
+    ui->label_impactDataYaw->setText(QString::number(control.yaw));
 }

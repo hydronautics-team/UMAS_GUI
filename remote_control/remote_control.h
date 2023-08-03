@@ -2,6 +2,10 @@
 #define REMOTECONTROL_H
 
 #include <QObject>
+#include "i_control_data.h"
+#include <QTimer>
+#include <QDebug>
+
 
 #include "SFML/Window.hpp"
 
@@ -15,22 +19,28 @@ public:
     int id;
     int periodUpdateMsec;
 
-    float getMarch();
-    float getDepth();
-    float getRoll();
-    float getPitch();
-    float getYaw();
+    void setMarch();
+    void setDepth();
+    void setRoll();
+    void setPitch();
+    void setYaw();
 
+public slots:
+    void updateImpact();
+
+signals:
+
+protected:
     sf::Joystick::Axis impactAxisMarch;
     sf::Joystick::Axis impactAxisDepth;
     sf::Joystick::Axis impactAxisRoll;
     sf::Joystick::Axis impactAxisPitch;
     sf::Joystick::Axis impactAxisYaw;
 
-signals:
+private:
 
-protected:
-
+    IControlData interface;
+    QTimer *updateTimer;
 
 };
 
