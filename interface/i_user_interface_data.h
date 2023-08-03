@@ -11,6 +11,8 @@ public:
     IUserInterfaceData();
 
     ControlData getControlData();
+    void setControlContoursFlags(e_StabilizationContours contour, bool value);
+    void setCSMode(e_CSMode mode);
 };
 
 #endif // IUSERINTERFACEDATA_H

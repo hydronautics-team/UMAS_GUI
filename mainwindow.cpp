@@ -29,6 +29,33 @@ MainWindow::MainWindow(QWidget *parent)
     modeAutomated->addButton(ui->pushButton_modeAutomated_gamma);
     modeAutomated->setExclusive(false);
 
+    connect(
+        ui->pushButton_modeManual, SIGNAL(clicked()),
+        this, SLOT(e_CSModeManualToggled()));
+
+    connect(
+        ui->pushButton_modeAutomated, SIGNAL(clicked()),
+        this, SLOT(e_CSModeAutomatedToggled()));
+
+    connect(
+        ui->pushButton_modeAutomated_gamma, SIGNAL(toggled(bool)),
+        this, SLOT(stabilizeRollToggled(bool)));
+
+    connect(
+        ui->pushButton_modeAutomated_lag, SIGNAL(toggled(bool)),
+        this, SLOT(stabilizeLagToggled(bool)));
+
+    connect(
+        ui->pushButton_modeAutomated_march, SIGNAL(toggled(bool)),
+        this, SLOT(stabilizeMarchToggled(bool)));
+
+    connect(
+        ui->pushButton_modeAutomated_psi, SIGNAL(toggled(bool)),
+        this, SLOT(stabilizeYawToggled(bool)));
+
+    connect(
+        ui->pushButton_modeAutomated_tetta, SIGNAL(toggled(bool)),
+        this, SLOT(stabilizePitchToggled(bool)));
 
 }
 
@@ -53,4 +80,33 @@ void MainWindow::updateUi_fromControl(){
     ui->label_impactDataRoll->setText(QString::number(control.roll));
     ui->label_impactDataPitch->setText(QString::number(control.pitch));
     ui->label_impactDataYaw->setText(QString::number(control.yaw));
+}
+
+void MainWindow::stabilizeMarchToggled(bool state) {
+    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_MARCH, state);
+}
+
+void MainWindow::stabilizeYawToggled(bool state) {
+    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_YAW, state);
+}
+
+void MainWindow::stabilizePitchToggled(bool state) {
+    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_PITCH, state);
+}
+
+void MainWindow::stabilizeRollToggled(bool state) {
+    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_ROLL, ui->pushButton_modeAutomated_gamma->isChecked());
+}
+
+
+void MainWindow::stabilizeLagToggled(bool state) {
+    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_LAG, state);
+}
+
+void MainWindow::e_CSModeManualToggled() {
+    uv_interface.setCSMode(e_CSMode::MODE_MANUAL);
+}
+
+void MainWindow::e_CSModeAutomatedToggled() {
+    uv_interface.setCSMode(e_CSMode::MODE_AUTOMATED);
 }

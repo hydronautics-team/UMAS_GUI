@@ -32,6 +32,14 @@ public:
 
 private slots:
     void updateUi_fromControl();
+    void stabilizeYawToggled(bool state);
+    void stabilizePitchToggled(bool state);
+    void stabilizeRollToggled(bool state);
+    void stabilizeMarchToggled(bool state);
+    void stabilizeLagToggled(bool state);
+
+    void e_CSModeManualToggled();
+    void e_CSModeAutomatedToggled();
 
 private:
     Ui::MainWindow *ui;

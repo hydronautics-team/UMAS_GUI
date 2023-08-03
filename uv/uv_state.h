@@ -10,6 +10,15 @@ enum class e_CSMode : quint8 { //режим работы
     MODE_GROUP //групповой
 };
 
+enum class e_StabilizationContours: unsigned char {
+    CONTOUR_DEPTH = 0,
+    CONTOUR_MARCH,
+    CONTOUR_LAG,
+    CONTOUR_YAW,
+    CONTOUR_ROLL,
+    CONTOUR_PITCH
+};
+
 #pragma pack(push,1)
 //структура данных, которая передается из Северова в Пульт
 //тут описаны данные, которые Пульт принимает от Северова
@@ -25,6 +34,7 @@ struct ControlData { //данные, которые идут с пульта в 
 };
 
 struct ControlContoursFlags { //флаги замыкания контуров (если 1, то замкнуты, 0 - разомкнуты)
+    ControlContoursFlags();
     quint8 yaw;
     quint8 pitch;
     quint8 roll;
@@ -124,6 +134,9 @@ public:
 //    ~UV_State();
 
     ControlData control;
+
+    ControlContoursFlags controlContoursFlags;
+    e_CSMode cSMode;
 
 };
 
