@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    updateTimer = new QTimer(this);
 
     MainWindow::timerUpdateImpact(joystick.periodUpdateMsec);
 
@@ -57,6 +58,19 @@ MainWindow::MainWindow(QWidget *parent)
         ui->pushButton_modeAutomated_tetta, SIGNAL(toggled(bool)),
         this, SLOT(stabilizePitchToggled(bool)));
 
+
+    pultProtocol = new Pult::PC_Protocol(QHostAddress("192.168.1.2"), 13051, QHostAddress("192.168.1.3"),
+                                         13050, 10);
+
+    qDebug() << "-----start exchange";
+    pultProtocol->startExchange();
+
+    connect(pultProtocol, SIGNAL(dataReceived()), this, SLOT(updateUi_fromAgent()));
+    connect(updateTimer,&QTimer::timeout,this,[this](){
+//        qDebug()<<"sending data to bort";
+        pultProtocol->send_data = data.generateFullMessage();
+    });
+
 }
 
 MainWindow::~MainWindow()
@@ -65,12 +79,13 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::timerUpdateImpact(int periodUpdateMsec){
-    QTimer *updateTimer = new QTimer(this);
+    //QTimer *updateTimer = new QTimer(this);
     connect(
         updateTimer, SIGNAL(timeout()),
         this, SLOT(updateUi_fromControl())
         );
     updateTimer->start(periodUpdateMsec);
+
 }
 
 void MainWindow::updateUi_fromControl(){
@@ -80,6 +95,11 @@ void MainWindow::updateUi_fromControl(){
     ui->label_impactDataRoll->setText(QString::number(control.roll));
     ui->label_impactDataPitch->setText(QString::number(control.pitch));
     ui->label_impactDataYaw->setText(QString::number(control.yaw));
+
+    ui->widget->setYaw(pultProtocol->rec_data.dataAH127C.yaw);
+    ui->widget->setYawDesirable(control.yaw);
+
+
 }
 
 void MainWindow::stabilizeMarchToggled(bool state) {
@@ -109,4 +129,13 @@ void MainWindow::e_CSModeManualToggled() {
 
 void MainWindow::e_CSModeAutomatedToggled() {
     uv_interface.setCSMode(e_CSMode::MODE_AUTOMATED);
+}
+
+void MainWindow::updateUi_fromAgent() {
+
+    data.parseFullMessage(pultProtocol->rec_data);
+    ui->widget->setYaw(0);
+
+    //ui->widget->setYaw(pultProtocol->rec_data.dataAH127C.yaw);
+    qDebug() <<     pultProtocol->rec_data.dataAH127C.yaw;
 }

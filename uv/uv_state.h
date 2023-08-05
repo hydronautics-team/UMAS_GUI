@@ -43,41 +43,44 @@ struct ControlContoursFlags { //флаги замыкания контуров (
     quint8 lag;
 };
 
-//struct AUVCurrentData {
-//    //!!тут все текущие параметры АНПА
-//    //текущий режим
-//    //текущее состояние контуров
-//    //текущий выбор модель/реальный НПА
-//    //текущие курс, дифферент, крен
-//    //управление на ВМА (текущие управляющие сигнлы на движители)
-//};
+struct AUVCurrentData
+{
+    //!!тут все текущие параметры АНПА
+    quint8 modeReal;//текущий режим
+    ControlContoursFlags controlReal;//текущее состояние контуров
+    quint8 modeAUV_Real;//текущий выбор модель/реальный НПА
+    ControlData ControlDataReal;//текущие курс, дифферент, крен
+    ControlData signalVMA_real;//управление на ВМА (текущие управляющие сигнлы на движители)
+};
 
 struct PowerSystemData {
     //состояние системы питания
 };
 
 struct Header {
-    int send;
-    int receiv;
-    int msg;
+    int senderID;
+    int receiverID;
+    int msgSize;
 };
 
 struct DataAH127C { //структура данных с датчика бесплатформенной системы ориентации
+    DataAH127C();
+
     float yaw; //курс градусы +/- 180
     float pitch; //...
     float roll;
 
-    float X_accel;
-    float Y_accel;
-    float Z_accel;
+    float ax;
+    float ay;
+    float az;
 
-    float X_rate;
-    float Y_rate;
-    float Z_rate;
+    float wx;
+    float wy;
+    float wz;
 
-    float X_magn;
-    float Y_magn;
-    float Z_magn;
+    float mx;
+    float my;
+    float mz;
 
     float quat [4];
 };
@@ -100,28 +103,30 @@ struct DataUWB { //структура данных с сверхширокопо
 
 //};
 
-struct ToPult {
-    ToPult(int auvID){
-//        header.senderID = auvID;
-//        header.receiverID = 0;
-//        header.msgSize = sizeof (ToPult);
+struct ToPult
+{
+    ToPult(int auvID=0)
+    {
+        header.senderID = auvID;
+        header.receiverID = 0;
+        header.msgSize = sizeof (ToPult);
     }
     Header header;
-//    AUVCurrentData auvData;
+    AUVCurrentData auvData;// данные о текущих параметрах
     DataAH127C dataAH127C;// данные с БСО
     DataPressure dataPressure; //данные с датчика давления
     DataUWB dataUWB;//данные с UWB
-    quint16 checksum;
+    uint checksum;
 };
 
 //структура данных, которая передается из пульта в АНПА
-struct FromPult {
-    // эти структуры и енумы реализованы в uv_state
+struct FromPult
+{
     ControlData controlData; //данные, которые идут с пульта при замыканиии контуров
     e_CSMode cSMode; //режим работы
     ControlContoursFlags controlContoursFlags; //флаги замыкания контуров (если больше 0, то замкнуты
     PowerSystemData desiredPowerState; //структура с желаемыми параметрами системы питания
-    quint16 checksum;
+    uint checksum;
 };
 
 #pragma pack (pop)
@@ -132,12 +137,17 @@ class UVState : public QObject
 public:
     UVState();
 //    ~UV_State();
+    Header header;
+    DataAH127C imuData;
+    DataPressure dataPressure;
+    DataUWB dataUWB;
 
-    ControlData control;
+    AUVCurrentData auvData;
 
-    ControlContoursFlags controlContoursFlags;
     e_CSMode cSMode;
-
+    ControlContoursFlags controlContoursFlags;
+    ControlData control;
+    PowerSystemData desiredPowerState;
 };
 
 #endif // UVSTATE_H

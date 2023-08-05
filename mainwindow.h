@@ -14,6 +14,8 @@
 #include "remote_control.h"
 #include "uv_state.h"
 #include "i_user_interface_data.h"
+#include "pc_protocol.h"
+#include "i_server_data.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -41,14 +43,20 @@ private slots:
     void e_CSModeManualToggled();
     void e_CSModeAutomatedToggled();
 
+    void updateUi_fromAgent();
+
 private:
     Ui::MainWindow *ui;
+    QTimer * updateTimer = nullptr;
 
     QButtonGroup *mode;
     QButtonGroup *modeAutomated;
 
     IUserInterfaceData uv_interface;
+    Pult::PC_Protocol* pultProtocol;
+
     RemoteControl joystick;
+    IServerData data;
 
 
 };

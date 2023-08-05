@@ -12,12 +12,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Charts)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Network)
+
 
 include_directories("${PROJECT_SOURCE_DIR}/compass")
 include_directories("${PROJECT_SOURCE_DIR}/remote_control")
 include_directories("${PROJECT_SOURCE_DIR}/uv")
 include_directories("${PROJECT_SOURCE_DIR}/interface")
 include_directories("${PROJECT_SOURCE_DIR}/map")
+include_directories("${PROJECT_SOURCE_DIR}/communication")
+include_directories("${PROJECT_SOURCE_DIR}/kx_pult")
 
 set(PROJECT_SOURCES
         main.cpp
@@ -39,8 +43,12 @@ set(PROJECT_SOURCES
         interface/i_basic_data.h
         interface/i_user_interface_data.cpp
         interface/i_user_interface_data.h
-
+        interface/i_server_data.h
+        interface/i_server_data.cpp
+        communication/pc_protocol.h
+        communication/udp_protocol.h
 )
+
 
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -69,7 +77,8 @@ endif()
 target_link_libraries(UMAS_GUI PRIVATE
     sfml-graphics sfml-window sfml-system
     Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::Charts)
+    Qt${QT_VERSION_MAJOR}::Charts
+    Qt${QT_VERSION_MAJOR}::Network)
 
 set_target_properties(UMAS_GUI PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

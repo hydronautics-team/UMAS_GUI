@@ -40,3 +40,11 @@ void IUserInterfaceData::setControlContoursFlags(e_StabilizationContours contour
 void IUserInterfaceData::setCSMode(e_CSMode mode) {
     agent.cSMode = mode;
 }
+
+//DataAH127C IUserInterfaceData::getImuData() {
+//    DataAH127C data;
+
+//    data = agent.imuData;
+
+//    return data;
+//}

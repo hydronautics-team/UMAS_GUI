@@ -13,6 +13,7 @@ public:
     ControlData getControlData();
     void setControlContoursFlags(e_StabilizationContours contour, bool value);
     void setCSMode(e_CSMode mode);
+//    ImuData getImuData();
 };
 
 #endif // IUSERINTERFACEDATA_H
