@@ -64,34 +64,36 @@ struct Header {
 };
 
 struct DataAH127C { //структура данных с датчика бесплатформенной системы ориентации
-    DataAH127C();
+ //   DataAH127C();
 
-    float yaw; //курс градусы +/- 180
-    float pitch; //...
-    float roll;
+    float yaw = 0; //курс градусы +/- 180
+    float pitch = 0; //...
+    float roll = 0;
 
-    float ax;
-    float ay;
-    float az;
+    float X_accel = 0;
+    float Y_accel = 0;
+    float Z_accel = 0;
 
-    float wx;
-    float wy;
-    float wz;
+    float X_rate = 0;
+    float Y_rate = 0;
+    float Z_rate = 0;
 
-    float mx;
-    float my;
-    float mz;
+    float X_magn = 0;
+    float Y_magn = 0;
+    float Z_magn = 0;
 
     float quat [4];
 };
 
 struct DataPressure { //структура данных с датчика давления
+    DataPressure();
     float temperature; //Temperature returned in deg C.
     float depth; //Depth returned in meters
     float pressure; // Pressure returned in mbar or mbar*conversion rate.
 };
 
 struct DataUWB { //структура данных с сверхширокополосного модуля
+    DataUWB();
     float locationX; //координата аппарата по оси X
     float locationY; //координата аппарата по оси Y
     float distanceToBeacon[4]; //расстоние до i-го маяка

@@ -18,17 +18,211 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
         <string>Tab 1</string>
        </attribute>
       </widget>
-      <widget class="QWidget" name="tab_2">
+      <widget class="QWidget" name="imuData">
        <attribute name="title">
         <string>Tab 2</string>
        </attribute>
+       <widget class="QWidget" name="gridLayoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>9</x>
+          <y>19</y>
+          <width>201</width>
+          <height>511</height>
+         </rect>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_imuData">
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_IMU_rate_Z">
+           <property name="text">
+            <string>Z_rate</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_IMU_rate_X">
+           <property name="text">
+            <string>X_rate</string>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="0">
+          <widget class="QLabel" name="label_IMU_q2">
+           <property name="text">
+            <string>q2</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="label_IMU_magn_Y">
+           <property name="text">
+            <string>Y_magn</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="label_IMUdata_accel_Y">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_IMU_rate_Y">
+           <property name="text">
+            <string>Y_rate</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="0">
+          <widget class="QLabel" name="label_IMU_q1">
+           <property name="text">
+            <string>q1</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_IMU_accel_Z">
+           <property name="text">
+            <string>Z_accel</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0">
+          <widget class="QLabel" name="label_IMU_magn_Z">
+           <property name="text">
+            <string>Z_magn</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLabel" name="label_IMUdata_accel_X">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_IMU_accel_Y">
+           <property name="text">
+            <string>Y_accel</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_IMU_accel_X">
+           <property name="text">
+            <string>X_accel</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="label_IMU_magn_X">
+           <property name="text">
+            <string>X_magn</string>
+           </property>
+          </widget>
+         </item>
+         <item row="11" column="0">
+          <widget class="QLabel" name="label_IMU_q3">
+           <property name="text">
+            <string>q3</string>
+           </property>
+          </widget>
+         </item>
+         <item row="12" column="0">
+          <widget class="QLabel" name="label_IMU_q4">
+           <property name="text">
+            <string>q4</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLabel" name="label_IMUdata_accel_Z">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLabel" name="label_IMUdata_rate_X">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLabel" name="label_IMUdata_rate_Y">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QLabel" name="label_IMUdata_rate_Z">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QLabel" name="label_IMUdata_magn_X">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QLabel" name="label_IMUdata_magn_Y">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="1">
+          <widget class="QLabel" name="label_IMUdata_magn_Z">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="1">
+          <widget class="QLabel" name="label_IMUdata_q1">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="1">
+          <widget class="QLabel" name="label_IMUdata_q2">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="11" column="1">
+          <widget class="QLabel" name="label_IMUdata_q3">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="12" column="1">
+          <widget class="QLabel" name="label_IMUdata_q4">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </widget>
     </item>
@@ -44,7 +238,7 @@
          </widget>
         </item>
         <item>
-         <widget class="Compass" name="widget" native="true">
+         <widget class="Compass" name="compass" native="true">
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
             <horstretch>0</horstretch>
@@ -70,7 +264,7 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QLabel" name="label_7">
+           <widget class="QLabel" name="label_IMUdata_yaw">
             <property name="text">
              <string>0</string>
             </property>
@@ -112,21 +306,21 @@
            </widget>
           </item>
           <item row="2" column="2">
-           <widget class="QLabel" name="label_16">
+           <widget class="QLabel" name="label_IMUdata_pitch">
             <property name="text">
              <string>0</string>
             </property>
            </widget>
           </item>
           <item row="2" column="3">
-           <widget class="QLabel" name="label_17">
+           <widget class="QLabel" name="label_IMUdata_roll">
             <property name="text">
              <string>0</string>
             </property>
            </widget>
           </item>
           <item row="2" column="4">
-           <widget class="QLabel" name="label_18">
+           <widget class="QLabel" name="label_IMUdata_depth">
             <property name="text">
              <string>0</string>
             </property>

@@ -17,7 +17,6 @@
 #include "pc_protocol.h"
 #include "i_server_data.h"
 
-
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -44,6 +43,12 @@ private slots:
     void e_CSModeAutomatedToggled();
 
     void updateUi_fromAgent();
+    void updateUi_Compass(float yaw);
+    void updateUi_IMU(DataAH127C imuData);
+
+signals:
+    void updateCompass(float yaw);
+    void updateIMU(DataAH127C imuData);
 
 private:
     Ui::MainWindow *ui;
@@ -57,7 +62,6 @@ private:
 
     RemoteControl joystick;
     IServerData data;
-
 
 };
 #endif // MAINWINDOW_H

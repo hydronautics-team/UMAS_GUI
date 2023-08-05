@@ -65,12 +65,13 @@ MainWindow::MainWindow(QWidget *parent)
     qDebug() << "-----start exchange";
     pultProtocol->startExchange();
 
-    connect(pultProtocol, SIGNAL(dataReceived()), this, SLOT(updateUi_fromAgent()));
-    connect(updateTimer,&QTimer::timeout,this,[this](){
-//        qDebug()<<"sending data to bort";
-        pultProtocol->send_data = data.generateFullMessage();
-    });
+    connect(pultProtocol, SIGNAL(dataReceived()),
+            this, SLOT(updateUi_fromAgent()));
 
+    connect(this, SIGNAL(updateCompass(float)),
+            this, SLOT(updateUi_Compass(float)));
+    connect(this, SIGNAL(updateIMU(DataAH127C)),
+            this, SLOT(updateUi_IMU(DataAH127C)));
 }
 
 MainWindow::~MainWindow()
@@ -90,17 +91,44 @@ void MainWindow::timerUpdateImpact(int periodUpdateMsec){
 
 void MainWindow::updateUi_fromControl(){
     ControlData control = uv_interface.getControlData();
+    DataAH127C imuData = uv_interface.getImuData();
 
-    ui->label_impactDataDepth->setText(QString::number(control.march));
-    ui->label_impactDataRoll->setText(QString::number(control.roll));
-    ui->label_impactDataPitch->setText(QString::number(control.pitch));
-    ui->label_impactDataYaw->setText(QString::number(control.yaw));
+    ui->label_impactDataDepth->setText(QString::number(control.march, 'f', 2));
+    ui->label_impactDataRoll->setText(QString::number(control.roll, 'f', 2));
+    ui->label_impactDataPitch->setText(QString::number(control.pitch, 'f', 2));
+    ui->label_impactDataYaw->setText(QString::number(control.yaw, 'f', 2));
 
-    ui->widget->setYaw(pultProtocol->rec_data.dataAH127C.yaw);
-    ui->widget->setYawDesirable(control.yaw);
-
-
+    ui->compass->setYawDesirable(imuData.yaw + control.yaw);
 }
+
+void MainWindow::updateUi_Compass(float yaw) {
+    ui->compass->setYaw(yaw);
+}
+
+void MainWindow::updateUi_IMU(DataAH127C imuData){
+    ui->label_IMUdata_accel_X->setText(QString::number(imuData.X_accel, 'f', 2));
+    ui->label_IMUdata_accel_Y->setText(QString::number(imuData.Y_accel, 'f', 2));
+    ui->label_IMUdata_accel_Z->setText(QString::number(imuData.Z_accel, 'f', 2));
+
+    ui->label_IMUdata_rate_X->setText(QString::number(imuData.X_rate, 'f', 2));
+    ui->label_IMUdata_rate_Y->setText(QString::number(imuData.Y_rate, 'f', 2));
+    ui->label_IMUdata_rate_Z->setText(QString::number(imuData.Z_rate, 'f', 2));
+
+    ui->label_IMUdata_magn_X->setText(QString::number(imuData.X_magn, 'f', 2));
+    ui->label_IMUdata_magn_Y->setText(QString::number(imuData.Y_magn, 'f', 2));
+    ui->label_IMUdata_magn_Z->setText(QString::number(imuData.Z_magn, 'f', 2));
+
+    ui->label_IMUdata_q1->setText(QString::number(imuData.quat[0], 'f', 2));
+    ui->label_IMUdata_q2->setText(QString::number(imuData.quat[1], 'f', 2));
+    ui->label_IMUdata_q3->setText(QString::number(imuData.quat[2], 'f', 2));
+    ui->label_IMUdata_q4->setText(QString::number(imuData.quat[3], 'f', 2));
+
+    ui->label_IMUdata_yaw->setText(QString::number(imuData.yaw, 'f', 2));
+    ui->label_IMUdata_pitch->setText(QString::number(imuData.pitch, 'f', 2));
+    ui->label_IMUdata_roll->setText(QString::number(imuData.roll, 'f', 2));
+}
+
+
 
 void MainWindow::stabilizeMarchToggled(bool state) {
     uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_MARCH, state);
@@ -132,10 +160,8 @@ void MainWindow::e_CSModeAutomatedToggled() {
 }
 
 void MainWindow::updateUi_fromAgent() {
+    DataAH127C imuData = uv_interface.getImuData();
 
-    data.parseFullMessage(pultProtocol->rec_data);
-    ui->widget->setYaw(0);
-
-    //ui->widget->setYaw(pultProtocol->rec_data.dataAH127C.yaw);
-    qDebug() <<     pultProtocol->rec_data.dataAH127C.yaw;
+    emit updateCompass(imuData.yaw);
+    emit updateIMU(imuData);
 }

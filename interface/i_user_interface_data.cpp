@@ -5,9 +5,6 @@ IUserInterfaceData::IUserInterfaceData() : IBasicData()
 
 }
 
-ControlData IUserInterfaceData::getControlData() {
-    return agent.control;
-}
 
 void IUserInterfaceData::setControlContoursFlags(e_StabilizationContours contour, bool value) {
     switch (contour) {
@@ -41,10 +38,26 @@ void IUserInterfaceData::setCSMode(e_CSMode mode) {
     agent.cSMode = mode;
 }
 
-//DataAH127C IUserInterfaceData::getImuData() {
-//    DataAH127C data;
+ControlData IUserInterfaceData::getControlData() {
+    return agent.control;
+}
 
-//    data = agent.imuData;
+DataAH127C IUserInterfaceData::getImuData() {
+    return agent.imuData;
+}
 
-//    return data;
-//}
+Header IUserInterfaceData::getHeader() {
+    return agent.header;
+}
+
+AUVCurrentData IUserInterfaceData::getAUVCurrentData() {
+    return agent.auvData;
+}
+
+DataPressure IUserInterfaceData::getDataPressure() {
+    return agent.dataPressure;
+}
+
+DataUWB IUserInterfaceData::getDataUWB() {
+    return agent.dataUWB;
+ }
