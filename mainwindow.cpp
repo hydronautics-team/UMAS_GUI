@@ -29,6 +29,8 @@ MainWindow::MainWindow(QWidget *parent)
     modeAutomated->addButton(ui->pushButton_modeAutomated_tetta);
     modeAutomated->addButton(ui->pushButton_modeAutomated_gamma);
     modeAutomated->setExclusive(false);
+    ui->tabWidget->setTabText(1, "БСО");
+
 
     connect(
         ui->pushButton_modeManual, SIGNAL(clicked()),
@@ -58,15 +60,13 @@ MainWindow::MainWindow(QWidget *parent)
         ui->pushButton_modeAutomated_tetta, SIGNAL(toggled(bool)),
         this, SLOT(stabilizePitchToggled(bool)));
 
+    connect(
+        ui->comboBox_modeSelection, SIGNAL(activated(int)),
+        this, SLOT(setModeSelection(int)));
 
-    pultProtocol = new Pult::PC_Protocol(QHostAddress("192.168.1.2"), 13051, QHostAddress("192.168.1.3"),
-                                         13050, 10);
-
-    qDebug() << "-----start exchange";
-    pultProtocol->startExchange();
-
-    connect(pultProtocol, SIGNAL(dataReceived()),
-            this, SLOT(updateUi_fromAgent()));
+    connect(
+        ui->pushButton_connection, SIGNAL(clicked()),
+        this, SLOT(setConnection()));
 
     connect(this, SIGNAL(updateCompass(float)),
             this, SLOT(updateUi_Compass(float)));
@@ -118,17 +118,27 @@ void MainWindow::updateUi_IMU(DataAH127C imuData){
     ui->label_IMUdata_magn_Y->setText(QString::number(imuData.Y_magn, 'f', 2));
     ui->label_IMUdata_magn_Z->setText(QString::number(imuData.Z_magn, 'f', 2));
 
-    ui->label_IMUdata_q1->setText(QString::number(imuData.quat[0], 'f', 2));
-    ui->label_IMUdata_q2->setText(QString::number(imuData.quat[1], 'f', 2));
-    ui->label_IMUdata_q3->setText(QString::number(imuData.quat[2], 'f', 2));
-    ui->label_IMUdata_q4->setText(QString::number(imuData.quat[3], 'f', 2));
+    ui->label_IMUdata_q0->setText(QString::number(imuData.quat[0], 'f', 2));
+    ui->label_IMUdata_q1->setText(QString::number(imuData.quat[1], 'f', 2));
+    ui->label_IMUdata_q2->setText(QString::number(imuData.quat[2], 'f', 2));
+    ui->label_IMUdata_q3->setText(QString::number(imuData.quat[3], 'f', 2));
 
     ui->label_IMUdata_yaw->setText(QString::number(imuData.yaw, 'f', 2));
     ui->label_IMUdata_pitch->setText(QString::number(imuData.pitch, 'f', 2));
     ui->label_IMUdata_roll->setText(QString::number(imuData.roll, 'f', 2));
 }
 
+void MainWindow::setConnection()
+{
+    pultProtocol = new Pult::PC_Protocol(QHostAddress("192.168.1.2"), 13051,
+                                         QHostAddress("192.168.1.3"), 13050, 10);
 
+    qDebug() << "-----start exchange";
+    pultProtocol->startExchange();
+
+    connect(pultProtocol, SIGNAL(dataReceived()),
+            this, SLOT(updateUi_fromAgent()));
+}
 
 void MainWindow::stabilizeMarchToggled(bool state) {
     uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_MARCH, state);
@@ -157,6 +167,15 @@ void MainWindow::e_CSModeManualToggled() {
 
 void MainWindow::e_CSModeAutomatedToggled() {
     uv_interface.setCSMode(e_CSMode::MODE_AUTOMATED);
+}
+
+void MainWindow::setModeSelection(int index)
+{
+    if (index == 1)
+        uv_interface.setModeSelection(true);
+    else
+        uv_interface.setModeSelection(false);
+
 }
 
 void MainWindow::updateUi_fromAgent() {

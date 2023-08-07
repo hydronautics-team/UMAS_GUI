@@ -12,6 +12,8 @@ public:
 
     void setControlContoursFlags(e_StabilizationContours contour, bool value);
     void setCSMode(e_CSMode mode);
+    void setModeSelection(bool mode);
+
 
     ControlData     getControlData();
     DataAH127C      getImuData();

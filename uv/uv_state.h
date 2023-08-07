@@ -127,6 +127,7 @@ struct FromPult
     ControlData controlData; //данные, которые идут с пульта при замыканиии контуров
     e_CSMode cSMode; //режим работы
     ControlContoursFlags controlContoursFlags; //флаги замыкания контуров (если больше 0, то замкнуты
+    bool modeAUV_selection;//текущий выбор модель/реальный НПА
     PowerSystemData desiredPowerState; //структура с желаемыми параметрами системы питания
     uint checksum;
 };
@@ -146,6 +147,7 @@ public:
 
     AUVCurrentData auvData;
 
+    bool modeAUV_selection;
     e_CSMode cSMode;
     ControlContoursFlags controlContoursFlags;
     ControlData control;

@@ -38,6 +38,10 @@ void IUserInterfaceData::setCSMode(e_CSMode mode) {
     agent.cSMode = mode;
 }
 
+void IUserInterfaceData::setModeSelection(bool mode) {
+    agent.modeAUV_selection = mode;
+}
+
 ControlData IUserInterfaceData::getControlData() {
     return agent.control;
 }

@@ -11,6 +11,7 @@ FromPult IServerData::generateFullMessage() {
     data.controlData = agent.control;
     data.cSMode = agent.cSMode;
     data.controlContoursFlags = agent.controlContoursFlags;
+    data.modeAUV_selection = agent.modeAUV_selection;
  //   data.desiredPowerState = agent.desiredPowerState;
 
     return data;

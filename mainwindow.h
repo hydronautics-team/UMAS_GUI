@@ -30,6 +30,7 @@ public:
     ~MainWindow();
 
     void timerUpdateImpact(int periodUpdateMsec);
+    void setBottom();
 
 private slots:
     void updateUi_fromControl();
@@ -42,9 +43,13 @@ private slots:
     void e_CSModeManualToggled();
     void e_CSModeAutomatedToggled();
 
+    void setModeSelection(int index);
+
     void updateUi_fromAgent();
     void updateUi_Compass(float yaw);
     void updateUi_IMU(DataAH127C imuData);
+
+    void setConnection();
 
 signals:
     void updateCompass(float yaw);
