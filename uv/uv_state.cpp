@@ -2,7 +2,7 @@
 
 UVState::UVState()
 {
-
+    modeAUV_selection = true;
 }
 
 ControlData::ControlData() {

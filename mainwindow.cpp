@@ -1,6 +1,19 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
+
+#include <QtCharts/QScatterSeries>
+#include <QtCharts/QLegendMarker>
+#include <QtGui/QImage>
+#include <QtGui/QPainter>
+#include <QtCore/QtMath>
+#include <QtCharts/QChartView>
+#include <QtCharts/QAbstractAxis>
+#include <QtCharts/QAbstractSeries>
+#include <QtCharts/QChart>
+#include <QtWidgets/QGraphicsView>
+
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -30,8 +43,30 @@ MainWindow::MainWindow(QWidget *parent)
     modeAutomated->addButton(ui->pushButton_modeAutomated_gamma);
     modeAutomated->setExclusive(false);
     ui->tabWidget->setTabText(1, "БСО");
+    ui->tabWidget->setTabText(0, "Карта");
+
+//map
+
+    auto series0 = new QScatterSeries;
+    series0->setName("Агент - 1");
+    series0->setMarkerShape(QScatterSeries::MarkerShapeCircle);
+    series0->setMarkerSize(15.0);
+
+    series0->append(3, 8);
 
 
+    auto chart = new QChart;
+    chart->addSeries(series0);
+    chart->createDefaultAxes();
+    chart->setDropShadowEnabled(false);
+
+    chart->legend()->setMarkerShape(QLegend::MarkerShapeFromSeries);
+
+    QChartView *chartView = new QChartView(chart);
+
+    ui->verticalLayout_forMap->addWidget(chartView);
+
+//
     connect(
         ui->pushButton_modeManual, SIGNAL(clicked()),
         this, SLOT(e_CSModeManualToggled()));
@@ -88,6 +123,7 @@ void MainWindow::timerUpdateImpact(int periodUpdateMsec){
     updateTimer->start(periodUpdateMsec);
 
 }
+
 
 void MainWindow::updateUi_fromControl(){
     ControlData control = uv_interface.getControlData();
@@ -172,9 +208,9 @@ void MainWindow::e_CSModeAutomatedToggled() {
 void MainWindow::setModeSelection(int index)
 {
     if (index == 1)
-        uv_interface.setModeSelection(true);
-    else
         uv_interface.setModeSelection(false);
+    else
+        uv_interface.setModeSelection(true);
 
 }
 
