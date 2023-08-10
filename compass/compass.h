@@ -16,7 +16,7 @@ public:
 
 public slots:
     void setYaw(double yawNew);
-    void setYawDesirable(double yawDesirableNew);
+    void setYawDesirable(double yawDesirableNew, double YawFromIMU, bool mode);
 
 protected:
     void paintEvent(QPaintEvent *e);

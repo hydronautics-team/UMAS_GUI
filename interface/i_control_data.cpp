@@ -32,3 +32,15 @@ void IControlData::setPitch(double pitch) {
 void IControlData::setYaw(double yaw) {
     agent.control.yaw = yaw;
 }
+
+bool IControlData::getCSMode()
+{
+    if (agent.cSMode == e_CSMode::MODE_AUTOMATED)
+        return true;
+    else
+        return false;
+}
+
+DataAH127C IControlData::getImuData() {
+    return agent.imuData;
+}

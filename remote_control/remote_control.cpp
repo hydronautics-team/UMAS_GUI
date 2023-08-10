@@ -18,13 +18,14 @@ RemoteControl::RemoteControl(int joy_id, int update_time, QObject *parent) : QOb
 
 void RemoteControl::updateImpact() {
     sf::Joystick::update();
+    DataAH127C imuData = interface.getImuData();
 
     if (sf::Joystick::isConnected(id)) {
         setMarch();
         setDepth();
-        setRoll();
-        setPitch();
-        setYaw();
+        setRoll(imuData.roll);
+        setPitch(imuData.pitch);
+        setYaw(imuData.yaw);
     }
 }
 
@@ -36,16 +37,16 @@ void RemoteControl::setDepth(){
     interface.setDepth(sf::Joystick::getAxisPosition(id, impactAxisDepth));
 }
 
-void RemoteControl::setRoll(){
-    interface.setRoll(sf::Joystick::getAxisPosition(id, impactAxisRoll));
+void RemoteControl::setRoll(float roll){
+    interface.setRoll(sf::Joystick::getAxisPosition(id, impactAxisRoll) + roll * interface.getCSMode());
 }
 
-void RemoteControl::setPitch(){
-    interface.setPitch(sf::Joystick::getAxisPosition(id, impactAxisPitch));
+void RemoteControl::setPitch(float pitch){
+    interface.setPitch(sf::Joystick::getAxisPosition(id, impactAxisPitch) + pitch * interface.getCSMode());
 }
 
-void RemoteControl::setYaw(){
-    interface.setYaw(sf::Joystick::getAxisPosition(id, impactAxisYaw));
+void RemoteControl::setYaw(float yaw){
+    interface.setYaw(sf::Joystick::getAxisPosition(id, impactAxisYaw) + yaw * interface.getCSMode());
 }
 
 RemoteControl::~RemoteControl(){

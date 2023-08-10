@@ -1,5 +1,15 @@
 {
 "cmake.configureArgs": [
-	"-DCMAKE_PREFIX_PATH=/home/shakuevda/Qt/6.4.2/gcc_64/lib/cmake"
-]
+	"-DCMAKE_PREFIX_PATH=/home/shakuevda/Qt/6.4.2/gcc_64/lib/cmake" 		// my
+	// "-DCMAKE_PREFIX_PATH=/home/hydro/Qt/5.15.2/gcc_64/lib/cmake" 			// laptop
+	// "-DCMAKE_PREFIX_PATH=/home/hydronautics/Qt/5.15.2/gcc_64/lib/cmake"			// station
+
+],
+"files.associations": {
+	"qabstractseries": "cpp",
+	"qabstractaxis": "cpp",
+	"qpainter": "cpp",
+	"qchartview": "cpp",
+	"qtmath": "cpp"
+}
 }

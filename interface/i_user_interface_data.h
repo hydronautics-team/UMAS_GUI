@@ -15,6 +15,7 @@ public:
     void setModeSelection(bool mode);
 
 
+    bool            getCSMode();
     ControlData     getControlData();
     DataAH127C      getImuData();
     Header          getHeader();

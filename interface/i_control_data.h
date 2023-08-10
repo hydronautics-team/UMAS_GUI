@@ -16,6 +16,9 @@ public:
     void setRoll(double roll);
     void setPitch(double pitch);
     void setYaw(double yaw);
+
+    bool getCSMode();
+    DataAH127C getImuData();
 };
 
 #endif // ICONTROLDATA_H

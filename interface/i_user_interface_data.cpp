@@ -42,6 +42,14 @@ void IUserInterfaceData::setModeSelection(bool mode) {
     agent.modeAUV_selection = mode;
 }
 
+bool IUserInterfaceData::getCSMode()
+{
+    if (agent.cSMode == e_CSMode::MODE_AUTOMATED)
+        return true;
+    else
+        return false;
+}
+
 ControlData IUserInterfaceData::getControlData() {
     return agent.control;
 }

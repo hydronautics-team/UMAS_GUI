@@ -2,15 +2,15 @@
 #include "./ui_mainwindow.h"
 
 
-#include <QtCharts/QScatterSeries>
-#include <QtCharts/QLegendMarker>
+// #include <QtCharts/QScatterSeries>
+// #include <QtCharts/QLegendMarker>
 #include <QtGui/QImage>
 #include <QtGui/QPainter>
 #include <QtCore/QtMath>
-#include <QtCharts/QChartView>
-#include <QtCharts/QAbstractAxis>
-#include <QtCharts/QAbstractSeries>
-#include <QtCharts/QChart>
+// #include <QtCharts/QChartView>
+// #include <QtCharts/QAbstractAxis>
+// #include <QtCharts/QAbstractSeries>
+// #include <QtCharts/QChart>
 #include <QtWidgets/QGraphicsView>
 
 
@@ -45,28 +45,28 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tabWidget->setTabText(1, "БСО");
     ui->tabWidget->setTabText(0, "Карта");
 
-//map
+// //map
 
-    auto series0 = new QScatterSeries;
-    series0->setName("Агент - 1");
-    series0->setMarkerShape(QScatterSeries::MarkerShapeCircle);
-    series0->setMarkerSize(15.0);
+//     auto series0 = new QScatterSeries;
+//     series0->setName("Агент - 1");
+//     series0->setMarkerShape(QScatterSeries::MarkerShapeCircle);
+//     series0->setMarkerSize(15.0);
 
-    series0->append(3, 8);
+//     series0->append(3, 8);
 
 
-    auto chart = new QChart;
-    chart->addSeries(series0);
-    chart->createDefaultAxes();
-    chart->setDropShadowEnabled(false);
+//     auto chart = new QChart;
+//     chart->addSeries(series0);
+//     chart->createDefaultAxes();
+//     chart->setDropShadowEnabled(false);
 
-    chart->legend()->setMarkerShape(QLegend::MarkerShapeFromSeries);
+//     chart->legend()->setMarkerShape(QLegend::MarkerShapeFromSeries);
 
-    QChartView *chartView = new QChartView(chart);
+//     QChartView *chartView = new QChartView(chart);
 
-    ui->verticalLayout_forMap->addWidget(chartView);
+//     ui->verticalLayout_forMap->addWidget(chartView);
 
-//
+// //
     connect(
         ui->pushButton_modeManual, SIGNAL(clicked()),
         this, SLOT(e_CSModeManualToggled()));
@@ -124,17 +124,17 @@ void MainWindow::timerUpdateImpact(int periodUpdateMsec){
 
 }
 
-
 void MainWindow::updateUi_fromControl(){
     ControlData control = uv_interface.getControlData();
     DataAH127C imuData = uv_interface.getImuData();
+    bool mode = uv_interface.getCSMode();
 
     ui->label_impactDataDepth->setText(QString::number(control.march, 'f', 2));
     ui->label_impactDataRoll->setText(QString::number(control.roll, 'f', 2));
     ui->label_impactDataPitch->setText(QString::number(control.pitch, 'f', 2));
     ui->label_impactDataYaw->setText(QString::number(control.yaw, 'f', 2));
 
-    ui->compass->setYawDesirable(imuData.yaw + control.yaw);
+    ui->compass->setYawDesirable(control.yaw, imuData.yaw, mode);
 }
 
 void MainWindow::updateUi_Compass(float yaw) {

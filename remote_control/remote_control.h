@@ -21,9 +21,9 @@ public:
 
     void setMarch();
     void setDepth();
-    void setRoll();
-    void setPitch();
-    void setYaw();
+    void setRoll(float roll);
+    void setPitch(float pitch);
+    void setYaw(float yaw);
 
 public slots:
     void updateImpact();
