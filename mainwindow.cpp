@@ -166,8 +166,8 @@ void MainWindow::updateUi_IMU(DataAH127C imuData){
 
 void MainWindow::setConnection()
 {
-    pultProtocol = new Pult::PC_Protocol(QHostAddress("192.168.1.2"), 13051,
-                                         QHostAddress("192.168.1.3"), 13050, 10);
+    pultProtocol = new Pult::PC_Protocol(QHostAddress("192.168.137.2"), 13051,
+                                         QHostAddress("192.168.137.3"), 13050, 10);
 
     qDebug() << "-----start exchange";
     pultProtocol->startExchange();
@@ -177,24 +177,24 @@ void MainWindow::setConnection()
 }
 
 void MainWindow::stabilizeMarchToggled(bool state) {
-    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_MARCH, state);
+    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_MARCH, !state);
 }
 
 void MainWindow::stabilizeYawToggled(bool state) {
-    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_YAW, state);
+    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_YAW, !state);
 }
 
 void MainWindow::stabilizePitchToggled(bool state) {
-    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_PITCH, state);
+    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_PITCH, !state);
 }
 
 void MainWindow::stabilizeRollToggled(bool state) {
-    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_ROLL, ui->pushButton_modeAutomated_gamma->isChecked());
+    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_ROLL, !state);
 }
 
 
 void MainWindow::stabilizeLagToggled(bool state) {
-    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_LAG, state);
+    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_LAG, !state);
 }
 
 void MainWindow::e_CSModeManualToggled() {
