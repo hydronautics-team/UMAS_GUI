@@ -801,7 +801,7 @@
                  </widget>
                 </item>
                 <item row="0" column="1">
-                 <widget class="QLabel" name="label_Impact_data_count_yaw">
+                 <widget class="QLabel" name="label_tab_setupMsg_send_Impact_data_count_yaw">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -833,7 +833,7 @@
                  </widget>
                 </item>
                 <item row="1" column="1">
-                 <widget class="QLabel" name="label_Impact_data_count_pitch">
+                 <widget class="QLabel" name="label_tab_setupMsg_send_Impact_data_count_pitch">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -865,7 +865,7 @@
                  </widget>
                 </item>
                 <item row="2" column="1">
-                 <widget class="QLabel" name="label_Impact_data_count_roll">
+                 <widget class="QLabel" name="label_tab_setupMsg_send_Impact_data_count_roll">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -897,7 +897,7 @@
                  </widget>
                 </item>
                 <item row="3" column="1">
-                 <widget class="QLabel" name="label_Impact_data_count_march">
+                 <widget class="QLabel" name="label_tab_setupMsg_send_Impact_data_count_march">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -929,7 +929,7 @@
                  </widget>
                 </item>
                 <item row="4" column="1">
-                 <widget class="QLabel" name="label_Impact_data_count_lag">
+                 <widget class="QLabel" name="label_tab_setupMsg_send_Impact_data_count_lag">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -961,7 +961,7 @@
                  </widget>
                 </item>
                 <item row="5" column="1">
-                 <widget class="QLabel" name="label_Impact_data_count_depth">
+                 <widget class="QLabel" name="label_tab_setupMsg_send_Impact_data_count_depth">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1272,7 +1272,7 @@
                  </widget>
                 </item>
                 <item row="0" column="1">
-                 <widget class="QLabel" name="label_controlContoursFlags_data_flags_yaw">
+                 <widget class="QLabel" name="label_tab_setupMsg_send_controlContoursFlags_data_flags_yaw">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1304,7 +1304,7 @@
                  </widget>
                 </item>
                 <item row="1" column="1">
-                 <widget class="QLabel" name="label_controlContoursFlags_data_flags_pitch">
+                 <widget class="QLabel" name="label_tab_setupMsg_send_controlContoursFlags_data_flags_pitch">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1336,7 +1336,7 @@
                  </widget>
                 </item>
                 <item row="2" column="1">
-                 <widget class="QLabel" name="label_controlContoursFlags_data_flags_roll">
+                 <widget class="QLabel" name="label_tab_setupMsg_send_controlContoursFlags_data_flags_roll">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1368,7 +1368,7 @@
                  </widget>
                 </item>
                 <item row="3" column="1">
-                 <widget class="QLabel" name="label_controlContoursFlags_data_flags_march">
+                 <widget class="QLabel" name="label_tab_setupMsg_send_controlContoursFlags_data_flags_march">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1400,7 +1400,7 @@
                  </widget>
                 </item>
                 <item row="4" column="1">
-                 <widget class="QLabel" name="label_controlContoursFlags_data_flags_lag">
+                 <widget class="QLabel" name="label_tab_setupMsg_send_controlContoursFlags_data_flags_lag">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1464,7 +1464,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_powerMode_count">
+               <widget class="QLabel" name="label_tab_setupMsg_send_powerMode_count">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
                   <horstretch>0</horstretch>
@@ -1497,7 +1497,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_modeAUV_selection_mode">
+               <widget class="QLabel" name="label_tab_setupMsg_send_modeAUV_selection_mode">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
                   <horstretch>0</horstretch>
@@ -1544,7 +1544,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_cSMode_count">
+               <widget class="QLabel" name="label_tab_setupMsg_send_cSMode_count">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
                   <horstretch>0</horstretch>
@@ -1590,7 +1590,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="label_checksum_count">
+               <widget class="QLabel" name="label_tab_setupMsg_send_checksum_count">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
                   <horstretch>0</horstretch>

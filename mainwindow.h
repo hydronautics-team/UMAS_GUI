@@ -60,7 +60,7 @@ private slots:
     void updateUi_fromAgent();
     void updateUi_Compass(float yaw);
     void updateUi_IMU(DataAH127C imuData);
-//    void updateUi_SetupMsg();
+    void updateUi_SetupMsg();
 
     void setConnection();
 

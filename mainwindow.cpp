@@ -232,14 +232,16 @@ void MainWindow::updateUi_IMU(DataAH127C imuData){
     ui->label_IMUdata_roll->setText(QString::number(imuData.roll, 'f', 2));
 }
 
-//void MainWindow::updateUi_SetupMsg()
-//{
+void MainWindow::updateUi_SetupMsg()
+{
+    power_Mode pMode = uv_interface.getPowerMode();
+    uv_interface.getAUVCurrentData();
+    uv_interface.getControlData();
 //    uv_interface.getCSMode();
-//    uv_interface.getAUVCurrentData()
-//    uv_interface.getControlData()
-//    uv_interface.getPowerMode()
 
-//}
+//    ui->label_tab_setupMsg_send_
+
+}
 
 void MainWindow::setConnection()
 {
