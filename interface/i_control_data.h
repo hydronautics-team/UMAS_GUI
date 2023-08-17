@@ -3,6 +3,7 @@
 
 #include "i_basic_data.h"
 
+
 class IControlData : public IBasicData
 {
 public:
@@ -17,8 +18,8 @@ public:
     void setPitch(double pitch);
     void setYaw(double yaw);
 
-    bool getCSMode();
-    DataAH127C getImuData();
+    bool        getCSMode();
+    DataAH127C  getImuData();
 };
 
 #endif // ICONTROLDATA_H

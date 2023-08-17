@@ -19,7 +19,7 @@ include_directories("${PROJECT_SOURCE_DIR}/compass")
 include_directories("${PROJECT_SOURCE_DIR}/remote_control")
 include_directories("${PROJECT_SOURCE_DIR}/uv")
 include_directories("${PROJECT_SOURCE_DIR}/interface")
-#include_directories("${PROJECT_SOURCE_DIR}/map")
+include_directories("${PROJECT_SOURCE_DIR}/map")
 include_directories("${PROJECT_SOURCE_DIR}/communication")
 include_directories("${PROJECT_SOURCE_DIR}/ui_utils")
 
@@ -30,8 +30,6 @@ set(PROJECT_SOURCES
         mainwindow.ui
         remote_control/remote_control.h
         remote_control/remote_control.cpp
-#        map/map.h
-#        map/map.cpp
         compass/compass.cpp
         compass/compass.h
         compass/compass.ui
@@ -49,7 +47,14 @@ set(PROJECT_SOURCES
         communication/udp_protocol.h
         ui_utils/setup_imu.h
         ui_utils/setup_imu.cpp
-        ui_utils/setupimu.ui
+        ui_utils/setup_imu.ui
+        ui_utils/setupimu_start.h
+        ui_utils/setupimu_start.cpp
+        ui_utils/setupimu_start.ui
+        map/map.h
+        map/map.cpp
+        map/map.ui
+        img.qrc
 )
 
 

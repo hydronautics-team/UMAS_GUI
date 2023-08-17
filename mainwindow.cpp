@@ -1,113 +1,179 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
-
-// #include <QtCharts/QScatterSeries>
-// #include <QtCharts/QLegendMarker>
-#include <QtGui/QImage>
-#include <QtGui/QPainter>
-#include <QtCore/QtMath>
-// #include <QtCharts/QChartView>
-// #include <QtCharts/QAbstractAxis>
-// #include <QtCharts/QAbstractSeries>
-// #include <QtCharts/QChart>
-#include <QtWidgets/QGraphicsView>
-
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    updateTimer = new QTimer(this);
 
-    MainWindow::timerUpdateImpact(joystick.periodUpdateMsec);
+    timerUpdateImpact(joystick.periodUpdateMsec);
 
+//  установка всех кнопок и слотов к ним
+    setBottom(ui, this);
+
+//    установка названий к вкладкам
+    setTab(ui);
+
+//    установка меток для вывода информации о посылках
+//    setLable_setupMsg(ui, this);
+
+    connect(this, SIGNAL(updateCompass(float)),
+            this, SLOT(updateUi_Compass(float)));
+    connect(this, SIGNAL(updateIMU(DataAH127C)),
+            this, SLOT(updateUi_IMU(DataAH127C)));
+    connect(this, SIGNAL(updateSetupMsg()),
+            this, SLOT(updateUi_SetupMsg()));
+}
+
+
+void MainWindow::setBottom(Ui::MainWindow *ui, QObject *ts) {
     ui->pushButton_modeManual->setCheckable(true);
     ui->pushButton_modeAutomated->setCheckable(true);
-    mode = new QButtonGroup(this);
+    QButtonGroup *mode = new QButtonGroup(ts);
     mode->addButton(ui->pushButton_modeManual);
     mode->addButton(ui->pushButton_modeAutomated);
     mode->setExclusive(true);
+    ui->pushButton_modeManual->setChecked(true);
 
     ui->pushButton_modeAutomated_march->setCheckable(true);
     ui->pushButton_modeAutomated_lag->setCheckable(true);
     ui->pushButton_modeAutomated_psi->setCheckable(true);
     ui->pushButton_modeAutomated_tetta->setCheckable(true);
     ui->pushButton_modeAutomated_gamma->setCheckable(true);
-    modeAutomated = new QButtonGroup(this);
+    QButtonGroup *modeAutomated = new QButtonGroup(ts);
     modeAutomated->addButton(ui->pushButton_modeAutomated_march);
     modeAutomated->addButton(ui->pushButton_modeAutomated_lag);
     modeAutomated->addButton(ui->pushButton_modeAutomated_psi);
     modeAutomated->addButton(ui->pushButton_modeAutomated_tetta);
     modeAutomated->addButton(ui->pushButton_modeAutomated_gamma);
     modeAutomated->setExclusive(false);
-    ui->tabWidget->setTabText(1, "БСО");
-    ui->tabWidget->setTabText(0, "Карта");
-
-// //map
-
-//     auto series0 = new QScatterSeries;
-//     series0->setName("Агент - 1");
-//     series0->setMarkerShape(QScatterSeries::MarkerShapeCircle);
-//     series0->setMarkerSize(15.0);
-
-//     series0->append(3, 8);
+    setBottom_powerMode(ui, ts);
 
 
-//     auto chart = new QChart;
-//     chart->addSeries(series0);
-//     chart->createDefaultAxes();
-//     chart->setDropShadowEnabled(false);
+    setBottom_connect(ui, ts);
+}
 
-//     chart->legend()->setMarkerShape(QLegend::MarkerShapeFromSeries);
+void MainWindow::setBottom_powerMode(Ui::MainWindow *ui, QObject *ts)
+{
+    QButtonGroup *powerMode = new QButtonGroup(ts);
+    powerMode->addButton(ui->pushButton_powerMode_2);
+    powerMode->addButton(ui->pushButton_powerMode_3);
+    powerMode->addButton(ui->pushButton_powerMode_4);
+    powerMode->addButton(ui->pushButton_powerMode_5);
 
-//     QChartView *chartView = new QChartView(chart);
+    ui->pushButton_powerMode_2->setCheckable(true);
+    ui->pushButton_powerMode_3->setCheckable(true);
+    ui->pushButton_powerMode_4->setCheckable(true);
+    ui->pushButton_powerMode_5->setCheckable(true);
 
-//     ui->verticalLayout_forMap->addWidget(chartView);
+    ui->pushButton_powerMode_2->setChecked(true);
 
-// //
+    uv_interface.setPowerMode(power_Mode::MODE_2);
+
+
+    connect(
+        ui->pushButton_powerMode_2, SIGNAL(clicked()),
+        ts, SLOT(pushButton_on_powerMode_2()));
+
+    connect(
+        ui->pushButton_powerMode_3, SIGNAL(clicked()),
+        ts, SLOT(pushButton_on_powerMode_3()));
+
+    connect(
+        ui->pushButton_powerMode_4, SIGNAL(clicked()),
+        ts, SLOT(pushButton_on_powerMode_4()));
+
+    connect(
+        ui->pushButton_powerMode_5, SIGNAL(clicked()),
+        ts, SLOT(pushButton_on_powerMode_5()));
+}
+
+void MainWindow::pushButton_on_powerMode_2()
+{
+    uv_interface.setPowerMode(power_Mode::MODE_2);
+}
+
+void MainWindow::pushButton_on_powerMode_3()
+{
+    uv_interface.setPowerMode(power_Mode::MODE_3);
+}
+
+void MainWindow::pushButton_on_powerMode_4()
+{
+    uv_interface.setPowerMode(power_Mode::MODE_4);
+}
+
+void MainWindow::pushButton_on_powerMode_5()
+{
+    uv_interface.setPowerMode(power_Mode::MODE_5);
+}
+
+void MainWindow::setBottom_connect(Ui::MainWindow *ui, QObject *ts)
+{
     connect(
         ui->pushButton_modeManual, SIGNAL(clicked()),
-        this, SLOT(e_CSModeManualToggled()));
+        ts, SLOT(e_CSModeManualToggled()));
 
     connect(
         ui->pushButton_modeAutomated, SIGNAL(clicked()),
-        this, SLOT(e_CSModeAutomatedToggled()));
+        ts, SLOT(e_CSModeAutomatedToggled()));
 
     connect(
         ui->pushButton_modeAutomated_gamma, SIGNAL(toggled(bool)),
-        this, SLOT(stabilizeRollToggled(bool)));
+        ts, SLOT(stabilizeRollToggled(bool)));
 
     connect(
         ui->pushButton_modeAutomated_lag, SIGNAL(toggled(bool)),
-        this, SLOT(stabilizeLagToggled(bool)));
+        ts, SLOT(stabilizeLagToggled(bool)));
 
     connect(
         ui->pushButton_modeAutomated_march, SIGNAL(toggled(bool)),
-        this, SLOT(stabilizeMarchToggled(bool)));
+        ts, SLOT(stabilizeMarchToggled(bool)));
 
     connect(
         ui->pushButton_modeAutomated_psi, SIGNAL(toggled(bool)),
-        this, SLOT(stabilizeYawToggled(bool)));
+        ts, SLOT(stabilizeYawToggled(bool)));
 
     connect(
         ui->pushButton_modeAutomated_tetta, SIGNAL(toggled(bool)),
-        this, SLOT(stabilizePitchToggled(bool)));
+        ts, SLOT(stabilizePitchToggled(bool)));
 
     connect(
         ui->comboBox_modeSelection, SIGNAL(activated(int)),
-        this, SLOT(setModeSelection(int)));
+        ts, SLOT(setModeSelection(int)));
 
     connect(
         ui->pushButton_connection, SIGNAL(clicked()),
-        this, SLOT(setConnection()));
+        ts, SLOT(setConnection()));
 
-    connect(this, SIGNAL(updateCompass(float)),
-            this, SLOT(updateUi_Compass(float)));
-    connect(this, SIGNAL(updateIMU(DataAH127C)),
-            this, SLOT(updateUi_IMU(DataAH127C)));
+    connect(
+        ui->pushButton_setupIMU, SIGNAL(clicked()),
+        ts, SLOT(setupIMU()));
 }
+
+void MainWindow::setTab(Ui::MainWindow *ui)
+{
+    ui->tabWidget->setTabText(0, "Карта");
+    ui->tabWidget->setTabText(1, "БСО");
+    ui->tabWidget->setTabText(2,  "Контроль сообщений");
+    ui->tabWidget->setTabText(3,  "Режимы питания");
+}
+
+//void setLable_setupMsg(Ui::MainWindow *ui, QObject *ts)
+//{
+
+//}
+
+
+
+
+
+
+
+
+
+
 
 MainWindow::~MainWindow()
 {
@@ -115,7 +181,7 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::timerUpdateImpact(int periodUpdateMsec){
-    //QTimer *updateTimer = new QTimer(this);
+    QTimer *updateTimer = new QTimer(this);
     connect(
         updateTimer, SIGNAL(timeout()),
         this, SLOT(updateUi_fromControl())
@@ -129,10 +195,12 @@ void MainWindow::updateUi_fromControl(){
     DataAH127C imuData = uv_interface.getImuData();
     bool mode = uv_interface.getCSMode();
 
-    ui->label_impactDataDepth->setText(QString::number(control.march, 'f', 2));
+    ui->label_impactDataDepth->setText(QString::number(control.depth, 'f', 2));
     ui->label_impactDataRoll->setText(QString::number(control.roll, 'f', 2));
     ui->label_impactDataPitch->setText(QString::number(control.pitch, 'f', 2));
     ui->label_impactDataYaw->setText(QString::number(control.yaw, 'f', 2));
+    ui->label_impactDataMarch->setText(QString::number(control.march, 'f', 2));
+    ui->label_impactDataLag->setText(QString::number(control.lag, 'f', 2));
 
     ui->compass->setYawDesirable(control.yaw, imuData.yaw, mode);
 }
@@ -164,10 +232,19 @@ void MainWindow::updateUi_IMU(DataAH127C imuData){
     ui->label_IMUdata_roll->setText(QString::number(imuData.roll, 'f', 2));
 }
 
+//void MainWindow::updateUi_SetupMsg()
+//{
+//    uv_interface.getCSMode();
+//    uv_interface.getAUVCurrentData()
+//    uv_interface.getControlData()
+//    uv_interface.getPowerMode()
+
+//}
+
 void MainWindow::setConnection()
 {
     pultProtocol = new Pult::PC_Protocol(QHostAddress("192.168.137.2"), 13051,
-                                         QHostAddress("192.168.137.3"), 13050, 10);
+                                         QHostAddress("192.168.137.11"), 13050, 10);
 
     qDebug() << "-----start exchange";
     pultProtocol->startExchange();
@@ -177,24 +254,24 @@ void MainWindow::setConnection()
 }
 
 void MainWindow::stabilizeMarchToggled(bool state) {
-    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_MARCH, !state);
+    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_MARCH, state);
 }
 
 void MainWindow::stabilizeYawToggled(bool state) {
-    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_YAW, !state);
+    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_YAW, state);
 }
 
 void MainWindow::stabilizePitchToggled(bool state) {
-    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_PITCH, !state);
+    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_PITCH, state);
 }
 
 void MainWindow::stabilizeRollToggled(bool state) {
-    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_ROLL, !state);
+    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_ROLL, state);
 }
 
 
 void MainWindow::stabilizeLagToggled(bool state) {
-    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_LAG, !state);
+    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_LAG, state);
 }
 
 void MainWindow::e_CSModeManualToggled() {
@@ -202,8 +279,15 @@ void MainWindow::e_CSModeManualToggled() {
 }
 
 void MainWindow::e_CSModeAutomatedToggled() {
+    ui->pushButton_modeAutomated_gamma->setChecked(true);
+    ui->pushButton_modeAutomated_lag->setChecked(true);
+    ui->pushButton_modeAutomated_march->setChecked(true);
+    ui->pushButton_modeAutomated_psi->setChecked(true);
+    ui->pushButton_modeAutomated_tetta->setChecked(true);
+
     uv_interface.setCSMode(e_CSMode::MODE_AUTOMATED);
 }
+
 
 void MainWindow::setModeSelection(int index)
 {
@@ -219,4 +303,13 @@ void MainWindow::updateUi_fromAgent() {
 
     emit updateCompass(imuData.yaw);
     emit updateIMU(imuData);
+    emit updateSetupMsg();
 }
+
+void MainWindow::setupIMU()
+{
+    SetupIMU window_setupIMU;
+    window_setupIMU.setModal(true);
+    window_setupIMU.exec();
+}
+

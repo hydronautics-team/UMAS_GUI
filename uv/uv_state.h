@@ -19,6 +19,14 @@ enum class e_StabilizationContours: unsigned char {
     CONTOUR_PITCH
 };
 
+enum class power_Mode : quint8
+{ //режим работы
+    MODE_2 = 0, //включены вычислитель, wifi, uwb
+    MODE_3, //включены вычислитель, wifi, uwb, гидроакустика
+    MODE_4, //включены вычислитель, wifi, uwb, гидроакустика, ВМА
+    MODE_5 //выключить вычислитель на 5 секунд и включить обратно
+};
+
 #pragma pack(push,1)
 //структура данных, которая передается из Северова в Пульт
 //тут описаны данные, которые Пульт принимает от Северова
@@ -66,21 +74,21 @@ struct Header {
 struct DataAH127C { //структура данных с датчика бесплатформенной системы ориентации
  //   DataAH127C();
 
-    float yaw = 0; //курс градусы +/- 180
-    float pitch = 0; //...
-    float roll = 0;
+    float yaw; //курс градусы +/- 180
+    float pitch; //...
+    float roll;
 
-    float X_accel = 0;
-    float Y_accel = 0;
-    float Z_accel = 0;
+    float X_accel;
+    float Y_accel;
+    float Z_accel;
 
-    float X_rate = 0;
-    float Y_rate = 0;
-    float Z_rate = 0;
+    float X_rate;
+    float Y_rate;
+    float Z_rate;
 
-    float X_magn = 0;
-    float Y_magn = 0;
-    float Z_magn = 0;
+    float X_magn;
+    float Y_magn;
+    float Z_magn;
 
     float quat [4];
 };
@@ -128,7 +136,7 @@ struct FromPult
     e_CSMode cSMode; //режим работы
     ControlContoursFlags controlContoursFlags; //флаги замыкания контуров (если больше 0, то замкнуты
     bool modeAUV_selection;//текущий выбор модель/реальный НПА
-    PowerSystemData desiredPowerState; //структура с желаемыми параметрами системы питания
+    power_Mode pMode; //режим работы системы питания, структура с желаемыми параметрами системы питания
     uint checksum;
 };
 
@@ -151,7 +159,7 @@ public:
     e_CSMode cSMode;
     ControlContoursFlags controlContoursFlags;
     ControlData control;
-    PowerSystemData desiredPowerState;
+    power_Mode pMode;
 };
 
 #endif // UVSTATE_H

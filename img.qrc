@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/setupIMU_for_agent.png</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,19 @@
+{
+	"BUILD_DIR" : "/home/shakuevda/Desktop/UMAS/UMAS_GUI/build/UMAS_GUI_autogen",
+	"CMAKE_BINARY_DIR" : "/home/shakuevda/Desktop/UMAS/UMAS_GUI/build",
+	"CMAKE_CURRENT_BINARY_DIR" : "/home/shakuevda/Desktop/UMAS/UMAS_GUI/build",
+	"CMAKE_CURRENT_SOURCE_DIR" : "/home/shakuevda/Desktop/UMAS/UMAS_GUI",
+	"CMAKE_SOURCE_DIR" : "/home/shakuevda/Desktop/UMAS/UMAS_GUI",
+	"INCLUDE_DIR" : "/home/shakuevda/Desktop/UMAS/UMAS_GUI/build/UMAS_GUI_autogen/include",
+	"INPUTS" : [ "/home/shakuevda/Desktop/UMAS/UMAS_GUI/img/setupIMU_for_agent.png" ],
+	"LOCK_FILE" : "/home/shakuevda/Desktop/UMAS/UMAS_GUI/build/CMakeFiles/UMAS_GUI_autogen.dir/AutoRcc_img_EWIEGA46WW_Lock.lock",
+	"MULTI_CONFIG" : false,
+	"OPTIONS" : [ "-name", "img" ],
+	"OUTPUT_CHECKSUM" : "EWIEGA46WW",
+	"OUTPUT_NAME" : "qrc_img.cpp",
+	"RCC_EXECUTABLE" : "/home/shakuevda/Qt/6.4.2/gcc_64/./libexec/rcc",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "/home/shakuevda/Desktop/UMAS/UMAS_GUI/build/CMakeFiles/UMAS_GUI_autogen.dir/AutoRcc_img_EWIEGA46WW_Used.txt",
+	"SOURCE" : "/home/shakuevda/Desktop/UMAS/UMAS_GUI/img.qrc",
+	"VERBOSITY" : 0
+}

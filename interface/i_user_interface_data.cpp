@@ -5,6 +5,9 @@ IUserInterfaceData::IUserInterfaceData() : IBasicData()
 
 }
 
+void IUserInterfaceData::setPowerMode(power_Mode mode) {
+    agent.pMode = mode;
+}
 
 void IUserInterfaceData::setControlContoursFlags(e_StabilizationContours contour, bool value) {
     switch (contour) {
@@ -40,6 +43,11 @@ void IUserInterfaceData::setCSMode(e_CSMode mode) {
 
 void IUserInterfaceData::setModeSelection(bool mode) {
     agent.modeAUV_selection = mode;
+}
+
+power_Mode IUserInterfaceData::getPowerMode()
+{
+    return agent.pMode;
 }
 
 bool IUserInterfaceData::getCSMode()

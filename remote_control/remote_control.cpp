@@ -3,7 +3,7 @@
 RemoteControl::RemoteControl(int joy_id, int update_time, QObject *parent) : QObject(parent)
 {
     id = 0;
-    periodUpdateMsec = 30;
+    periodUpdateMsec = 20;
 
     updateTimer = new QTimer(this);
     connect(updateTimer, &QTimer::timeout, this, &RemoteControl::updateImpact);
@@ -30,7 +30,7 @@ void RemoteControl::updateImpact() {
 }
 
 void RemoteControl::setMarch(){
-    interface.setMarch(sf::Joystick::getAxisPosition(id, impactAxisMarch));
+    interface.setMarch(-sf::Joystick::getAxisPosition(id, impactAxisMarch));
 }
 
 void RemoteControl::setDepth(){

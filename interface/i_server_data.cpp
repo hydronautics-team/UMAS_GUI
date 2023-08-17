@@ -12,7 +12,22 @@ FromPult IServerData::generateFullMessage() {
     data.cSMode = agent.cSMode;
     data.controlContoursFlags = agent.controlContoursFlags;
     data.modeAUV_selection = agent.modeAUV_selection;
- //   data.desiredPowerState = agent.desiredPowerState;
+    data.pMode = agent.pMode;
+
+    switch(data.pMode) {
+    case power_Mode::MODE_2:
+        qDebug() << "power_Mode::MODE_2";
+        break;
+    case power_Mode::MODE_3:
+        qDebug() << "power_Mode::MODE_3";
+        break;
+    case power_Mode::MODE_4:
+        qDebug() << "power_Mode::MODE_4";
+        break;
+    case power_Mode::MODE_5:
+        qDebug() << "power_Mode::MODE_5";
+        break;
+    }
 
     return data;
 }
@@ -20,11 +35,9 @@ FromPult IServerData::generateFullMessage() {
 void IServerData::parseFullMessage(ToPult message) {
     agent.header = message.header;
 
-
     agent.imuData = message.dataAH127C;
     agent.dataPressure = message.dataPressure;
     agent.dataUWB = message.dataUWB;
-
 
     agent.auvData.modeReal = message.auvData.modeReal;
     agent.auvData.controlReal = message.auvData.controlReal;

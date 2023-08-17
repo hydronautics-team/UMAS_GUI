@@ -2,6 +2,7 @@
 #define IBASICDATA_H
 
 #include <QObject>
+#include <QDebug>
 
 #include "uv_state.h"
 
