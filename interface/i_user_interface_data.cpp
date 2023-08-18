@@ -5,6 +5,11 @@ IUserInterfaceData::IUserInterfaceData() : IBasicData()
 
 }
 
+void IUserInterfaceData::setFlagAH127C_pult(FlagAH127C_pult flagAH127C_pult)
+{
+    agent.flagAH127C_pult = flagAH127C_pult;
+}
+
 void IUserInterfaceData::setPowerMode(power_Mode mode) {
     agent.pMode = mode;
 }
@@ -43,6 +48,11 @@ void IUserInterfaceData::setCSMode(e_CSMode mode) {
 
 void IUserInterfaceData::setModeSelection(bool mode) {
     agent.modeAUV_selection = mode;
+}
+
+FlagAH127C_bort IUserInterfaceData::getFlagAH127C_bort()
+{
+    return agent.flagAH127C_bort;
 }
 
 power_Mode IUserInterfaceData::getPowerMode()

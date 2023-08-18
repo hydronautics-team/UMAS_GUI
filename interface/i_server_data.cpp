@@ -13,6 +13,7 @@ FromPult IServerData::generateFullMessage() {
     data.controlContoursFlags = agent.controlContoursFlags;
     data.modeAUV_selection = agent.modeAUV_selection;
     data.pMode = agent.pMode;
+    data.flagAH127C_pult = agent.flagAH127C_pult;
 
     switch(data.pMode) {
     case power_Mode::MODE_2:
@@ -38,6 +39,7 @@ void IServerData::parseFullMessage(ToPult message) {
     agent.imuData = message.dataAH127C;
     agent.dataPressure = message.dataPressure;
     agent.dataUWB = message.dataUWB;
+    agent.flagAH127C_bort = message.flagAH127C_bort;
 
     agent.auvData.modeReal = message.auvData.modeReal;
     agent.auvData.controlReal = message.auvData.controlReal;

@@ -31,6 +31,18 @@ enum class power_Mode : quint8
 //структура данных, которая передается из Северова в Пульт
 //тут описаны данные, которые Пульт принимает от Северова
 
+struct FlagAH127C_bort
+{
+    bool startCalibration = false;
+    bool endCalibration = false;
+};
+
+struct FlagAH127C_pult
+{
+    bool initCalibration = false;
+    bool saveCalibration = false;
+};
+
 struct ControlData { //данные, которые идут с пульта в СУ
     ControlData();
     float yaw;
@@ -59,10 +71,6 @@ struct AUVCurrentData
     quint8 modeAUV_Real;//текущий выбор модель/реальный НПА
     ControlData ControlDataReal;//текущие курс, дифферент, крен
     ControlData signalVMA_real;//управление на ВМА (текущие управляющие сигнлы на движители)
-};
-
-struct PowerSystemData {
-    //состояние системы питания
 };
 
 struct Header {
@@ -126,6 +134,7 @@ struct ToPult
     DataAH127C dataAH127C;// данные с БСО
     DataPressure dataPressure; //данные с датчика давления
     DataUWB dataUWB;//данные с UWB
+    FlagAH127C_bort flagAH127C_bort;
     uint checksum;
 };
 
@@ -137,6 +146,7 @@ struct FromPult
     ControlContoursFlags controlContoursFlags; //флаги замыкания контуров (если больше 0, то замкнуты
     bool modeAUV_selection;//текущий выбор модель/реальный НПА
     power_Mode pMode; //режим работы системы питания, структура с желаемыми параметрами системы питания
+    FlagAH127C_pult flagAH127C_pult;
     uint checksum;
 };
 
@@ -154,6 +164,9 @@ public:
     DataUWB dataUWB;
 
     AUVCurrentData auvData;
+
+    FlagAH127C_bort flagAH127C_bort;
+    FlagAH127C_pult flagAH127C_pult;
 
     bool modeAUV_selection;
     e_CSMode cSMode;
