@@ -235,12 +235,40 @@ void MainWindow::updateUi_IMU(DataAH127C imuData){
 void MainWindow::updateUi_SetupMsg()
 {
     power_Mode pMode = uv_interface.getPowerMode();
-    uv_interface.getAUVCurrentData();
-    uv_interface.getControlData();
-//    uv_interface.getCSMode();
+    bool modeSelection = uv_interface.getModeSelection();
+    bool CsMode = uv_interface.getCSMode();
+    ControlContoursFlags controlContoursFlags = uv_interface.getControlContoursFlags();
+    ControlData control = uv_interface.getControlData();
+    AUVCurrentData auvData = uv_interface.getAUVCurrentData();
 
-//    ui->label_tab_setupMsg_send_
+    ui->label_tab_setupMsg_send_powerMode_count->setNum(static_cast<int>(pMode));
+    ui->label_tab_setupMsg_send_modeAUV_selection_mode->setText(QString::number(modeSelection, 'f', 2));
+    ui->label_tab_setupMsg_send_cSMode_count->setNum(static_cast<int>(CsMode));
+    ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_yaw->setNum(controlContoursFlags.yaw);
+    ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_pitch->setNum(controlContoursFlags.pitch);
+    ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_roll->setNum(controlContoursFlags.roll);
+    ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_march->setNum(controlContoursFlags.march);
+    ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_lag->setNum(controlContoursFlags.lag);
+    ui->label_tab_setupMsg_send_Impact_data_count_yaw->setNum(control.yaw);
+    ui->label_tab_setupMsg_send_Impact_data_count_pitch->setNum(control.pitch);
+    ui->label_tab_setupMsg_send_Impact_data_count_roll->setNum(control.roll);
+    ui->label_tab_setupMsg_send_Impact_data_count_march->setNum(control.march);
+    ui->label_tab_setupMsg_send_Impact_data_count_lag->setNum(control.lag);
+    ui->label_tab_setupMsg_send_Impact_data_count_depth->setNum(control.depth);
 
+    ui->labelt_tab_setupMsg_received_modeAUV_selection_mode->setNum(auvData.modeAUV_Real);
+    ui->label_tab_setupMsg_received_cSMode_count->setNum(auvData.modeReal);
+    ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_yaw->setNum(auvData.controlReal.yaw);
+    ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_pitch->setNum(auvData.controlReal.pitch);
+    ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_roll->setNum(auvData.controlReal.roll);
+    ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_march->setNum(auvData.controlReal.march);
+    ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_lag->setNum(auvData.controlReal.lag);
+    ui->label_tab_setupMsg_received_Impact_data_count_yaw->setNum(auvData.signalVMA_real.yaw);
+    ui->label_tab_setupMsg_received_Impact_data_count_pitch->setNum(auvData.signalVMA_real.pitch);
+    ui->label_tab_setupMsg_received_Impact_data_count_roll->setNum(auvData.signalVMA_real.roll);
+    ui->label_tab_setupMsg_received_Impact_data_count_march->setNum(auvData.signalVMA_real.march);
+    ui->label_tab_setupMsg_received_Impact_data_count_lag->setNum(auvData.signalVMA_real.lag);
+    ui->label_tab_setupMsg_received_Impact_data_count_depth->setNum(auvData.signalVMA_real.depth);
 }
 
 void MainWindow::setConnection()

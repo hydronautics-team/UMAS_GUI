@@ -50,6 +50,16 @@ void IUserInterfaceData::setModeSelection(bool mode) {
     agent.modeAUV_selection = mode;
 }
 
+ControlContoursFlags IUserInterfaceData::getControlContoursFlags()
+{
+    return agent.controlContoursFlags;
+}
+
+bool IUserInterfaceData::getModeSelection()
+{
+    return agent.modeAUV_selection;
+}
+
 FlagAH127C_bort IUserInterfaceData::getFlagAH127C_bort()
 {
     return agent.flagAH127C_bort;

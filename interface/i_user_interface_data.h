@@ -16,15 +16,17 @@ public:
     void setCSMode(e_CSMode mode);
     void setModeSelection(bool mode);
 
-    FlagAH127C_bort getFlagAH127C_bort();
-    power_Mode      getPowerMode();
-    bool            getCSMode();
-    ControlData     getControlData();
-    DataAH127C      getImuData();
-    Header          getHeader();
-    AUVCurrentData  getAUVCurrentData();
-    DataPressure    getDataPressure();
-    DataUWB         getDataUWB();
+    ControlContoursFlags    getControlContoursFlags();
+    bool                    getModeSelection();
+    FlagAH127C_bort         getFlagAH127C_bort();
+    power_Mode              getPowerMode();
+    bool                    getCSMode();
+    ControlData             getControlData();
+    DataAH127C              getImuData();
+    Header                  getHeader();
+    AUVCurrentData          getAUVCurrentData();
+    DataPressure            getDataPressure();
+    DataUWB                 getDataUWB();
 };
 
 #endif // IUSERINTERFACEDATA_H
