@@ -273,6 +273,8 @@ void MainWindow::updateUi_SetupMsg()
 
 void MainWindow::setConnection()
 {
+    ui->pushButton_connection->setEnabled(false);
+
     pultProtocol = new Pult::PC_Protocol(QHostAddress("192.168.137.2"), 13051,
                                          QHostAddress("192.168.137.11"), 13050, 10);
 

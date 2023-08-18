@@ -15,21 +15,6 @@ FromPult IServerData::generateFullMessage() {
     data.pMode = agent.pMode;
     data.flagAH127C_pult = agent.flagAH127C_pult;
 
-    switch(data.pMode) {
-    case power_Mode::MODE_2:
-        qDebug() << "power_Mode::MODE_2";
-        break;
-    case power_Mode::MODE_3:
-        qDebug() << "power_Mode::MODE_3";
-        break;
-    case power_Mode::MODE_4:
-        qDebug() << "power_Mode::MODE_4";
-        break;
-    case power_Mode::MODE_5:
-        qDebug() << "power_Mode::MODE_5";
-        break;
-    }
-
     return data;
 }
 

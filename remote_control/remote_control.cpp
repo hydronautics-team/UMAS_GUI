@@ -50,7 +50,6 @@ void RemoteControl::setYaw(float yaw){
 }
 
 RemoteControl::~RemoteControl(){
-    qDebug()<<"RemoteControl deleted";
 }
 
 

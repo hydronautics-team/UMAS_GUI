@@ -84,3 +84,15 @@
 1	12	0	UMAS_GUI_autogen/mocs_compilation.cpp	9dc435c4d92e31ec
 12	3439	1692359725109955918	CMakeFiles/UMAS_GUI.dir/mainwindow.cpp.o	24cd8a5c995bdf8e
 3439	4019	1692359725685961427	UMAS_GUI	9914c83bb4aed9c6
+3	22	0	CMakeFiles/UMAS_GUI_autogen	9dc435c4d92e31ec
+3	22	0	UMAS_GUI_autogen/mocs_compilation.cpp	9dc435c4d92e31ec
+22	5159	1692359893467566874	CMakeFiles/UMAS_GUI.dir/mainwindow.cpp.o	24cd8a5c995bdf8e
+5159	5786	1692359894091572848	UMAS_GUI	9914c83bb4aed9c6
+3	19	0	CMakeFiles/UMAS_GUI_autogen	9dc435c4d92e31ec
+3	19	0	UMAS_GUI_autogen/mocs_compilation.cpp	9dc435c4d92e31ec
+20	2373	1692359929975916414	CMakeFiles/UMAS_GUI.dir/interface/i_server_data.cpp.o	5b0c55061c0a52d7
+2373	2957	1692359930555921967	UMAS_GUI	9914c83bb4aed9c6
+3	19	0	CMakeFiles/UMAS_GUI_autogen	9dc435c4d92e31ec
+3	19	0	UMAS_GUI_autogen/mocs_compilation.cpp	9dc435c4d92e31ec
+19	2389	1692359949032098883	CMakeFiles/UMAS_GUI.dir/remote_control/remote_control.cpp.o	56e26ffaca06bb08
+2389	2973	1692359949608104400	UMAS_GUI	9914c83bb4aed9c6
