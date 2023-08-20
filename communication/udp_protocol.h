@@ -82,7 +82,10 @@ private:
     //проверка верна ли контрольная сумма
     bool validate(const ReceiveStruct & data) {
         if (!checkState) {return true;}
-        else return (data.checksum == checksum_i(&data, sizeof(data) - 4));
+        else {
+            uint crc= checksum_i(&data, sizeof(data) - 4);
+            return (data.checksum == crc);
+        }
     }
     bool validate(const SendStruct & data) {
         if (!checkState) {return true;}
@@ -103,7 +106,9 @@ public slots:
     void receiveData(){
         while(receiveSocket->hasPendingDatagrams()) {
             ReceiveStruct rec;// создаем локальную переменную для приема данных до проверки
+            receiveSocket->pendingDatagramSize();
             receiveSocket->readDatagram((char *)&rec, sizeof(rec)); //считываем данные
+
             if (!validate(rec)) {
                 //Функция validate возвращает true - если контрольная сумма верна
                 //и возвращает false, если это не так

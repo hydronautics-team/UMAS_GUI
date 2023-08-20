@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+
     timerUpdateImpact(joystick.periodUpdateMsec);
 
 //  установка всех кнопок и слотов к ним
@@ -15,8 +16,6 @@ MainWindow::MainWindow(QWidget *parent)
 //    установка названий к вкладкам
     setTab(ui);
 
-//    установка меток для вывода информации о посылках
-//    setLable_setupMsg(ui, this);
 
     connect(this, SIGNAL(updateCompass(float)),
             this, SLOT(updateUi_Compass(float)));
@@ -160,15 +159,6 @@ void MainWindow::setTab(Ui::MainWindow *ui)
     ui->tabWidget->setTabText(3,  "Режимы питания");
 }
 
-//void setLable_setupMsg(Ui::MainWindow *ui, QObject *ts)
-//{
-
-//}
-
-
-
-
-
 
 
 
@@ -263,12 +253,12 @@ void MainWindow::updateUi_SetupMsg()
     ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_roll->setNum(auvData.controlReal.roll);
     ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_march->setNum(auvData.controlReal.march);
     ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_lag->setNum(auvData.controlReal.lag);
-    ui->label_tab_setupMsg_received_Impact_data_count_yaw->setNum(auvData.signalVMA_real.yaw);
-    ui->label_tab_setupMsg_received_Impact_data_count_pitch->setNum(auvData.signalVMA_real.pitch);
-    ui->label_tab_setupMsg_received_Impact_data_count_roll->setNum(auvData.signalVMA_real.roll);
-    ui->label_tab_setupMsg_received_Impact_data_count_march->setNum(auvData.signalVMA_real.march);
-    ui->label_tab_setupMsg_received_Impact_data_count_lag->setNum(auvData.signalVMA_real.lag);
-    ui->label_tab_setupMsg_received_Impact_data_count_depth->setNum(auvData.signalVMA_real.depth);
+//    ui->label_tab_setupMsg_received_Impact_data_count_yaw->setNum(auvData.signalVMA_real.yaw);
+//    ui->label_tab_setupMsg_received_Impact_data_count_pitch->setNum(auvData.signalVMA_real.pitch);
+//    ui->label_tab_setupMsg_received_Impact_data_count_roll->setNum(auvData.signalVMA_real.roll);
+//    ui->label_tab_setupMsg_received_Impact_data_count_march->setNum(auvData.signalVMA_real.march);
+//    ui->label_tab_setupMsg_received_Impact_data_count_lag->setNum(auvData.signalVMA_real.lag);
+//    ui->label_tab_setupMsg_received_Impact_data_count_depth->setNum(auvData.signalVMA_real.depth);
 }
 
 void MainWindow::setConnection()
@@ -341,7 +331,7 @@ void MainWindow::updateUi_fromAgent() {
 void MainWindow::setupIMU()
 {
     SetupIMU window_setupIMU;
-    window_setupIMU.setModal(true);
+    window_setupIMU.setModal(false);
     window_setupIMU.exec();
 }
 
