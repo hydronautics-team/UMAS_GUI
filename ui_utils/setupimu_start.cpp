@@ -118,9 +118,7 @@ void SetupIMU_start::isCheckedFlagBort_end()
         ui->pushButton_setupIMU_end->setEnabled(true);
         ui->SetupIMU_start_statusBar->setStyleSheet("color: rgb(0, 153, 76)");
         ui->SetupIMU_start_statusBar->setText("Данные сохранились, можно завершать настройку ");
-    }
-    else
-    {
+    } else {
         ui->SetupIMU_start_statusBar->setStyleSheet("color: rgb(255, 0, 0)");
         ui->SetupIMU_start_statusBar->setText("Данные сохраняются");
     }

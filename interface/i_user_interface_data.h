@@ -19,6 +19,7 @@ public:
     ControlContoursFlags    getControlContoursFlags();
     bool                    getModeSelection();
     FlagAH127C_bort         getFlagAH127C_bort();
+    FlagAH127C_pult         getFlagAH127C_pult();
     power_Mode              getPowerMode();
     bool                    getCSMode();
     ControlData             getControlData();

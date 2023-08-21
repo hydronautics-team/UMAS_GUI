@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>923</width>
-    <height>661</height>
+    <width>1138</width>
+    <height>742</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -472,7 +472,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>0</string>
+                 <string>в разраб.</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -534,7 +534,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>0</string>
+                 <string>в разраб.</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -591,7 +591,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>0</string>
+                 <string>нет сигнала</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -642,7 +642,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>1</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -674,7 +674,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>1</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -706,7 +706,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>1</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -738,7 +738,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>1</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -770,7 +770,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>1</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -846,7 +846,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>0</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -878,7 +878,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>0</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -910,7 +910,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>0</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -942,7 +942,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>0</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -974,7 +974,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>0</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1006,7 +1006,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>0</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1090,7 +1090,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>0</string>
+                 <string>в разраб.</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -1123,7 +1123,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>0</string>
+                 <string>нет сигнала</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -1156,7 +1156,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>0</string>
+                 <string>нет сигнала</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -1202,7 +1202,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>0</string>
+                 <string>нет сигнала</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -1232,7 +1232,7 @@
                 <item row="0" column="1">
                  <widget class="QLabel" name="label_tab_setupMsg_flagsSetupIMU_pult_init">
                   <property name="text">
-                   <string>0</string>
+                   <string>нет сигнала</string>
                   </property>
                  </widget>
                 </item>
@@ -1246,7 +1246,7 @@
                 <item row="1" column="1">
                  <widget class="QLabel" name="label_tab_setupMsg_flagsSetupIMU_pult_save">
                   <property name="text">
-                   <string>0</string>
+                   <string>нет сигнала</string>
                   </property>
                  </widget>
                 </item>
@@ -1264,7 +1264,7 @@
                 <item row="0" column="1">
                  <widget class="QLabel" name="label_tab_setupMsg_flagsSetupIMU_bort_start">
                   <property name="text">
-                   <string>0</string>
+                   <string>нет сигнала</string>
                   </property>
                  </widget>
                 </item>
@@ -1278,7 +1278,7 @@
                 <item row="1" column="1">
                  <widget class="QLabel" name="label_tab_setupMsg_flagsSetupIMU_bort_end">
                   <property name="text">
-                   <string>0</string>
+                   <string>нет сигнала</string>
                   </property>
                  </widget>
                 </item>
@@ -1349,7 +1349,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>1</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1381,7 +1381,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>1</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1413,7 +1413,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>1</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1445,7 +1445,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>1</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1477,7 +1477,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>1</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1527,14 +1527,14 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>Текущие задающие воздействия:</string>
+                 <string>Текущие воздействия на ВМА:</string>
                 </property>
                </widget>
               </item>
               <item>
                <layout class="QFormLayout" name="formLayout_tab_setupMsg_received_controlContoursFlags_data_3">
                 <item row="0" column="0">
-                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_name_yaw">
+                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_name_vma1">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1542,7 +1542,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>ψ:</string>
+                   <string>ВМА1:</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1550,7 +1550,7 @@
                  </widget>
                 </item>
                 <item row="0" column="1">
-                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_count_yaw">
+                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_count_vma1">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1558,7 +1558,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>0</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1566,7 +1566,7 @@
                  </widget>
                 </item>
                 <item row="1" column="0">
-                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_name_pitch">
+                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_name_vma2">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1574,7 +1574,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>θ:</string>
+                   <string>ВМА2:</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1582,7 +1582,7 @@
                  </widget>
                 </item>
                 <item row="1" column="1">
-                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_count_pitch">
+                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_count_vma2">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1590,7 +1590,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>0</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1598,7 +1598,7 @@
                  </widget>
                 </item>
                 <item row="2" column="0">
-                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_name_roll">
+                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_name_vma3">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1606,7 +1606,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>γ:</string>
+                   <string>ВМА3:</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1614,7 +1614,7 @@
                  </widget>
                 </item>
                 <item row="2" column="1">
-                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_count_roll">
+                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_count_vma3">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1622,7 +1622,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>0</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1630,7 +1630,7 @@
                  </widget>
                 </item>
                 <item row="3" column="1">
-                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_count_march">
+                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_count_vma4">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1638,7 +1638,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>0</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1646,7 +1646,7 @@
                  </widget>
                 </item>
                 <item row="3" column="0">
-                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_name_march">
+                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_name_vma4">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1654,7 +1654,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>x:</string>
+                   <string>ВМА4:</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1662,7 +1662,7 @@
                  </widget>
                 </item>
                 <item row="4" column="1">
-                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_count_lag">
+                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_count_vma5">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1670,7 +1670,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>0</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1678,7 +1678,7 @@
                  </widget>
                 </item>
                 <item row="4" column="0">
-                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_name_lag">
+                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_name_vma5">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1686,7 +1686,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>y:</string>
+                   <string>ВМА5:</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1694,7 +1694,7 @@
                  </widget>
                 </item>
                 <item row="5" column="0">
-                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_name_depth">
+                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_name_vma6">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1702,7 +1702,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>z:</string>
+                   <string>ВМА6:</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1710,7 +1710,7 @@
                  </widget>
                 </item>
                 <item row="5" column="1">
-                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_count_depth">
+                 <widget class="QLabel" name="label_tab_setupMsg_received_Impact_data_count_vma6">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -1718,7 +1718,7 @@
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>0</string>
+                   <string>нет сигнала</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -1753,7 +1753,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>0</string>
+                 <string>нет сигнала</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -2788,7 +2788,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>923</width>
+     <width>1138</width>
      <height>22</height>
     </rect>
    </property>
