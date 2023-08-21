@@ -328,13 +328,6 @@ void MainWindow::updateUi_SetupMsg()
         ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_lag->setText("незамкнут");
     }
 
-    auvData.signalVMA_real.VMA1 = 1;
-    auvData.signalVMA_real.VMA2 = 2;
-    auvData.signalVMA_real.VMA3 = 3;
-    auvData.signalVMA_real.VMA4 = 4;
-    auvData.signalVMA_real.VMA5 = 5;
-    auvData.signalVMA_real.VMA6 = 6;
-
     ui->label_tab_setupMsg_received_Impact_data_count_vma1->setNum(auvData.signalVMA_real.VMA1);
     ui->label_tab_setupMsg_received_Impact_data_count_vma2->setNum(auvData.signalVMA_real.VMA2);
     ui->label_tab_setupMsg_received_Impact_data_count_vma3->setNum(auvData.signalVMA_real.VMA3);
