@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1138</width>
-    <height>742</height>
+    <width>1214</width>
+    <height>792</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -472,7 +472,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>в разраб.</string>
+                 <string>нет сигнала</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -534,7 +534,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>в разраб.</string>
+                 <string>нет сигнала</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -1090,7 +1090,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>в разраб.</string>
+                 <string>нет сигнала</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -2788,7 +2788,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1138</width>
+     <width>1214</width>
      <height>22</height>
     </rect>
    </property>

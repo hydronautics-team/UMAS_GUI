@@ -14,7 +14,9 @@ FromPult IServerData::generateFullMessage() {
     data.modeAUV_selection = agent.modeAUV_selection;
     data.pMode = agent.pMode;
     data.flagAH127C_pult = agent.flagAH127C_pult;
-    qDebug() << "data: " << sizeof(data);
+
+    agent.checksum_msg_gui_send = sizeof(data);
+
     return data;
 }
 
@@ -31,7 +33,7 @@ void IServerData::parseFullMessage(ToPult message) {
     agent.auvData.modeAUV_Real = message.auvData.modeAUV_Real;
     agent.auvData.signalVMA_real = message.auvData.signalVMA_real;
     agent.auvData.ControlDataReal = message.auvData.ControlDataReal;
-    qDebug() << "message: " << sizeof(message);
-    qDebug() << message.auvData.modeReal;
-    qDebug() << message.dataAH127C.yaw;
+
+    agent.checksum_msg_agent_send = message.checksum;
+    agent.checksum_msg_gui_received = sizeof(message);
 }

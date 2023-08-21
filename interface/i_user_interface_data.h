@@ -16,6 +16,9 @@ public:
     void setCSMode(e_CSMode mode);
     void setModeSelection(bool mode);
 
+    int                     getChecksumMsgAgentSend();
+    int                     getChecksumMsgGuiSend();
+    int                     getChecksumMsgGuiReceived();
     ControlContoursFlags    getControlContoursFlags();
     bool                    getModeSelection();
     FlagAH127C_bort         getFlagAH127C_bort();

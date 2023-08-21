@@ -232,6 +232,9 @@ void MainWindow::updateUi_SetupMsg()
     AUVCurrentData auvData = uv_interface.getAUVCurrentData();
     FlagAH127C_bort flagAH127C_bort = uv_interface.getFlagAH127C_bort();
     FlagAH127C_pult flagAH127C_pult = uv_interface.getFlagAH127C_pult();
+    int checksum_msg_gui_send = uv_interface.getChecksumMsgGuiSend();
+    int checksum_msg_agent_send = uv_interface.getChecksumMsgAgentSend();
+    int checksum_msg_gui_received = uv_interface.getChecksumMsgGuiReceived();
 
 //    send
 
@@ -341,6 +344,12 @@ void MainWindow::updateUi_SetupMsg()
     ui->label_tab_setupMsg_flagsSetupIMU_pult_save->setNum(flagAH127C_pult.saveCalibration);
     ui->label_tab_setupMsg_flagsSetupIMU_bort_end->setNum(flagAH127C_bort.startCalibration);
     ui->label_tab_setupMsg_flagsSetupIMU_bort_start->setNum(flagAH127C_bort.endCalibration);
+
+//    проверка количества посылок
+
+    ui->label_tab_setupMsg_send_checksum_count->setNum(checksum_msg_gui_send);
+    ui->label_tab_setupMsg_received_checksum_send_count->setNum(checksum_msg_agent_send);
+    ui->labe_tab_setupMsg_received_checksum_received_count_->setNum(checksum_msg_gui_received);
 }
 
 void MainWindow::setConnection()

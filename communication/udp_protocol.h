@@ -93,7 +93,7 @@ private:
     }
     void aboutSend() {
         send_data.checksum = checksum_i(&send_data, sizeof(send_data) - 4);
-    } //функция, которая вычисляет контроьную сумму и записывает
+    } //функция, которая вычисляет контрольную сумму и записывает
     //ее в переменную checksum структуры отправки
 
 public slots:
