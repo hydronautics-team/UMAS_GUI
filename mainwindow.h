@@ -32,9 +32,6 @@ public:
     void setBottom_powerMode(Ui::MainWindow *ui, QObject *ts);
     void setBottom_connect(Ui::MainWindow *ui, QObject *ts);
     void setTab(Ui::MainWindow *ui);
-//    void setLable_setupMsg(Ui::MainWindow *ui, QObject *ts);
-
-
 //
 
     void timerUpdateImpact(int periodUpdateMsec);

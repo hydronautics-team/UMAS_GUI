@@ -11,7 +11,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Charts)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Network)
 
 
@@ -19,7 +18,6 @@ include_directories("${PROJECT_SOURCE_DIR}/compass")
 include_directories("${PROJECT_SOURCE_DIR}/remote_control")
 include_directories("${PROJECT_SOURCE_DIR}/uv")
 include_directories("${PROJECT_SOURCE_DIR}/interface")
-include_directories("${PROJECT_SOURCE_DIR}/map")
 include_directories("${PROJECT_SOURCE_DIR}/communication")
 include_directories("${PROJECT_SOURCE_DIR}/ui_utils")
 
@@ -51,9 +49,6 @@ set(PROJECT_SOURCES
         ui_utils/setupimu_start.h
         ui_utils/setupimu_start.cpp
         ui_utils/setupimu_start.ui
-        map/map.h
-        map/map.cpp
-        map/map.ui
         img.qrc
 )
 
@@ -85,7 +80,6 @@ endif()
 target_link_libraries(UMAS_GUI PRIVATE
     sfml-graphics sfml-window sfml-system
     Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::Charts
     Qt${QT_VERSION_MAJOR}::Network)
 
 set_target_properties(UMAS_GUI PROPERTIES
