@@ -6,13 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-<<<<<<< HEAD
-    <width>923</width>
-    <height>681</height>
-=======
-    <width>1214</width>
-    <height>792</height>
->>>>>>> develop
+    <width>1262</width>
+    <height>769</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -2810,7 +2805,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1214</width>
+     <width>1262</width>
      <height>22</height>
     </rect>
    </property>

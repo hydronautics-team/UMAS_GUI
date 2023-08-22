@@ -48,11 +48,6 @@
 			"EWIEGA46WW/moc_mainwindow.cpp"
 		],
 		[
-			"/home/shakuevda/Desktop/UMAS/UMAS_GUI/map/map.h",
-			"MU",
-			"VQTIZUGSAA/moc_map.cpp"
-		],
-		[
 			"/home/shakuevda/Desktop/UMAS/UMAS_GUI/remote_control/remote_control.h",
 			"MU",
 			"5PDRT6OIYK/moc_remote_control.cpp"
@@ -76,16 +71,7 @@
 	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
 	"INCLUDE_DIR" : "/home/shakuevda/Desktop/UMAS/UMAS_GUI/build/UMAS_GUI_autogen/include",
 	"MOC_COMPILATION_FILE" : "/home/shakuevda/Desktop/UMAS/UMAS_GUI/build/UMAS_GUI_autogen/mocs_compilation.cpp",
-	"MOC_DEFINITIONS" : 
-	[
-		"QT_CHARTS_LIB",
-		"QT_CORE_LIB",
-		"QT_GUI_LIB",
-		"QT_NETWORK_LIB",
-		"QT_OPENGLWIDGETS_LIB",
-		"QT_OPENGL_LIB",
-		"QT_WIDGETS_LIB"
-	],
+	"MOC_DEFINITIONS" : [ "QT_CORE_LIB", "QT_GUI_LIB", "QT_NETWORK_LIB", "QT_WIDGETS_LIB" ],
 	"MOC_DEPEND_FILTERS" : 
 	[
 		[
@@ -99,7 +85,6 @@
 		"/home/shakuevda/Desktop/UMAS/UMAS_GUI/remote_control",
 		"/home/shakuevda/Desktop/UMAS/UMAS_GUI/uv",
 		"/home/shakuevda/Desktop/UMAS/UMAS_GUI/interface",
-		"/home/shakuevda/Desktop/UMAS/UMAS_GUI/map",
 		"/home/shakuevda/Desktop/UMAS/UMAS_GUI/communication",
 		"/home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils",
 		"/home/shakuevda/Qt/6.4.2/gcc_64/include/QtCore",
@@ -107,9 +92,6 @@
 		"/home/shakuevda/Qt/6.4.2/gcc_64/mkspecs/linux-g++",
 		"/home/shakuevda/Qt/6.4.2/gcc_64/include/QtWidgets",
 		"/home/shakuevda/Qt/6.4.2/gcc_64/include/QtGui",
-		"/home/shakuevda/Qt/6.4.2/gcc_64/include/QtCharts",
-		"/home/shakuevda/Qt/6.4.2/gcc_64/include/QtOpenGL",
-		"/home/shakuevda/Qt/6.4.2/gcc_64/include/QtOpenGLWidgets",
 		"/home/shakuevda/Qt/6.4.2/gcc_64/include/QtNetwork",
 		"/usr/include",
 		"/usr/include/c++/9",
@@ -168,7 +150,6 @@
 		],
 		[ "/home/shakuevda/Desktop/UMAS/UMAS_GUI/main.cpp", "MU" ],
 		[ "/home/shakuevda/Desktop/UMAS/UMAS_GUI/mainwindow.cpp", "MU" ],
-		[ "/home/shakuevda/Desktop/UMAS/UMAS_GUI/map/map.cpp", "MU" ],
 		[
 			"/home/shakuevda/Desktop/UMAS/UMAS_GUI/remote_control/remote_control.cpp",
 			"MU"
