@@ -178,6 +178,10 @@ public:
     ControlContoursFlags controlContoursFlags;
     ControlData control;
     power_Mode pMode;
+
+    int checksum_msg_gui_send;
+    int checksum_msg_agent_send;
+    int checksum_msg_gui_received;
 };
 
 #endif // UVSTATE_H

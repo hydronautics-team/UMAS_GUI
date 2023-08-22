@@ -5,6 +5,8 @@ IUserInterfaceData::IUserInterfaceData() : IBasicData()
 
 }
 
+// set-функции
+
 void IUserInterfaceData::setFlagAH127C_pult(FlagAH127C_pult flagAH127C_pult)
 {
     agent.flagAH127C_pult = flagAH127C_pult;
@@ -50,6 +52,20 @@ void IUserInterfaceData::setModeSelection(bool mode) {
     agent.modeAUV_selection = mode;
 }
 
+// get-функции
+
+int IUserInterfaceData::getChecksumMsgAgentSend() {
+    return agent.checksum_msg_agent_send;
+}
+
+int IUserInterfaceData::getChecksumMsgGuiSend() {
+    return agent.checksum_msg_gui_send;
+}
+
+int IUserInterfaceData::getChecksumMsgGuiReceived() {
+    return agent.checksum_msg_gui_received;
+}
+
 ControlContoursFlags IUserInterfaceData::getControlContoursFlags()
 {
     return agent.controlContoursFlags;
@@ -63,6 +79,11 @@ bool IUserInterfaceData::getModeSelection()
 FlagAH127C_bort IUserInterfaceData::getFlagAH127C_bort()
 {
     return agent.flagAH127C_bort;
+}
+
+FlagAH127C_pult IUserInterfaceData::getFlagAH127C_pult()
+{
+    return agent.flagAH127C_pult;
 }
 
 power_Mode IUserInterfaceData::getPowerMode()
