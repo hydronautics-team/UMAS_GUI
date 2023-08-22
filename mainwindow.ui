@@ -65,6 +65,13 @@
           </property>
          </spacer>
         </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_breakConnection">
+          <property name="text">
+           <string>Разорвать соединение</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item>

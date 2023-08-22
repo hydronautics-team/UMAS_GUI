@@ -49,6 +49,8 @@ void MainWindow::setBottom(Ui::MainWindow *ui, QObject *ts) {
     modeAutomated->setExclusive(false);
     setBottom_powerMode(ui, ts);
 
+    ui->pushButton_breakConnection->setEnabled(false);
+
 
     setBottom_connect(ui, ts);
 }
@@ -145,6 +147,9 @@ void MainWindow::setBottom_connect(Ui::MainWindow *ui, QObject *ts)
     connect(
         ui->pushButton_connection, SIGNAL(clicked()),
         ts, SLOT(setConnection()));
+    connect(
+        ui->pushButton_breakConnection, SIGNAL(clicked()),
+        ts, SLOT(breakConnection()));
 
     connect(
         ui->pushButton_setupIMU, SIGNAL(clicked()),
@@ -345,7 +350,7 @@ void MainWindow::updateUi_SetupMsg()
     ui->label_tab_setupMsg_flagsSetupIMU_bort_end->setNum(flagAH127C_bort.startCalibration);
     ui->label_tab_setupMsg_flagsSetupIMU_bort_start->setNum(flagAH127C_bort.endCalibration);
 
-//    проверка количества посылок
+//    количество посылок
 
     ui->label_tab_setupMsg_send_checksum_count->setNum(checksum_msg_gui_send);
     ui->label_tab_setupMsg_received_checksum_send_count->setNum(checksum_msg_agent_send);
@@ -355,15 +360,35 @@ void MainWindow::updateUi_SetupMsg()
 void MainWindow::setConnection()
 {
     ui->pushButton_connection->setEnabled(false);
+    ui->pushButton_breakConnection->setEnabled(true);
+
 
     pultProtocol = new Pult::PC_Protocol(QHostAddress("192.168.137.2"), 13051,
                                          QHostAddress("192.168.137.11"), 13050, 10);
 
-    qDebug() << "-----start exchange";
     pultProtocol->startExchange();
 
-    connect(pultProtocol, SIGNAL(dataReceived()),
-            this, SLOT(updateUi_fromAgent()));
+    if (pultProtocol->bindState()) {
+        qDebug() << "-----start exchange";
+        connect(pultProtocol, SIGNAL(dataReceived()),
+                this, SLOT(updateUi_fromAgent()));
+    } else {
+        ui->pushButton_connection->setEnabled(true);
+        ui->pushButton_breakConnection->setEnabled(false);
+        qInfo() << "Попробуйте снова";
+    }
+}
+
+void MainWindow::breakConnection()
+{
+    ui->pushButton_connection->setEnabled(true);
+    qDebug() << "stop exchange";
+
+
+    pultProtocol->stopExhange();
+    delete pultProtocol;
+
+    ui->pushButton_breakConnection->setEnabled(false);
 }
 
 void MainWindow::stabilizeMarchToggled(bool state) {

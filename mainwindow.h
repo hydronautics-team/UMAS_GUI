@@ -63,6 +63,7 @@ private slots:
     void updateUi_SetupMsg();
 
     void setConnection();
+    void breakConnection();
 
     void setupIMU();
 
