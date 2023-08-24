@@ -8,15 +8,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     qInfo() << "Приложение работает";
 
+    setTimer_updateImpact(joystick.periodUpdateMsec);
 
-    timerUpdateImpact(joystick.periodUpdateMsec);
-
-//  установка всех кнопок и слотов к ним
     setBottom(ui, this);
-
-//    установка названий к вкладкам
     setTab(ui);
-
 
     connect(this, SIGNAL(updateCompass(float)),
             this, SLOT(updateUi_Compass(float)));
@@ -25,7 +20,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, SIGNAL(updateSetupMsg()),
             this, SLOT(updateUi_SetupMsg()));
 }
-
 
 void MainWindow::setBottom(Ui::MainWindow *ui, QObject *ts)
 {
@@ -170,38 +164,7 @@ void MainWindow::setTab(Ui::MainWindow *ui)
     ui->tabWidget->setTabText(3,  "Режимы питания");
 }
 
-
-
-
-
-
-
-MainWindow::~MainWindow()
-{
-    delete ui;
-}
-
-void MainWindow::pushButton_on_powerMode_2()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_2);
-}
-
-void MainWindow::pushButton_on_powerMode_3()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_3);
-}
-
-void MainWindow::pushButton_on_powerMode_4()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_4);
-}
-
-void MainWindow::pushButton_on_powerMode_5()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_5);
-}
-
-void MainWindow::timerUpdateImpact(int periodUpdateMsec){
+void MainWindow::setTimer_updateImpact(int periodUpdateMsec){
     QTimer *updateTimer = new QTimer(this);
     connect(
         updateTimer, SIGNAL(timeout()),
@@ -211,7 +174,21 @@ void MainWindow::timerUpdateImpact(int periodUpdateMsec){
     qInfo() << "Таймер обновления джойстика запущен";
 }
 
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::updateUi_fromAgent() {
+    DataAH127C imuData = uv_interface.getImuData();
+
+    emit updateCompass(imuData.yaw);
+    emit updateIMU(imuData);
+    emit updateSetupMsg();
+}
+
 void MainWindow::updateUi_fromControl(){
+
     ControlData control = uv_interface.getControlData();
     DataAH127C imuData = uv_interface.getImuData();
     bool mode = uv_interface.getCSMode();
@@ -383,6 +360,13 @@ void MainWindow::updateUi_SetupMsg()
     ui->labe_tab_setupMsg_received_checksum_received_count_->setNum(checksum_msg_gui_received);
 }
 
+void MainWindow::setupIMU()
+{
+    SetupIMU window_setupIMU;
+    window_setupIMU.setModal(false);
+    window_setupIMU.exec();
+}
+
 void MainWindow::setConnection()
 {
     ui->pushButton_connection->setEnabled(false);
@@ -417,6 +401,27 @@ void MainWindow::breakConnection()
     ui->pushButton_breakConnection->setEnabled(false);
 }
 
+void MainWindow::pushButton_on_powerMode_2()
+{
+    uv_interface.setPowerMode(power_Mode::MODE_2);
+}
+
+void MainWindow::pushButton_on_powerMode_3()
+{
+    uv_interface.setPowerMode(power_Mode::MODE_3);
+}
+
+void MainWindow::pushButton_on_powerMode_4()
+{
+    uv_interface.setPowerMode(power_Mode::MODE_4);
+}
+
+void MainWindow::pushButton_on_powerMode_5()
+{
+    uv_interface.setPowerMode(power_Mode::MODE_5);
+
+}
+
 void MainWindow::stabilizeMarchToggled(bool state) {
     uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_MARCH, state);
 }
@@ -446,7 +451,6 @@ void MainWindow::e_CSModeAutomatedToggled() {
     uv_interface.setCSMode(e_CSMode::MODE_AUTOMATED);
 }
 
-
 void MainWindow::setModeSelection(int index)
 {
     if (index == 1){
@@ -455,20 +459,5 @@ void MainWindow::setModeSelection(int index)
     else{
         uv_interface.setModeSelection(true); //модель
     }
-}
-
-void MainWindow::updateUi_fromAgent() {
-    DataAH127C imuData = uv_interface.getImuData();
-
-    emit updateCompass(imuData.yaw);
-    emit updateIMU(imuData);
-    emit updateSetupMsg();
-}
-
-void MainWindow::setupIMU()
-{
-    SetupIMU window_setupIMU;
-    window_setupIMU.setModal(false);
-    window_setupIMU.exec();
 }
 

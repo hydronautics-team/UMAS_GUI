@@ -30,7 +30,6 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-// оптимизация места
     void setBottom(Ui::MainWindow *ui, QObject *ts);
     void setBottom_mode(Ui::MainWindow *ui, QObject *ts);
     void setBottom_modeAutomated(Ui::MainWindow *ui, QObject *ts);
@@ -40,12 +39,8 @@ public:
     void setBottom_setupIMU(Ui::MainWindow *ui, QObject *ts);
 
     void setTab(Ui::MainWindow *ui);
-//    void setLable_setupMsg(Ui::MainWindow *ui, QObject *ts);
 
-
-//
-
-    void timerUpdateImpact(int periodUpdateMsec);
+    void setTimer_updateImpact(int periodUpdateMsec);
 
 private slots:
     void updateUi_fromControl();
