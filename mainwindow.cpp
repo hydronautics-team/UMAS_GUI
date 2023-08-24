@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    qInfo() << "Приложение работает";
 
 
     timerUpdateImpact(joystick.periodUpdateMsec);
@@ -26,15 +27,39 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 
-void MainWindow::setBottom(Ui::MainWindow *ui, QObject *ts) {
+void MainWindow::setBottom(Ui::MainWindow *ui, QObject *ts)
+{
+    setBottom_mode(ui, ts);
+    setBottom_modeAutomated(ui, ts);
+    setBottom_powerMode(ui, ts);
+    setBottom_connection(ui, ts);
+    setBottom_modeSelection(ui, ts);
+    setBottom_setupIMU(ui, ts);
+}
+
+void MainWindow::setBottom_mode(Ui::MainWindow *ui, QObject *ts)
+{
     ui->pushButton_modeManual->setCheckable(true);
     ui->pushButton_modeAutomated->setCheckable(true);
     QButtonGroup *mode = new QButtonGroup(ts);
     mode->addButton(ui->pushButton_modeManual);
     mode->addButton(ui->pushButton_modeAutomated);
     mode->setExclusive(true);
-    ui->pushButton_modeManual->setChecked(true);
 
+    ui->pushButton_modeManual->setChecked(true);
+    e_CSModeManualToggled();
+
+    connect(
+        ui->pushButton_modeManual, SIGNAL(clicked()),
+        ts, SLOT(e_CSModeManualToggled()));
+
+    connect(
+        ui->pushButton_modeAutomated, SIGNAL(clicked()),
+        ts, SLOT(e_CSModeAutomatedToggled()));
+}
+
+void MainWindow::setBottom_modeAutomated(Ui::MainWindow *ui, QObject *ts)
+{
     ui->pushButton_modeAutomated_march->setCheckable(true);
     ui->pushButton_modeAutomated_lag->setCheckable(true);
     ui->pushButton_modeAutomated_psi->setCheckable(true);
@@ -47,78 +72,12 @@ void MainWindow::setBottom(Ui::MainWindow *ui, QObject *ts) {
     modeAutomated->addButton(ui->pushButton_modeAutomated_tetta);
     modeAutomated->addButton(ui->pushButton_modeAutomated_gamma);
     modeAutomated->setExclusive(false);
-    setBottom_powerMode(ui, ts);
 
-    ui->pushButton_breakConnection->setEnabled(false);
-
-
-    setBottom_connect(ui, ts);
-}
-
-void MainWindow::setBottom_powerMode(Ui::MainWindow *ui, QObject *ts)
-{
-    QButtonGroup *powerMode = new QButtonGroup(ts);
-    powerMode->addButton(ui->pushButton_powerMode_2);
-    powerMode->addButton(ui->pushButton_powerMode_3);
-    powerMode->addButton(ui->pushButton_powerMode_4);
-    powerMode->addButton(ui->pushButton_powerMode_5);
-
-    ui->pushButton_powerMode_2->setCheckable(true);
-    ui->pushButton_powerMode_3->setCheckable(true);
-    ui->pushButton_powerMode_4->setCheckable(true);
-    ui->pushButton_powerMode_5->setCheckable(true);
-
-    ui->pushButton_powerMode_2->setChecked(true);
-
-    uv_interface.setPowerMode(power_Mode::MODE_2);
-
-
-    connect(
-        ui->pushButton_powerMode_2, SIGNAL(clicked()),
-        ts, SLOT(pushButton_on_powerMode_2()));
-
-    connect(
-        ui->pushButton_powerMode_3, SIGNAL(clicked()),
-        ts, SLOT(pushButton_on_powerMode_3()));
-
-    connect(
-        ui->pushButton_powerMode_4, SIGNAL(clicked()),
-        ts, SLOT(pushButton_on_powerMode_4()));
-
-    connect(
-        ui->pushButton_powerMode_5, SIGNAL(clicked()),
-        ts, SLOT(pushButton_on_powerMode_5()));
-}
-
-void MainWindow::pushButton_on_powerMode_2()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_2);
-}
-
-void MainWindow::pushButton_on_powerMode_3()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_3);
-}
-
-void MainWindow::pushButton_on_powerMode_4()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_4);
-}
-
-void MainWindow::pushButton_on_powerMode_5()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_5);
-}
-
-void MainWindow::setBottom_connect(Ui::MainWindow *ui, QObject *ts)
-{
-    connect(
-        ui->pushButton_modeManual, SIGNAL(clicked()),
-        ts, SLOT(e_CSModeManualToggled()));
-
-    connect(
-        ui->pushButton_modeAutomated, SIGNAL(clicked()),
-        ts, SLOT(e_CSModeAutomatedToggled()));
+    ui->pushButton_modeAutomated_gamma->setChecked(true);
+    ui->pushButton_modeAutomated_lag->setChecked(true);
+    ui->pushButton_modeAutomated_march->setChecked(true);
+    ui->pushButton_modeAutomated_psi->setChecked(true);
+    ui->pushButton_modeAutomated_tetta->setChecked(true);
 
     connect(
         ui->pushButton_modeAutomated_gamma, SIGNAL(toggled(bool)),
@@ -140,9 +99,45 @@ void MainWindow::setBottom_connect(Ui::MainWindow *ui, QObject *ts)
         ui->pushButton_modeAutomated_tetta, SIGNAL(toggled(bool)),
         ts, SLOT(stabilizePitchToggled(bool)));
 
+}
+
+void MainWindow::setBottom_powerMode(Ui::MainWindow *ui, QObject *ts)
+{
+    QButtonGroup *powerMode = new QButtonGroup(ts);
+    powerMode->addButton(ui->pushButton_powerMode_2);
+    powerMode->addButton(ui->pushButton_powerMode_3);
+    powerMode->addButton(ui->pushButton_powerMode_4);
+    powerMode->addButton(ui->pushButton_powerMode_5);
+
+    ui->pushButton_powerMode_2->setCheckable(true);
+    ui->pushButton_powerMode_3->setCheckable(true);
+    ui->pushButton_powerMode_4->setCheckable(true);
+    ui->pushButton_powerMode_5->setCheckable(true);
+
+    ui->pushButton_powerMode_2->setChecked(true);
+
+    uv_interface.setPowerMode(power_Mode::MODE_2);
+
     connect(
-        ui->comboBox_modeSelection, SIGNAL(activated(int)),
-        ts, SLOT(setModeSelection(int)));
+        ui->pushButton_powerMode_2, SIGNAL(clicked()),
+        ts, SLOT(pushButton_on_powerMode_2()));
+
+    connect(
+        ui->pushButton_powerMode_3, SIGNAL(clicked()),
+        ts, SLOT(pushButton_on_powerMode_3()));
+
+    connect(
+        ui->pushButton_powerMode_4, SIGNAL(clicked()),
+        ts, SLOT(pushButton_on_powerMode_4()));
+
+    connect(
+        ui->pushButton_powerMode_5, SIGNAL(clicked()),
+        ts, SLOT(pushButton_on_powerMode_5()));
+}
+
+void MainWindow::setBottom_connection(Ui::MainWindow *ui, QObject *ts)
+{
+    ui->pushButton_breakConnection->setEnabled(false);
 
     connect(
         ui->pushButton_connection, SIGNAL(clicked()),
@@ -150,7 +145,18 @@ void MainWindow::setBottom_connect(Ui::MainWindow *ui, QObject *ts)
     connect(
         ui->pushButton_breakConnection, SIGNAL(clicked()),
         ts, SLOT(breakConnection()));
+}
 
+void MainWindow::setBottom_modeSelection(Ui::MainWindow *ui, QObject *ts)
+{
+    setModeSelection(0);
+    connect(
+        ui->comboBox_modeSelection, SIGNAL(activated(int)),
+        ts, SLOT(setModeSelection(int)));
+}
+
+void MainWindow::setBottom_setupIMU(Ui::MainWindow *ui, QObject *ts)
+{
     connect(
         ui->pushButton_setupIMU, SIGNAL(clicked()),
         ts, SLOT(setupIMU()));
@@ -175,6 +181,26 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::pushButton_on_powerMode_2()
+{
+    uv_interface.setPowerMode(power_Mode::MODE_2);
+}
+
+void MainWindow::pushButton_on_powerMode_3()
+{
+    uv_interface.setPowerMode(power_Mode::MODE_3);
+}
+
+void MainWindow::pushButton_on_powerMode_4()
+{
+    uv_interface.setPowerMode(power_Mode::MODE_4);
+}
+
+void MainWindow::pushButton_on_powerMode_5()
+{
+    uv_interface.setPowerMode(power_Mode::MODE_5);
+}
+
 void MainWindow::timerUpdateImpact(int periodUpdateMsec){
     QTimer *updateTimer = new QTimer(this);
     connect(
@@ -182,7 +208,7 @@ void MainWindow::timerUpdateImpact(int periodUpdateMsec){
         this, SLOT(updateUi_fromControl())
         );
     updateTimer->start(periodUpdateMsec);
-
+    qInfo() << "Таймер обновления джойстика запущен";
 }
 
 void MainWindow::updateUi_fromControl(){
@@ -417,12 +443,6 @@ void MainWindow::e_CSModeManualToggled() {
 }
 
 void MainWindow::e_CSModeAutomatedToggled() {
-    ui->pushButton_modeAutomated_gamma->setChecked(true);
-    ui->pushButton_modeAutomated_lag->setChecked(true);
-    ui->pushButton_modeAutomated_march->setChecked(true);
-    ui->pushButton_modeAutomated_psi->setChecked(true);
-    ui->pushButton_modeAutomated_tetta->setChecked(true);
-
     uv_interface.setCSMode(e_CSMode::MODE_AUTOMATED);
 }
 

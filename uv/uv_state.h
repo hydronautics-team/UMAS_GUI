@@ -162,7 +162,6 @@ class UVState : public QObject
     Q_OBJECT
 public:
     UVState();
-//    ~UV_State();
     Header header;
     DataAH127C imuData;
     DataPressure dataPressure;

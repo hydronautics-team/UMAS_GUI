@@ -15,12 +15,12 @@ ControlData::ControlData() {
 }
 
 ControlContoursFlags::ControlContoursFlags() {
-    yaw = 0;
-    pitch = 0;
-    roll = 0;
-    march = 0;
-    depth = 0;
-    lag = 0;
+    yaw = 1;
+    pitch = 1;
+    roll = 1;
+    march = 1;
+    depth = 1;
+    lag = 1;
 }
 
 DataPressure::DataPressure() { //структура данных с датчика давления

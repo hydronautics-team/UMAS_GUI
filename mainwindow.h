@@ -15,6 +15,9 @@
 #include "setup_imu.h"
 
 
+#include "i_basic_data.h"
+
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -29,8 +32,13 @@ public:
 
 // оптимизация места
     void setBottom(Ui::MainWindow *ui, QObject *ts);
+    void setBottom_mode(Ui::MainWindow *ui, QObject *ts);
+    void setBottom_modeAutomated(Ui::MainWindow *ui, QObject *ts);
     void setBottom_powerMode(Ui::MainWindow *ui, QObject *ts);
-    void setBottom_connect(Ui::MainWindow *ui, QObject *ts);
+    void setBottom_connection(Ui::MainWindow *ui, QObject *ts);
+    void setBottom_modeSelection(Ui::MainWindow *ui, QObject *ts);
+    void setBottom_setupIMU(Ui::MainWindow *ui, QObject *ts);
+
     void setTab(Ui::MainWindow *ui);
 //    void setLable_setupMsg(Ui::MainWindow *ui, QObject *ts);
 
