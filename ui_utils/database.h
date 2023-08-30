@@ -16,7 +16,8 @@
 
 #define TABLENAME           "IMUDATA_magn"
 #define TIME                "Time"
-#define DATAIMU_MAGN        "Magnitometr    "
+#define DATAIMU_MAGN_X        "Magn_x"
+#define DATAIMU_MAGN_Y        "Magn_y"
 
 class DataBase : public QObject
 {
@@ -28,7 +29,7 @@ public:
      * Подключение к базе данных и вставка записей в таблицу
      * */
     void connectToDataBase();
-    bool inserIntoDeviceTable(QString time, int magn);
+    bool inserIntoDeviceTable(QString time, int magn_x, int magn_y);
 
 private:
     // Сам объект базы данных, с которым будет производиться работа

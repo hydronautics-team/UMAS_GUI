@@ -18,6 +18,11 @@
 #include <QtCharts/QChart>
 #include <QtWidgets/QGraphicsView>
 
+#include <QValueAxis>
+
+
+#include <QtCharts/QSplineSeries>
+
 #include <QDebug>
 
 #include "database.h"
@@ -39,13 +44,12 @@ public:
 private slots:
     void startCheck();
     void timer_setupIMU_check_timeStart();
-    void updateUI_grafic();
+    void updateUI_table();
     void resetTable();
 
 
 private:
     Ui::SetupIMU_check  *ui;
-
 
     QTimer *timer_setupIMU_check;
     QTimer *timer_updateUI_check;
@@ -60,8 +64,14 @@ private:
 
     DataBase *db;
 
-    void createUI(const QStringList &headers);
+    QChart *chart;
+    QChartView *chartView;
+    QSplineSeries *series;
 
+
+    void createPlot();
+    void createUI(const QStringList &headers);
+    void updateUI_setPlot();
 };
 
 #endif // SETUPIMU_CHECK_H

@@ -19,10 +19,8 @@ void DataBase::connectToDataBase()
      * */
     if(!QFile("./ui_utils/" DATABASE_NAME).exists()){
         qDebug() << "createDeviceTable" << this->restoreDataBase();
-        qDebug() << 1;
     } else {
         this->openDataBase();
-        qDebug() << 2;
     }
 }
 
@@ -77,7 +75,8 @@ bool DataBase::createDeviceTable()
     if(!query.exec( "CREATE TABLE " TABLENAME " ("
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                     TIME            " STRING     NOT NULL,"
-                    DATAIMU_MAGN    " INTEGER     NOT NULL"
+                    DATAIMU_MAGN_X    " INTEGER     NOT NULL,"
+                    DATAIMU_MAGN_Y    " INTEGER     NOT NULL"
                     " )"
                     )){
         qDebug() << "DataBase: error of create " << TABLENAME;
@@ -91,24 +90,17 @@ bool DataBase::createDeviceTable()
 
 /* Метод для вставки записи в таблицу устройств
  * */
-bool DataBase::inserIntoDeviceTable(QString time, int magn)
+bool DataBase::inserIntoDeviceTable(QString time, int magn_x, int magn_y)
 {
     QSqlQuery query;
 
-    qDebug() << ">> inserIntoDeviceTable <<";
-
     query.prepare("INSERT INTO " TABLENAME " ( " TIME ", "
-                  DATAIMU_MAGN " ) "
-                  "VALUES (:Time, :Magnitometr)");
+                  DATAIMU_MAGN_X ", " DATAIMU_MAGN_Y " ) "
+                  "VALUES (:Time, :Magn_x, :Magn_y)");
 
-//    query.prepare("INSERT INTO IMUDATA_magn (Time, Magnitometr) "
-//                  "VALUES (:Time, :Magnitometr)");
-
-//    query.prepare("INSERT INTO " TABLENAME " (" TIME ", "
-//                  DATAIMU_MAGN ") "
-//                  "VALUES (:Время, :Магнитометр )");
     query.bindValue(":Time",  time);
-    query.bindValue(":Magnitometr",    magn);
+    query.bindValue(":Magn_x",    magn_x);
+    query.bindValue(":Magn_y",    magn_y);
     // После чего выполняется запросом методом exec()
     if(!query.exec()){
         qDebug() << "error insert into " << TABLENAME;
