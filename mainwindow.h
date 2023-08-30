@@ -59,6 +59,7 @@ private slots:
     void pushButton_on_powerMode_3();
     void pushButton_on_powerMode_4();
     void pushButton_on_powerMode_5();
+    void off_powerMode_5();
 
     void setModeSelection(int index);
 
@@ -81,6 +82,9 @@ signals:
 private:
     Ui::MainWindow *ui;
     QTimer *updateTimer = nullptr;
+
+    QTimer *timer_off_powerMode_5;
+    power_Mode before_powerMode;
 
     IUserInterfaceData uv_interface;
     Pult::PC_Protocol* pultProtocol;

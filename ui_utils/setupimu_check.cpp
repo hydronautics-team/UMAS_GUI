@@ -31,6 +31,10 @@ SetupIMU_check::SetupIMU_check(QWidget *parent) :
         ui->pushButton_setupIMU_check_reset, SIGNAL(clicked()),
         this, SLOT(resetTable()));
 
+    connect(
+        ui->pushButton_setupIMU_check_stop, SIGNAL(clicked()),
+        this, SLOT(stopCheck()));
+
 }
 
 SetupIMU_check::~SetupIMU_check()
@@ -97,7 +101,7 @@ void SetupIMU_check::updateUI_table()
 
     QString currentTime = QTime::currentTime().toString("HH:mm:ss");
 
-    db->inserIntoDeviceTable(currentTime, i,i);
+    db->inserIntoDeviceTable(currentTime, X_magn, Y_magn);
 
     QSqlQuery query("SELECT "
                     TABLENAME "." TIME ", "
@@ -124,6 +128,19 @@ void SetupIMU_check::resetTable()
         ui->tableWidget->removeRow(r);
 }
 
+void SetupIMU_check::stopCheck()
+{
+    timer_setupIMU_check->stop();
+    timer_updateUI_check->stop();
+    ui->pushButton_setupIMU_check_reset->setEnabled(true);
+    ui->pushButton_setupIMU_check_start->setEnabled(true);
+
+    ui->pushButton_setupIMU_check_pause->setEnabled(false);
+    ui->pushButton_setupIMU_check_stop->setEnabled(false);
+
+    resetTable();
+}
+
 void SetupIMU_check::createPlot()
 {
     // Построить ряд как источник данных диаграммы и добавить к нему 6 координатных точек
@@ -136,18 +153,78 @@ void SetupIMU_check::createPlot()
     chart->setTitle("Построение магнитной характеристики");  // Устанавливаем заголовок графика
 
     QValueAxis *axisX = new QValueAxis();
-    axisX->setTitleText("x, м");
+    axisX->setTitleText("Magn x");
     axisX->setLabelFormat("%i");
     axisX->setTickCount(1);
-//    axisX->setRange(-10,15);
     chart->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
 
     QValueAxis *axisY = new QValueAxis();
-    axisY->setTitleText("t, мс");
+    axisY->setTitleText("Magn y");
     axisY->setLabelFormat("%g");
     axisY->setTickCount(5);
-//    axisY->setRange(-10,15);
+    chart->addAxis(axisY, Qt::AlignLeft);
+    series->attachAxis(axisY);
+
+    // Создаем QChartView и устанавливаем сглаживание, заголовок, размер
+    chartView = new QChartView(chart);
+
+    // Добавляем его в горизонтальный Layout
+    ui->verticalLayout_map->addWidget(chartView);
+    chartView->setRenderHint(QPainter::Antialiasing);
+}
+
+void SetupIMU_check::updateUI_setPlot()
+{
+    ui->verticalLayout_map->removeWidget(chartView);
+
+    series = new QSplineSeries;
+
+    float magnX_max = 0;
+    float magnY_max = 0;
+    float magnX_min = 0;
+    float magnY_min = 0;
+
+    for (int r = 0; r < ui->tableWidget->rowCount(); r++)
+    {
+        QString magn_x = ui->tableWidget->item(r,1)->text();
+        QString magn_y = ui->tableWidget->item(r,2)->text();
+
+        if (magnX_max < magn_x.toFloat())
+            magnX_max = magn_x.toFloat();
+        if (magnY_max < magn_y.toFloat())
+            magnY_max = magn_y.toFloat();
+        if (magnX_min > magn_x.toFloat())
+            magnX_min = magn_x.toFloat();
+        if (magnY_min > magn_y.toFloat())
+            magnY_min = magn_y.toFloat();
+
+        series->append(magn_x.toFloat() , magn_y.toFloat());
+    }
+
+    float bb_x = (magnX_max-magnX_min) * 0.1;
+    float bb_y = (magnY_max-magnY_min) * 0.1;
+
+
+    // Построить график
+    chart = new QChart();
+    chart->legend()->hide();  // скрыть легенду
+    chart->addSeries(series);  // добавить серию на график
+    chart->setTitle("Построение магнитной характеристики");  // Устанавливаем заголовок графика
+
+        QValueAxis *axisX = new QValueAxis();
+    axisX->setTitleText("Magn x");
+        axisX->setLabelFormat("%i");
+    axisX->setTickCount(1);
+        axisX->setRange(magnX_min - bb_x , magnX_max + bb_x);
+    chart->addAxis(axisX, Qt::AlignBottom);
+    series->attachAxis(axisX);
+
+    QValueAxis *axisY = new QValueAxis();
+    axisY->setTitleText("Magn y");
+    axisY->setLabelFormat("%g");
+    axisY->setTickCount(5);
+    axisY->setRange(magnY_min - bb_y, magnY_max + bb_y);
     chart->addAxis(axisY, Qt::AlignLeft);
     series->attachAxis(axisY);
 
@@ -158,117 +235,6 @@ void SetupIMU_check::createPlot()
     ui->verticalLayout_map->addWidget(chartView);
     chartView->setRenderHint(QPainter::Antialiasing);
 
-
-}
-
-void SetupIMU_check::updateUI_setPlot()
-{
-    ui->verticalLayout_map->removeWidget(chartView);
-
-
-    series = new QSplineSeries;
-
-    for (int r = 0; r < ui->tableWidget->rowCount(); r++)
-    {
-        QString magn_x = ui->tableWidget->item(r,1)->text();
-        QString magn_y = ui->tableWidget->item(r,2)->text();
-        series->append(magn_x.toInt() , magn_y.toInt());
-    }
-
-    // Построить график
-    chart = new QChart();
-    chart->legend()->hide();  // скрыть легенду
-    chart->addSeries(series);  // добавить серию на график
-    chart->setTitle("Построение магнитной характеристики");  // Устанавливаем заголовок графика
-
-        QValueAxis *axisX = new QValueAxis();
-    axisX->setTitleText("x, м");
-        axisX->setLabelFormat("%i");
-    axisX->setTickCount(1);
-    //    axisX->setRange(-10,15);
-    chart->addAxis(axisX, Qt::AlignBottom);
-    series->attachAxis(axisX);
-
-    QValueAxis *axisY = new QValueAxis();
-    axisY->setTitleText("t, мс");
-                        axisY->setLabelFormat("%g");
-                        axisY->setTickCount(5);
-                        //    axisY->setRange(-10,15);
-                        chart->addAxis(axisY, Qt::AlignLeft);
-                        series->attachAxis(axisY);
-
-                        // Создаем QChartView и устанавливаем сглаживание, заголовок, размер
-                        chartView = new QChartView(chart);
-
-                        // Добавляем его в горизонтальный Layout
-                        ui->verticalLayout_map->addWidget(chartView);
-                        chartView->setRenderHint(QPainter::Antialiasing);
-
-////    QValueAxis *axisX = new QValueAxis();
-////    axisX->setTitleText("x, м");
-////        axisX->setLabelFormat("%i");
-////    axisX->setTickCount(1);
-////    chart->addAxis(axisX, Qt::AlignBottom);
-////    series->attachAxis(axisX);
-
-////    QValueAxis *axisY = new QValueAxis();
-////    axisY->setTitleText("t, мс");
-////    axisY->setLabelFormat("%g");
-////    axisY->setTickCount(5);
-////    chart->addAxis(axisY, Qt::AlignLeft);
-////    series->attachAxis(axisY);
-
-////    chart->removeAllSeries();
-//    chart->addSeries(series);  // добавить серию на график
-//    chartView->setChart(chart);
-
-
-
-//////    m_chart = new QChart;
-////////    m_chart->setMinimumSize(640, 480);
-////////    m_chart->setTitle("Hover the line to show callout. Click the line to make it stay");
-//////    m_chart->legend()->hide();
-//////    QSplineSeries *series2 = new QSplineSeries;
-//////    series2->append(1.6, 1.4);
-//////    series2->append(2.4, 3.5);
-//////    series2->append(3.7, 2.5);
-//////    series2->append(7, 4);
-//////    series2->append(10, 2);
-//////    m_chart->addSeries(series2);
-
-//////    m_chart->createDefaultAxes();
-//////    m_chart->setAcceptHoverEvents(true);
-
-//////    setRenderHint(QPainter::Antialiasing);
-//////    scene()->addItem(m_chart);
-
-//////    m_coordX = new QGraphicsSimpleTextItem(m_chart);
-//////    m_coordX->setPos(m_chart->size().width()/2 - 50, m_chart->size().height());
-//////    m_coordX->setText("X: ");
-//////    m_coordY = new QGraphicsSimpleTextItem(m_chart);
-//////    m_coordY->setPos(m_chart->size().width()/2 + 50, m_chart->size().height());
-//////    m_coordY->setText("Y: ");
-
-////    QSplineSeries* series0 = new QSplineSeries();
-//////    series0->setName("Агент - 1");
-////    series0->setMarkerSize(15.0);
-
-////    series0->append(3, 8);
-////    series0->append(11, 2);
-////    series0->append(5, 1);
-
-
-
-////    auto chart = new QChart;
-////    chart->addSeries(series0);
-////    chart->createDefaultAxes();
-////    chart->setDropShadowEnabled(false);
-
-////    chart->legend()->setMarkerShape(QLegend::MarkerShapeFromSeries);
-
-////    QChartView *chartView = new QChartView(chart);
-
-////    ui->verticalLayout_map->addWidget(chartView);
 }
 
 void SetupIMU_check::createUI(const QStringList &headers)

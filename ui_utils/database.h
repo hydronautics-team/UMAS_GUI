@@ -29,7 +29,7 @@ public:
      * Подключение к базе данных и вставка записей в таблицу
      * */
     void connectToDataBase();
-    bool inserIntoDeviceTable(QString time, int magn_x, int magn_y);
+    bool inserIntoDeviceTable(QString time, float magn_x, float magn_y);
 
 private:
     // Сам объект базы данных, с которым будет производиться работа

@@ -46,6 +46,7 @@ private slots:
     void timer_setupIMU_check_timeStart();
     void updateUI_table();
     void resetTable();
+    void stopCheck();
 
 
 private:
@@ -54,8 +55,8 @@ private:
     QTimer *timer_setupIMU_check;
     QTimer *timer_updateUI_check;
 
-    int time;
-    int periodicity;
+    float time;
+    float periodicity;
     int count;
     int i;
     int rowCount_beforeStart;

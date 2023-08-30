@@ -75,8 +75,8 @@ bool DataBase::createDeviceTable()
     if(!query.exec( "CREATE TABLE " TABLENAME " ("
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                     TIME            " STRING     NOT NULL,"
-                    DATAIMU_MAGN_X    " INTEGER     NOT NULL,"
-                    DATAIMU_MAGN_Y    " INTEGER     NOT NULL"
+                    DATAIMU_MAGN_X    " FLOAT     NOT NULL,"
+                    DATAIMU_MAGN_Y    " FLOAT     NOT NULL"
                     " )"
                     )){
         qDebug() << "DataBase: error of create " << TABLENAME;
@@ -90,7 +90,7 @@ bool DataBase::createDeviceTable()
 
 /* Метод для вставки записи в таблицу устройств
  * */
-bool DataBase::inserIntoDeviceTable(QString time, int magn_x, int magn_y)
+bool DataBase::inserIntoDeviceTable(QString time, float magn_x, float magn_y)
 {
     QSqlQuery query;
 
