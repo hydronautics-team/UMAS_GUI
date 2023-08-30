@@ -15,6 +15,7 @@
 
 #include "setup_imu.h"
 #include "setupimu_check.h"
+#include "map.h"
 
 #include "i_basic_data.h"
 

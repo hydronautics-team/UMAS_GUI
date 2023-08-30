@@ -451,6 +451,7 @@ void MainWindow::pushButton_on_powerMode_5()
 void MainWindow::off_powerMode_5()
 {
     timer_off_powerMode_5->stop();
+    uv_interface.setPowerMode(before_powerMode);
 
     switch (before_powerMode) {
     case power_Mode::MODE_2:
