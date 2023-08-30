@@ -5,6 +5,8 @@
 #include "EWIEGA46WW/moc_mainwindow.cpp"
 #include "VQTIZUGSAA/moc_map.cpp"
 #include "5PDRT6OIYK/moc_remote_control.cpp"
+#include "7JC2QM4LRV/moc_database.cpp"
 #include "7JC2QM4LRV/moc_setup_imu.cpp"
+#include "7JC2QM4LRV/moc_setupimu_check.cpp"
 #include "7JC2QM4LRV/moc_setupimu_start.cpp"
 #include "A7YEI6RLCU/moc_uv_state.cpp"

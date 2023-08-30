@@ -12,8 +12,9 @@
 #include "i_user_interface_data.h"
 #include "pc_protocol.h"
 #include "i_server_data.h"
-#include "setup_imu.h"
 
+#include "setup_imu.h"
+#include "setupimu_check.h"
 
 #include "i_basic_data.h"
 
@@ -37,6 +38,7 @@ public:
     void setBottom_connection(Ui::MainWindow *ui, QObject *ts);
     void setBottom_modeSelection(Ui::MainWindow *ui, QObject *ts);
     void setBottom_setupIMU(Ui::MainWindow *ui, QObject *ts);
+    void setBottom_setupIMU_check(Ui::MainWindow *ui, QObject *ts);
 
     void setTab(Ui::MainWindow *ui);
 
@@ -68,7 +70,8 @@ private slots:
     void setConnection();
     void breakConnection();
 
-    void setupIMU();
+    void getWindow_setupIMU();
+    void getWindow_setupIMU_check();
 
 signals:
     void updateCompass(float yaw);

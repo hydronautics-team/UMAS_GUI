@@ -4,7 +4,6 @@
 #include <QDialog>
 #include <QTimer>
 #include <QDebug>
-#include <QStatusBar>
 
 #include "i_user_interface_data.h"
 
@@ -38,9 +37,6 @@ private:
     IUserInterfaceData uv_interface;
     FlagAH127C_pult flagAH127C_pult;
     FlagAH127C_bort flagAH127C_bort;
-
-
-//    QStatusBar *statusBar;
 
     QTimer *updateTimerSec;
     QTimer *timer_checkFlag;

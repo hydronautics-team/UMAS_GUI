@@ -13,6 +13,8 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Charts)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Network)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)
+
 
 
 include_directories("${PROJECT_SOURCE_DIR}/compass")
@@ -55,6 +57,11 @@ set(PROJECT_SOURCES
         map/map.cpp
         map/map.ui
         img.qrc
+        ui_utils/setupimu_check.h
+        ui_utils/setupimu_check.cpp
+        ui_utils/setupimu_check.ui
+        ui_utils/database.h
+        ui_utils/database.cpp
 )
 
 
@@ -86,7 +93,10 @@ target_link_libraries(UMAS_GUI PRIVATE
     sfml-graphics sfml-window sfml-system
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Charts
-    Qt${QT_VERSION_MAJOR}::Network)
+    Qt${QT_VERSION_MAJOR}::Network
+    Qt${QT_VERSION_MAJOR}::Sql)
+
+
 
 set_target_properties(UMAS_GUI PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

@@ -29,6 +29,7 @@ void MainWindow::setBottom(Ui::MainWindow *ui, QObject *ts)
     setBottom_connection(ui, ts);
     setBottom_modeSelection(ui, ts);
     setBottom_setupIMU(ui, ts);
+    setBottom_setupIMU_check(ui, ts);
 }
 
 void MainWindow::setBottom_mode(Ui::MainWindow *ui, QObject *ts)
@@ -153,7 +154,14 @@ void MainWindow::setBottom_setupIMU(Ui::MainWindow *ui, QObject *ts)
 {
     connect(
         ui->pushButton_setupIMU, SIGNAL(clicked()),
-        ts, SLOT(setupIMU()));
+        ts, SLOT(getWindow_setupIMU()));
+}
+
+void MainWindow::setBottom_setupIMU_check(Ui::MainWindow *ui, QObject *ts)
+{
+    connect(
+        ui->pushButton_setupIMU_check, SIGNAL(clicked()),
+        ts, SLOT(getWindow_setupIMU_check()));
 }
 
 void MainWindow::setTab(Ui::MainWindow *ui)
@@ -360,11 +368,18 @@ void MainWindow::updateUi_SetupMsg()
     ui->labe_tab_setupMsg_received_checksum_received_count_->setNum(checksum_msg_gui_received);
 }
 
-void MainWindow::setupIMU()
+void MainWindow::getWindow_setupIMU()
 {
     SetupIMU window_setupIMU;
     window_setupIMU.setModal(false);
     window_setupIMU.exec();
+}
+
+void MainWindow::getWindow_setupIMU_check()
+{
+    SetupIMU_check window_setupIMU_check;
+    window_setupIMU_check.setModal(false);
+    window_setupIMU_check.exec();
 }
 
 void MainWindow::setConnection()

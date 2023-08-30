@@ -58,9 +58,19 @@
 			"5PDRT6OIYK/moc_remote_control.cpp"
 		],
 		[
+			"/home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/database.h",
+			"MU",
+			"7JC2QM4LRV/moc_database.cpp"
+		],
+		[
 			"/home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/setup_imu.h",
 			"MU",
 			"7JC2QM4LRV/moc_setup_imu.cpp"
+		],
+		[
+			"/home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/setupimu_check.h",
+			"MU",
+			"7JC2QM4LRV/moc_setupimu_check.cpp"
 		],
 		[
 			"/home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/setupimu_start.h",
@@ -84,6 +94,7 @@
 		"QT_NETWORK_LIB",
 		"QT_OPENGLWIDGETS_LIB",
 		"QT_OPENGL_LIB",
+		"QT_SQL_LIB",
 		"QT_WIDGETS_LIB"
 	],
 	"MOC_DEPEND_FILTERS" : 
@@ -111,6 +122,7 @@
 		"/home/shakuevda/Qt/6.4.2/gcc_64/include/QtOpenGL",
 		"/home/shakuevda/Qt/6.4.2/gcc_64/include/QtOpenGLWidgets",
 		"/home/shakuevda/Qt/6.4.2/gcc_64/include/QtNetwork",
+		"/home/shakuevda/Qt/6.4.2/gcc_64/include/QtSql",
 		"/usr/include",
 		"/usr/include/c++/9",
 		"/usr/include/x86_64-linux-gnu/c++/9",
@@ -173,7 +185,12 @@
 			"/home/shakuevda/Desktop/UMAS/UMAS_GUI/remote_control/remote_control.cpp",
 			"MU"
 		],
+		[ "/home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/database.cpp", "MU" ],
 		[ "/home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/setup_imu.cpp", "MU" ],
+		[
+			"/home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/setupimu_check.cpp",
+			"MU"
+		],
 		[
 			"/home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/setupimu_start.cpp",
 			"MU"
