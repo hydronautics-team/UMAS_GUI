@@ -22,27 +22,27 @@
  mmc:Q_OBJECT
  uic:ui_compass.h
 /home/shakuevda/Desktop/UMAS/UMAS_GUI/interface/i_control_data.h
-/home/shakuevda/Desktop/UMAS/UMAS_GUI/interface/i_user_interface_data.h
-/home/shakuevda/Desktop/UMAS/UMAS_GUI/compass/compass.cpp
-/home/shakuevda/Desktop/UMAS/UMAS_GUI/remote_control/remote_control.cpp
-/home/shakuevda/Desktop/UMAS/UMAS_GUI/interface/i_control_data.cpp
-/home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/setupimu_check.h
- mmc:Q_OBJECT
 /home/shakuevda/Desktop/UMAS/UMAS_GUI/interface/i_basic_data.h
  mmc:Q_OBJECT
 /home/shakuevda/Desktop/UMAS/UMAS_GUI/mainwindow.h
- mmc:Q_OBJECT
-/home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/database.h
  mmc:Q_OBJECT
 /home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/setupimu_start.cpp
  uic:ui_setupimu_start.h
 /home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/setupimu_start.h
  mmc:Q_OBJECT
-/home/shakuevda/Desktop/UMAS/UMAS_GUI/main.cpp
-/home/shakuevda/Desktop/UMAS/UMAS_GUI/map/map.h
+/home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/database.h
  mmc:Q_OBJECT
-/home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/setup_imu.cpp
- uic:ui_setup_imu.h
+/home/shakuevda/Desktop/UMAS/UMAS_GUI/interface/i_control_data.cpp
+/home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/setupimu_check.h
+ mmc:Q_OBJECT
+/home/shakuevda/Desktop/UMAS/UMAS_GUI/compass/compass.cpp
+/home/shakuevda/Desktop/UMAS/UMAS_GUI/remote_control/remote_control.cpp
+/home/shakuevda/Desktop/UMAS/UMAS_GUI/interface/i_user_interface_data.h
 /home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/setup_imu.h
  mmc:Q_OBJECT
  uic:ui_setupimu_start.h
+/home/shakuevda/Desktop/UMAS/UMAS_GUI/map/map.h
+ mmc:Q_OBJECT
+/home/shakuevda/Desktop/UMAS/UMAS_GUI/main.cpp
+/home/shakuevda/Desktop/UMAS/UMAS_GUI/ui_utils/setup_imu.cpp
+ uic:ui_setup_imu.h

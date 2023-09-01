@@ -20,7 +20,6 @@
 
 #include <QValueAxis>
 
-
 #include <QtCharts/QSplineSeries>
 
 #include <QDebug>

@@ -154,8 +154,8 @@ void SetupIMU_check::createPlot()
 
     QValueAxis *axisX = new QValueAxis();
     axisX->setTitleText("Magn x");
-    axisX->setLabelFormat("%i");
-    axisX->setTickCount(1);
+    axisX->setLabelFormat("%g");
+    axisX->setTickCount(5);
     chart->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
 
@@ -202,6 +202,11 @@ void SetupIMU_check::updateUI_setPlot()
         series->append(magn_x.toFloat() , magn_y.toFloat());
     }
 
+    QString magn_x = ui->tableWidget->item(0,1)->text();
+    QString magn_y = ui->tableWidget->item(0,2)->text();
+
+    series->append(magn_x.toFloat() , magn_y.toFloat());
+
     float bb_x = (magnX_max-magnX_min) * 0.1;
     float bb_y = (magnY_max-magnY_min) * 0.1;
 
@@ -214,8 +219,8 @@ void SetupIMU_check::updateUI_setPlot()
 
         QValueAxis *axisX = new QValueAxis();
     axisX->setTitleText("Magn x");
-        axisX->setLabelFormat("%i");
-    axisX->setTickCount(1);
+        axisX->setLabelFormat("%g");
+    axisX->setTickCount(5);
         axisX->setRange(magnX_min - bb_x , magnX_max + bb_x);
     chart->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);

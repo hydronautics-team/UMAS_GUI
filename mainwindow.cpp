@@ -254,7 +254,7 @@ void MainWindow::updateUi_SetupMsg()
 
 //    send
 
-    ui->label_tab_setupMsg_send_powerMode_count->setNum(static_cast<int>(pMode));
+    ui->label_tab_setupMsg_send_powerMode_count->setNum(2+static_cast<int>(pMode));
 
     if (modeSelection == 1)
         ui->label_tab_setupMsg_send_modeAUV_selection_mode->setText("модель");
@@ -388,8 +388,8 @@ void MainWindow::setConnection()
     ui->pushButton_breakConnection->setEnabled(true);
 
 
-    pultProtocol = new Pult::PC_Protocol(QHostAddress("192.168.137.2"), 13051,
-                                         QHostAddress("192.168.137.11"), 13050, 10);
+    pultProtocol = new Pult::PC_Protocol(QHostAddress("192.168.1.2"), 13051,
+                                         QHostAddress("192.168.1.11"), 13050, 10);
 
     pultProtocol->startExchange();
 
