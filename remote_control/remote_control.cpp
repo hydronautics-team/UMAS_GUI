@@ -42,7 +42,7 @@ void RemoteControl::setRoll(float roll){
 }
 
 void RemoteControl::setPitch(float pitch){
-    interface.setPitch(sf::Joystick::getAxisPosition(id, impactAxisPitch) + pitch * interface.getCSMode());
+    interface.setPitch(-(sf::Joystick::getAxisPosition(id, impactAxisPitch)/10 + pitch * interface.getCSMode()));
 }
 
 void RemoteControl::setYaw(float yaw){
