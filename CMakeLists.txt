@@ -24,6 +24,7 @@ include_directories("${PROJECT_SOURCE_DIR}/interface")
 include_directories("${PROJECT_SOURCE_DIR}/map")
 include_directories("${PROJECT_SOURCE_DIR}/communication")
 include_directories("${PROJECT_SOURCE_DIR}/ui_utils")
+include_directories("${PROJECT_SOURCE_DIR}")
 
 set(PROJECT_SOURCES
         main.cpp

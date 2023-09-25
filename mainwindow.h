@@ -5,6 +5,8 @@
 #include <QTimer>
 #include <QDebug>
 
+#include <QTime>
+
 #include <QButtonGroup>
 
 #include "remote_control.h"
@@ -75,12 +77,14 @@ private slots:
     void getWindow_setupIMU();
     void getWindow_setupIMU_check();
 
+    void displayText(QString str);
+
 signals:
     void updateCompass(float yaw);
     void updateIMU(DataAH127C imuData);
     void updateSetupMsg();
 
-private:
+protected:
     Ui::MainWindow *ui;
     QTimer *updateTimer = nullptr;
 

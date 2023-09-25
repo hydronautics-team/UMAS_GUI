@@ -4,9 +4,12 @@
 #include "i_basic_data.h"
 #include <QDebug>
 
-
 class IUserInterfaceData : public IBasicData
 {
+    Q_OBJECT
+signals:
+    void displayText_toConsole(QString str);
+
 public:
     IUserInterfaceData();
 

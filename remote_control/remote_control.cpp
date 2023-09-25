@@ -30,11 +30,11 @@ void RemoteControl::updateImpact() {
 }
 
 void RemoteControl::setMarch(){
-    interface.setMarch(-sf::Joystick::getAxisPosition(id, impactAxisMarch));
+    interface.setMarch(-sf::Joystick::getAxisPosition(id, impactAxisMarch)/2);
 }
 
 void RemoteControl::setDepth(){
-    interface.setDepth(sf::Joystick::getAxisPosition(id, impactAxisDepth));
+    interface.setDepth(3*sf::Joystick::getAxisPosition(id, impactAxisDepth)/4);
 }
 
 void RemoteControl::setRoll(float roll){
@@ -42,11 +42,11 @@ void RemoteControl::setRoll(float roll){
 }
 
 void RemoteControl::setPitch(float pitch){
-    interface.setPitch(-(sf::Joystick::getAxisPosition(id, impactAxisPitch)/10 + pitch * interface.getCSMode()));
+    interface.setPitch((sf::Joystick::getAxisPosition(id, impactAxisPitch)/10 + pitch * interface.getCSMode()));
 }
 
 void RemoteControl::setYaw(float yaw){
-    interface.setYaw(sf::Joystick::getAxisPosition(id, impactAxisYaw) + yaw * interface.getCSMode());
+    interface.setYaw(-(sf::Joystick::getAxisPosition(id, impactAxisYaw)/3 + yaw * interface.getCSMode()));
 }
 
 RemoteControl::~RemoteControl(){

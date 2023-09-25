@@ -6,7 +6,9 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    qInfo() << "Приложение работает";
+    displayText("Приложение работает");
+    displayText("Установите соединение для работы с агентом");
+
 
     setTimer_updateImpact(joystick.periodUpdateMsec);
 
@@ -19,6 +21,9 @@ MainWindow::MainWindow(QWidget *parent)
             this, SLOT(updateUi_IMU(DataAH127C)));
     connect(this, SIGNAL(updateSetupMsg()),
             this, SLOT(updateUi_SetupMsg()));
+
+    connect(&uv_interface, SIGNAL(displayText_toConsole(QString)),
+            this, SLOT(displayText(QString)));
 }
 
 void MainWindow::setBottom(Ui::MainWindow *ui, QObject *ts)
@@ -93,7 +98,6 @@ void MainWindow::setBottom_modeAutomated(Ui::MainWindow *ui, QObject *ts)
     connect(
         ui->pushButton_modeAutomated_tetta, SIGNAL(toggled(bool)),
         ts, SLOT(stabilizePitchToggled(bool)));
-
 }
 
 void MainWindow::setBottom_powerMode(Ui::MainWindow *ui, QObject *ts)
@@ -109,13 +113,13 @@ void MainWindow::setBottom_powerMode(Ui::MainWindow *ui, QObject *ts)
     ui->pushButton_powerMode_4->setCheckable(true);
     ui->pushButton_powerMode_5->setCheckable(true);
 
-    ui->pushButton_powerMode_2->setChecked(true);
-
     uv_interface.setPowerMode(power_Mode::MODE_2);
+    ui->pushButton_powerMode_2->setChecked(true);
 
     connect(
         ui->pushButton_powerMode_2, SIGNAL(clicked()),
         ts, SLOT(pushButton_on_powerMode_2()));
+
 
     connect(
         ui->pushButton_powerMode_3, SIGNAL(clicked()),
@@ -180,6 +184,13 @@ void MainWindow::setTimer_updateImpact(int periodUpdateMsec){
         );
     updateTimer->start(periodUpdateMsec);
     qInfo() << "Таймер обновления джойстика запущен";
+}
+
+void MainWindow::displayText(QString str)
+{
+    QString currentTime = QTime::currentTime().toString("HH:mm:ss");
+    qInfo() << currentTime << str;
+    ui->textEdit_console->append(currentTime + " " + str);
 }
 
 MainWindow::~MainWindow()
@@ -388,8 +399,8 @@ void MainWindow::setConnection()
     ui->pushButton_breakConnection->setEnabled(true);
 
 
-    pultProtocol = new Pult::PC_Protocol(QHostAddress("192.168.1.2"), 13051,
-                                         QHostAddress("192.168.1.11"), 13050, 10);
+    pultProtocol = new Pult::PC_Protocol(QHostAddress("192.168.1.173"), 13051,
+                                         QHostAddress("192.168.1.182"), 13050, 10);
 
     pultProtocol->startExchange();
 
@@ -400,7 +411,8 @@ void MainWindow::setConnection()
     } else {
         ui->pushButton_connection->setEnabled(true);
         ui->pushButton_breakConnection->setEnabled(false);
-        qInfo() << "Попробуйте снова";
+        displayText("Попробуйте снова");
+
     }
 }
 
