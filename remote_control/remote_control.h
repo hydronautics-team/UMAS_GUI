@@ -9,21 +9,14 @@
 
 #include "SFML/Window.hpp"
 
-class RemoteControl : public QObject
+class RemoteControl : public IControlData
 {
     Q_OBJECT
 public:
-    explicit RemoteControl(int joy_id = 0, int update_time = 0, QObject *parent = 0);
+    explicit RemoteControl();
     ~RemoteControl();
 
     int id;
-    int periodUpdateMsec;
-
-    void setMarch();
-    void setDepth();
-    void setRoll(float roll);
-    void setPitch(float pitch);
-    void setYaw(float yaw);
 
 public slots:
     void updateImpact();
@@ -38,10 +31,7 @@ protected:
     sf::Joystick::Axis impactAxisYaw;
 
 private:
-
-    IControlData interface;
     QTimer *updateTimer;
-
 };
 
 #endif // REMOTECONTROL_H

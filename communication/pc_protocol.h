@@ -34,7 +34,6 @@ public slots:
         timer->stop();
     }
     void sendData(){
- //       qDebug()<<"send data";
         send_data = uv_server.generateFullMessage();
         udpProtocol->send_data = send_data;
         udpProtocol->sendData();
@@ -45,7 +44,6 @@ public slots:
         rec_data = udpProtocol->rec_data;
         uv_server.parseFullMessage(rec_data);
         emit dataReceived();
-//        static_cast<unsigned char>(rec_data.cSMode);
     }
 public:
     ToPult  rec_data;

@@ -14,7 +14,7 @@ void Compass::paintEvent(QPaintEvent *e) {
     painter.setRenderHint(QPainter::Antialiasing, true); // сглаживание
     painter.translate(width() / 2, height() / 2); // перенос системы координат
     int side = qMin(width(), height());
-    painter.scale(side / 200, side / 200); // масштабирование СК
+    painter.scale(side / 170, side / 170); // масштабирование СК
     painter.save();
     painter.rotate(yaw);
     painter.drawConvexPolygon(arrowCompass, 6);
