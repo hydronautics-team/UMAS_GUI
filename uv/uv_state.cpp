@@ -29,13 +29,13 @@ DataPressure::DataPressure() { //структура данных с датчик
     pressure = 0; // Pressure returned in mbar or mbar*conversion rate.
 }
 
-DataUWB::DataUWB() {
-    locationX = 0;
-    locationY = 0;
+//DataUWB::DataUWB() {
+//    locationX = 0;
+//    locationY = 0;
 
-    for (int i = 0; i < 5; i++)
-        distanceToBeacon [i] = 0;
+//    for (int i = 0; i < 5; i++)
+//        distanceToBeacon [i] = 0;
 
-    for (int i = 0; i < 11; i++)
-        distanceToAgent [i] = 0;
-}
+//    for (int i = 0; i < 11; i++)
+//        distanceToAgent [i] = 0;
+//}

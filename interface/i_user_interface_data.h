@@ -18,6 +18,8 @@ public:
     void setControlContoursFlags(e_StabilizationContours contour, bool value);
     void setCSMode(e_CSMode mode);
     void setModeSelection(bool mode);
+    void setDataPultUWB(PultUWB pultUWB);
+
 
     int                     getChecksumMsgAgentSend();
     int                     getChecksumMsgGuiSend();

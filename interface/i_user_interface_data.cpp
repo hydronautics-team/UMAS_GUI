@@ -85,6 +85,11 @@ void IUserInterfaceData::setModeSelection(bool mode) {
         emit displayText_toConsole("Установлен вывод данных на агента");
 }
 
+void IUserInterfaceData::setDataPultUWB(PultUWB pultUWB)
+{
+    agent.pultUWB = pultUWB;
+}
+
 // get-функции
 
 int IUserInterfaceData::getChecksumMsgAgentSend() {

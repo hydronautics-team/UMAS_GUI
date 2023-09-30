@@ -10,6 +10,7 @@ FromPult IServerData::generateFullMessage() {
 
     data.controlData = agent.control;
     data.cSMode = agent.cSMode;
+    data.pultUWB = agent.pultUWB;
     data.controlContoursFlags = agent.controlContoursFlags;
     data.modeAUV_selection = agent.modeAUV_selection;
     data.pMode = agent.pMode;
