@@ -21,8 +21,6 @@ public:
 public slots:
     void updateImpact();
 
-signals:
-
 protected:
     sf::Joystick::Axis impactAxisMarch;
     sf::Joystick::Axis impactAxisDepth;
