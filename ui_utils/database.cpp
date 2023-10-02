@@ -14,16 +14,15 @@ DataBase::DataBase(QString name,
 
 DataBase::~DataBase()
 {
-
 }
 
-/* Методы для подключения к базе данных
- * */
+/*!
+ * \brief DataBase::connectToDataBase Перед подключением к базе данных производим
+ *  проверку на её существование.В зависимости от результата производим открытие
+ *  базы данных или её восстановление.
+ */
 void DataBase::connectToDataBase()
 {
-    /* Перед подключением к базе данных производим проверку на её существование.
-     * В зависимости от результата производим открытие базы данных или её восстановление
-     * */
     if(!QFile("./ui_utils/" + nameDB).exists()){
         qDebug() << "createDeviceTable" << this->restoreDataBase();
     } else {
@@ -31,8 +30,6 @@ void DataBase::connectToDataBase()
     }
 }
 
-/* Методы восстановления базы данных
- * */
 bool DataBase::restoreDataBase()
 {
     if(this->openDataBase()){
@@ -48,13 +45,12 @@ bool DataBase::restoreDataBase()
     return false;
 }
 
-/* Метод для открытия базы данных
- * */
+/*!
+ * \brief DataBase::openDataBase База данных открывается по заданному пути и
+ *  имени базы данных, если она существует.
+ */
 bool DataBase::openDataBase()
 {
-    /* База данных открывается по заданному пути
-     * и имени базы данных, если она существует
-     * */
     db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName("./ui_utils/" + nameDB);
     if(db.open()){
@@ -64,20 +60,17 @@ bool DataBase::openDataBase()
     }
 }
 
-/* Методы закрытия базы данных
- * */
 void DataBase::closeDataBase()
 {
     db.close();
 }
 
-/* Метод для создания таблицы устройств в базе данных
- * */
+/*!
+ * \brief DataBase::createDeviceTable В данном случае используется формирование
+ * сырого SQL-запроса с последующим его выполнением.
+ */
 bool DataBase::createDeviceTable()
 {
-    /* В данном случае используется формирование сырого SQL-запроса
-     * с последующим его выполнением.
-     * */
     QSqlQuery query;
     if(!query.exec( "CREATE TABLE " + tableNameDB + " ("
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -95,8 +88,6 @@ bool DataBase::createDeviceTable()
     return false;
 }
 
-/* Метод для вставки записи в таблицу устройств
- * */
 bool DataBase::inserIntoDeviceTable(QString str, float value1, float value2)
 {
     QSqlQuery query;
@@ -108,7 +99,7 @@ bool DataBase::inserIntoDeviceTable(QString str, float value1, float value2)
     query.addBindValue(str);
     query.addBindValue(value1);
     query.addBindValue(value2);
-    // После чего выполняется запросом методом exec()
+
     if(!query.exec()){
         qDebug() << "error insert into " << tableNameDB;
         qDebug() << query.lastError().text();

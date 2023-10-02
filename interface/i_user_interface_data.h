@@ -4,6 +4,11 @@
 #include "i_basic_data.h"
 #include <QDebug>
 
+
+/*!
+ * \brief IUserInterfaceData class класс для взаимодействия глобальной переменной
+ *  состояний с главной формой.
+ */
 class IUserInterfaceData : public IBasicData
 {
     Q_OBJECT

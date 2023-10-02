@@ -3,7 +3,10 @@
 
 #include "i_basic_data.h"
 
-
+/*!
+ * \brief IControlData class класс для получения и установки данных связанных
+ *  с управляющими воздействиями и пультом управления.
+ */
 class IControlData : public IBasicData
 {
 public:

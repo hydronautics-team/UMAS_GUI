@@ -287,6 +287,9 @@ protected:
      */
     Pult::PC_Protocol* pultProtocol;
 
+    /*!
+     * \brief map - указатель на объект класса для обновления map.ui.
+     */
     Map map;
 
 

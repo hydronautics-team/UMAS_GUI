@@ -12,7 +12,6 @@ SetupIMU_start::SetupIMU_start(QWidget *parent) :
     connect(
         ui->pushButton_setupIMU_startTimer, SIGNAL(clicked()),
         this, SLOT(pushButton_startTimer1()));
-
     connect(
         this, SIGNAL(on_t2()),
         this, SLOT(pushButton_startTimer2()));

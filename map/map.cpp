@@ -46,7 +46,9 @@ void Map::createPlot()
     chart->addSeries(agentCoords);
     chart->createDefaultAxes();
     chart->axes(Qt::Vertical).first()->setRange(-50,100);
+    chart->axes(Qt::Vertical).first()->setTitleText("Y, см");
     chart->axes(Qt::Horizontal).first()->setRange(-50,150);
+    chart->axes(Qt::Horizontal).first()->setTitleText("X, см");
     chartView = new QChartView(chart);
 
     ui->verticalLayout_map->addWidget(chartView);
@@ -94,6 +96,7 @@ void Map::updateLocationUWB()
         }
     }
     emit sendLocationUWB(&x[0],&y[0]);
+    beacon->clear();
     drawCircle(circle1, 0, range[0]);
     drawCircle(circle2, 1, range[1]);
     drawCircle(circle3, 2, range[2]);

@@ -15,7 +15,17 @@ public:
     explicit Compass(QWidget *parent = nullptr);
 
 public slots:
+    /*!
+     * \brief setYaw метод установки текущего значения компаса.
+     * \param yawNew текущее значение компаса.
+     */
     void setYaw(double yawNew);
+    /*!
+     * \brief setYawDesirable метод установки управляющего значения компаса.
+     * \param yawDesirableNew управляющего значения компаса
+     * \param YawFromIMU текущее значение курса.
+     * \param mode ручной или
+     */
     void setYawDesirable(double yawDesirableNew, double YawFromIMU, bool mode);
 
 protected:
