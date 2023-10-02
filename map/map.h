@@ -2,6 +2,7 @@
 #define MAP_H
 
 #include <QWidget>
+#include <QStringList>
 
 #include <QtCharts/QScatterSeries>
 #include <QtCharts/QLegendMarker>
@@ -11,6 +12,7 @@
 #include <QtCharts/QChart>
 #include <QtWidgets/QGraphicsView>
 #include <QLineSeries>
+#include <QColor>
 
 #include "uv_state.h"
 #include "database.h"
@@ -27,18 +29,17 @@ class Map : public QWidget
 public:
     explicit Map(QWidget *parent = nullptr);
     ~Map();
-public slots:
-    void drawCircle1(double R);
-    void drawCircle2(double R);
-    void drawCircle3(double R);
+
+    void drawCircle(QLineSeries *circle, int index, double R);
     void drawCurrentCoords(double x, double y);
 
-   void printInf(DataUWB msg);// разбираем что пришло в посылке с датчика
-
 protected:
-    double x1,y1;
-    double x2,y2;
-    double x3,y3;
+    double x[3];
+    double y[3];
+    double range[3];
+
+
+
     Ui::Map *ui;
     QChartView *chartView = nullptr;
     QChart *chart = nullptr;
@@ -47,8 +48,23 @@ protected:
     QLineSeries *circle1 = nullptr;
     QLineSeries *circle2 = nullptr;
     QLineSeries *circle3 = nullptr;
-    int prov[8];
-    int error_counter = 0;
+
+    QStringList color = { "Синий", "Зеленый", "Оранжевый" };
+
+private:
+    DataBase *db;
+
+    void createPlot();
+
+public slots:
+    void updateUi_map(DataUWB dataUWB);
+
+    void addRowUWB();
+    void updateLocationUWB();
+    void plotScaling(bool state);
+
+signals:
+    void sendLocationUWB(double *x, double *y);
 };
 
 #endif // MAP_H

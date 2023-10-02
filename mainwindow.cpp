@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     setTimer_updateImpact(20);
     setBottom();
     setTab();
+    setMap();
     setUpdateUI();
 }
 
@@ -290,10 +291,12 @@ void MainWindow::setConnection()
 
 void MainWindow::updateUi_fromAgent() {
     DataAH127C imuData = uv_interface.getImuData();
+    DataUWB dataUWB = uv_interface.getDataUWB();
 
     emit updateCompass(imuData.yaw);
     emit updateIMU(imuData);
     emit updateSetupMsg();
+    emit updateMap(dataUWB);
 }
 
 void MainWindow::breakConnection()
@@ -370,6 +373,29 @@ void MainWindow::setTab()
 
 //
 
+void MainWindow::setMap()
+{
+    connect(&map, SIGNAL(sendLocationUWB(double*,double*)),
+            this, SLOT(setLocationUWB(double*,double*)));
+}
+
+void MainWindow::setLocationUWB(double *x, double *y)
+{
+    PultUWB pultUWB;
+
+    for (int count = 0; count < 2; count++)
+    {
+        pultUWB.beacon_x[count] = *x;
+        pultUWB.beacon_y[count] = *y;
+        x++;
+        y++;
+    }
+
+    uv_interface.setDataPultUWB(pultUWB);
+}
+
+//
+
 void MainWindow::setUpdateUI()
 {
     connect(this, SIGNAL(updateCompass(float)),
@@ -378,6 +404,9 @@ void MainWindow::setUpdateUI()
             this, SLOT(updateUi_IMU(DataAH127C)));
     connect(this, SIGNAL(updateSetupMsg()),
             this, SLOT(updateUi_SetupMsg()));
+
+    connect(this, SIGNAL(updateMap(DataUWB)),
+            &map,SLOT(updateUi_map(DataUWB)));
 }
 
 void MainWindow::updateUi_Compass(float yaw) {

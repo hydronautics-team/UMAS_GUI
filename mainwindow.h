@@ -102,6 +102,11 @@ private:
     void setTab();
 
     /*!
+     * \brief setMap устанавливает настройки для карты.
+     */
+    void setMap();
+
+    /*!
      * \brief setUpdateUI устанавливает слоты обновления для UI формы.
      */
     void setUpdateUI();
@@ -113,6 +118,14 @@ private slots:
      * \param str является выводимой строкой.
      */
     void displayText(QString str);
+
+    /*!
+     * \brief setLocationUWB слот записи данных о месторасположении
+     *  3 uwb-модулей.
+     * \param x координаты по оси X.
+     * \param y координаты по оси Y.
+     */
+    void setLocationUWB(double *x, double *y);
 
     /*!
      * \brief updateUi_fromControl слот для обновления на UI форме
@@ -242,6 +255,8 @@ signals:
      */
     void updateSetupMsg();
 
+    void updateMap(DataUWB dataUWB);
+
 protected:
     /*!
      * \brief ui указатель на главную форму.
@@ -271,6 +286,8 @@ protected:
      * \brief pultProtocol указатель на объект класса для UDP соединения.
      */
     Pult::PC_Protocol* pultProtocol;
+
+    Map map;
 
 
 };

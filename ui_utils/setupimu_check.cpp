@@ -10,15 +10,12 @@ SetupIMU_check::SetupIMU_check(QWidget *parent) :
 
     ui->pushButton_setupIMU_check_stop->setEnabled(false);
     ui->pushButton_setupIMU_check_pause->setEnabled(false);
+    ui->pushButton_setupIMU_check_reset->setEnabled(false);
 
-    db = new DataBase();
+
+    db = new DataBase("dataIMU_magn.db", "IMUDATA_magn", "Time", "Magn_x", "Magn_y");
     db->connectToDataBase();
-
-    /* Наполним базу данных записями */
-    this->createUI(QStringList() << "Time"
-                                 << "Magn_x"
-                                 << "Magn_y"
-                   );
+    db->createTable(ui->tableWidget);
 
     this->createPlot();
 
@@ -70,8 +67,6 @@ void SetupIMU_check::startCheck()
             timer_setupIMU_check, SIGNAL(timeout()),
             this, SLOT(timer_setupIMU_check_timeStart()));
         timer_setupIMU_check->start(1000);
-
-
     }
     else
         qInfo() << "Необходимо выставить длительность и периодичность записи";
@@ -217,11 +212,11 @@ void SetupIMU_check::updateUI_setPlot()
     chart->addSeries(series);  // добавить серию на график
     chart->setTitle("Построение магнитной характеристики");  // Устанавливаем заголовок графика
 
-        QValueAxis *axisX = new QValueAxis();
+    QValueAxis *axisX = new QValueAxis();
     axisX->setTitleText("Magn x");
-        axisX->setLabelFormat("%g");
+    axisX->setLabelFormat("%g");
     axisX->setTickCount(5);
-        axisX->setRange(magnX_min - bb_x , magnX_max + bb_x);
+    axisX->setRange(magnX_min - bb_x , magnX_max + bb_x);
     chart->addAxis(axisX, Qt::AlignBottom);
     series->attachAxis(axisX);
 
@@ -240,18 +235,4 @@ void SetupIMU_check::updateUI_setPlot()
     ui->verticalLayout_map->addWidget(chartView);
     chartView->setRenderHint(QPainter::Antialiasing);
 
-}
-
-void SetupIMU_check::createUI(const QStringList &headers)
-{
-    ui->tableWidget->setColumnCount(3); // Указываем число колонок
-    ui->tableWidget->setShowGrid(true); // Включаем сетку
-    // Разрешаем выделение только одного элемента
-    ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
-    // Разрешаем выделение построчно
-    ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    // Устанавливаем заголовки колонок
-    ui->tableWidget->setHorizontalHeaderLabels(headers);
-    // Обновляем ширину столбцов
-    ui->tableWidget->resizeColumnsToContents();
 }

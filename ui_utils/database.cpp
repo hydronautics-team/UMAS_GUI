@@ -1,8 +1,15 @@
 #include "database.h"
 
-DataBase::DataBase(QObject *parent) : QObject(parent)
+DataBase::DataBase(QString name,
+                   QString tableName,
+                   QString nameColumn1, QString nameColumn2, QString nameColumn3,
+                   QObject *parent) : QObject(parent)
 {
-
+    nameDB = name;
+    tableNameDB = tableName;
+    nameColumn1DB = nameColumn1;
+    nameColumn2DB = nameColumn2;
+    nameColumn3DB = nameColumn3;
 }
 
 DataBase::~DataBase()
@@ -17,7 +24,7 @@ void DataBase::connectToDataBase()
     /* Перед подключением к базе данных производим проверку на её существование.
      * В зависимости от результата производим открытие базы данных или её восстановление
      * */
-    if(!QFile("./ui_utils/" DATABASE_NAME).exists()){
+    if(!QFile("./ui_utils/" + nameDB).exists()){
         qDebug() << "createDeviceTable" << this->restoreDataBase();
     } else {
         this->openDataBase();
@@ -49,7 +56,7 @@ bool DataBase::openDataBase()
      * и имени базы данных, если она существует
      * */
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("./ui_utils/" DATABASE_NAME);
+    db.setDatabaseName("./ui_utils/" + nameDB);
     if(db.open()){
         return true;
     } else {
@@ -72,14 +79,14 @@ bool DataBase::createDeviceTable()
      * с последующим его выполнением.
      * */
     QSqlQuery query;
-    if(!query.exec( "CREATE TABLE " TABLENAME " ("
+    if(!query.exec( "CREATE TABLE " + tableNameDB + " ("
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                    TIME            " STRING     NOT NULL,"
-                    DATAIMU_MAGN_X    " FLOAT     NOT NULL,"
-                    DATAIMU_MAGN_Y    " FLOAT     NOT NULL"
+                    + nameColumn1DB +    " STRING    NOT NULL,"
+                    + nameColumn2DB +    " FLOAT     NOT NULL,"
+                    + nameColumn3DB +    " FLOAT     NOT NULL"
                     " )"
                     )){
-        qDebug() << "DataBase: error of create " << TABLENAME;
+        qDebug() << "DataBase: error of create " << tableNameDB;
         qDebug() << query.lastError().text();
         return false;
     } else {
@@ -90,24 +97,41 @@ bool DataBase::createDeviceTable()
 
 /* Метод для вставки записи в таблицу устройств
  * */
-bool DataBase::inserIntoDeviceTable(QString time, float magn_x, float magn_y)
+bool DataBase::inserIntoDeviceTable(QString str, float value1, float value2)
 {
     QSqlQuery query;
 
-    query.prepare("INSERT INTO " TABLENAME " ( " TIME ", "
-                  DATAIMU_MAGN_X ", " DATAIMU_MAGN_Y " ) "
-                  "VALUES (:Time, :Magn_x, :Magn_y)");
+    query.prepare("INSERT INTO " + tableNameDB + " ( " + nameColumn1DB + ", "
+                  + nameColumn2DB + ", " + nameColumn3DB + " ) "
+                  "VALUES (?, ?, ?)");
 
-    query.bindValue(":Time",  time);
-    query.bindValue(":Magn_x",    magn_x);
-    query.bindValue(":Magn_y",    magn_y);
+    query.addBindValue(str);
+    query.addBindValue(value1);
+    query.addBindValue(value2);
     // После чего выполняется запросом методом exec()
     if(!query.exec()){
-        qDebug() << "error insert into " << TABLENAME;
+        qDebug() << "error insert into " << tableNameDB;
         qDebug() << query.lastError().text();
         return false;
     } else {
         return true;
     }
     return false;
+}
+
+void DataBase::createTable(QTableWidget* table)
+{
+    table->setColumnCount(3); // Указываем число колонок
+    table->setShowGrid(true); // Включаем сетку
+    // Разрешаем выделение только одного элемента
+    table->setSelectionMode(QAbstractItemView::SingleSelection);
+    // Разрешаем выделение построчно
+    table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    // Устанавливаем заголовки колонок
+    table->setHorizontalHeaderLabels(QStringList() << nameColumn1DB
+                                                   << nameColumn2DB
+                                                   << nameColumn3DB
+                                     );
+    // Обновляем ширину столбцов
+    table->resizeColumnsToContents();
 }

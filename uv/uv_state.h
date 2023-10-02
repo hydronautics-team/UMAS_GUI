@@ -120,8 +120,7 @@ struct DataPressure { //структура данных с датчика дав
 
 struct DataUWB
 { //структура данных с сверхширокополосного модуля
-    float beacon_x[3];
-    float beacon_y[3];
+
     uint8_t error_code = 0;
     uint16_t connection_field = 0;
     float locationX = 0; //координата аппарата по оси X
