@@ -71,7 +71,6 @@ void Map::updateUi_map(DataUWB dataUWB)
 }
 
 void Map::addRowUWB()
-
 {
     int countRows = ui->tableWidget_listUWB->rowCount();
     if (countRows == 2)

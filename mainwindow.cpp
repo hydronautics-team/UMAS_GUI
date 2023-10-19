@@ -375,7 +375,7 @@ void MainWindow::setTab()
 
 void MainWindow::setMap()
 {
-    connect(&map, SIGNAL(sendLocationUWB(double*,double*)),
+    connect(ui->map, SIGNAL(sendLocationUWB(double*,double*)),
             this, SLOT(setLocationUWB(double*,double*)));
 }
 
@@ -406,7 +406,7 @@ void MainWindow::setUpdateUI()
             this, SLOT(updateUi_SetupMsg()));
 
     connect(this, SIGNAL(updateMap(DataUWB)),
-            &map,SLOT(updateUi_map(DataUWB)));
+            ui->map,SLOT(updateUi_map(DataUWB)));
 }
 
 void MainWindow::updateUi_Compass(float yaw) {

@@ -288,9 +288,9 @@ protected:
     Pult::PC_Protocol* pultProtocol;
 
     /*!
-     * \brief map - указатель на объект класса для обновления map.ui.
+     * \brief pult объект класса для обновления задающих воздействий
      */
-    Map map;
+    RemoteControl pult;
 
 
 };
