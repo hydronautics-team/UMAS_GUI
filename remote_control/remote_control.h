@@ -6,8 +6,9 @@
 #include <QTimer>
 #include <QDebug>
 
-
 #include "SFML/Window.hpp"
+//#include "joy_stick.h"
+//#include "key_board.h"
 
 class RemoteControl : public IControlData
 {
@@ -16,10 +17,8 @@ public:
     explicit RemoteControl();
     ~RemoteControl();
 
-    int id;
-
-public slots:
-    void updateImpact();
+    int     id;
+    QTimer *updateTimer;
 
 protected:
     sf::Joystick::Axis impactAxisMarch;
@@ -28,8 +27,6 @@ protected:
     sf::Joystick::Axis impactAxisPitch;
     sf::Joystick::Axis impactAxisYaw;
 
-private:
-    QTimer *updateTimer;
 };
 
 #endif // REMOTECONTROL_H

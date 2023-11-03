@@ -21,6 +21,9 @@
 
 #include "i_basic_data.h"
 
+#include "joy_stick.h"
+#include "key_board.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -237,6 +240,9 @@ private slots:
      */
     void updateUi_SetupMsg();
 
+    void useKeyBoard();
+    void useJoyStick();
+
 
 signals:
     /*!
@@ -268,6 +274,10 @@ protected:
      */
     QTimer *updateTimer = nullptr;
 
+    JoyStick *joyStick = nullptr;
+    KeyBoard *keyBoard = nullptr;
+    void keyPressEvent(QKeyEvent *event);
+
     /*!
      * \brief timer_off_powerMode_5 таймер переключения 5 режима питания.
      */
@@ -291,7 +301,6 @@ protected:
      * \brief pult объект класса для обновления задающих воздействий
      */
     RemoteControl pult;
-
 
 };
 #endif // MAINWINDOW_H

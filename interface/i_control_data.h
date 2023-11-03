@@ -23,6 +23,7 @@ public:
 
     bool        getCSMode();
     DataAH127C  getImuData();
+    ControlData getControlData();
 };
 
 #endif // ICONTROLDATA_H

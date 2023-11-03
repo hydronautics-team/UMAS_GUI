@@ -44,3 +44,8 @@ bool IControlData::getCSMode()
 DataAH127C IControlData::getImuData() {
     return agent.imuData;
 }
+
+ControlData IControlData::getControlData()
+{
+    return agent.control;
+}

@@ -14,6 +14,8 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Charts)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Network)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Gui)
+
 
 
 
@@ -63,6 +65,8 @@ set(PROJECT_SOURCES
         ui_utils/setupimu_check.ui
         ui_utils/database.h
         ui_utils/database.cpp
+        remote_control/key_board.h remote_control/key_board.cpp
+        remote_control/joy_stick.h remote_control/joy_stick.cpp
 )
 
 
@@ -95,7 +99,9 @@ target_link_libraries(UMAS_GUI PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Charts
     Qt${QT_VERSION_MAJOR}::Network
-    Qt${QT_VERSION_MAJOR}::Sql)
+    Qt${QT_VERSION_MAJOR}::Sql
+    Qt${QT_VERSION_MAJOR}::Gui)
+
 
 
 

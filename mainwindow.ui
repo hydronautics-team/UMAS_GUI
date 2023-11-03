@@ -2461,7 +2461,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget_2">
       <widget class="QWidget" name="page_3">
-       <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,10,0,4,0,4,0,6">
+       <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,10,0,1,0,4,0,4,0,6">
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
@@ -2481,6 +2481,59 @@
         </item>
         <item>
          <widget class="Line" name="line_90">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QRadioButton" name="radioButton_useJoyStick">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Джойстик</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButton_useKeyBoard">
+            <property name="text">
+             <string>Клавиатура</string>
+            </property>
+            <property name="autoRepeat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="Line" name="line_123">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>

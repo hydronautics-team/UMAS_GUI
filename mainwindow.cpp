@@ -35,7 +35,13 @@ void MainWindow::displayText(QString str)
 
 //
 
-void MainWindow::setTimer_updateImpact(int periodUpdateMsec){
+void MainWindow::setTimer_updateImpact(int periodUpdateMsec)
+{
+    joyStick = new JoyStick(this);
+    connect(ui->radioButton_useJoyStick, &QRadioButton::clicked,
+            this, &MainWindow::useJoyStick);
+    connect(ui->radioButton_useKeyBoard, &QRadioButton::clicked,
+            this, &MainWindow::useKeyBoard);
     QTimer *updateTimer = new QTimer(this);
     connect(
         updateTimer, SIGNAL(timeout()),
@@ -43,6 +49,39 @@ void MainWindow::setTimer_updateImpact(int periodUpdateMsec){
         );
     updateTimer->start(periodUpdateMsec);
     displayText("Таймер обновления джойстика запущен");
+}
+
+void MainWindow::useKeyBoard()
+{
+    delete joyStick;
+
+    keyBoard = new KeyBoard(this);
+    displayText("Используемые клавиши(должна быть английская раскладка):\n"
+                "Клавиша O - вперед по маршу\n"
+                "Клавиша L - назад по маршу\n"
+                "Клавиша W - вниз по дифференту\n"
+                "Клавиша S - вверх по дифференту\n"
+                "Клавиша A - влево по курсу\n"
+                "Клавиша D - вправо по курсу\n"
+                "Клавиша C - вниз по глубине\n"
+                "Клавиша V - вверх по глубине\n"
+                "Клавиша Q - влево по крену\n"
+                "Клавиша E - вправо по крену\n"
+                "Клавиша K - влево по лагу\n"
+                "Клавиша ; - вправо по лагу\n");
+
+}
+
+void MainWindow::useJoyStick()
+{
+    delete keyBoard;
+
+    joyStick = new JoyStick(this);
+}
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    keyBoard->keyPressEvent(event);
 }
 
 void MainWindow::updateUi_fromControl(){
