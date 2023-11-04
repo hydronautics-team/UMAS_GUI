@@ -16,9 +16,9 @@ class IBasicData : public QObject
 public:
     explicit IBasicData(QObject *parent = nullptr);
 
-protected:
     // Static UV_State variable, which we will be accessing
-    static UVState agent;
+    static UVState agent[1];
+    static int currentAgent;
 };
 
 #endif // IBASICDATA_H

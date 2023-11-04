@@ -19,13 +19,13 @@ public:
      * \brief generateFullMessage метод формирование посылки на агента.
      * \return сформированная к отправке посылка.
      */
-    FromPult generateFullMessage();
+    FromPult generateFullMessage(int nmbAgent);
 
     /*!
      * \brief parseFullMessage метод распоковки посылки от агента.
      * \param message посылка от агента.
      */
-    void parseFullMessage(ToPult message);
+    void parseFullMessage(ToPult message, int nmbAgent);
 };
 
 #endif // ISERVERDATA_H

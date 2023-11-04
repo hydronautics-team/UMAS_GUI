@@ -6,46 +6,51 @@ IControlData::IControlData() :
 }
 
 void IControlData::setControlData(ControlData data) {
-    agent.control = data;
+    agent[getCurrentAgent()].control = data;
 }
 
 void IControlData::setMarch(double march) {
-    agent.control.march = march;
+    agent[getCurrentAgent()].control.march = march;
 }
 
 void IControlData::setLag(double lag) {
-    agent.control.lag = lag;
+    agent[getCurrentAgent()].control.lag = lag;
 }
 
 void IControlData::setDepth(double depth) {
-    agent.control.depth = depth;
+    agent[getCurrentAgent()].control.depth = depth;
 }
 
 void IControlData::setRoll(double roll) {
-    agent.control.roll = roll;
+    agent[getCurrentAgent()].control.roll = roll;
 }
 
 void IControlData::setPitch(double pitch) {
-    agent.control.pitch = pitch;
+    agent[getCurrentAgent()].control.pitch = pitch;
 }
 
 void IControlData::setYaw(double yaw) {
-    agent.control.yaw = yaw;
+    agent[getCurrentAgent()].control.yaw = yaw;
+}
+
+int IControlData::getCurrentAgent()
+{
+    return currentAgent;
 }
 
 bool IControlData::getCSMode()
 {
-    if (agent.cSMode == e_CSMode::MODE_AUTOMATED)
+    if (agent[getCurrentAgent()].cSMode == e_CSMode::MODE_AUTOMATED)
         return true;
     else
         return false;
 }
 
 DataAH127C IControlData::getImuData() {
-    return agent.imuData;
+    return agent[getCurrentAgent()].imuData;
 }
 
 ControlData IControlData::getControlData()
 {
-    return agent.control;
+    return agent[getCurrentAgent()].control;
 }

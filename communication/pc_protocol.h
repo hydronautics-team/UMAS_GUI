@@ -34,7 +34,7 @@ public slots:
         timer->stop();
     }
     void sendData(){
-        send_data = uv_server.generateFullMessage();
+        send_data = uv_server.generateFullMessage(0);
         udpProtocol->send_data = send_data;
         udpProtocol->sendData();
     }
@@ -42,7 +42,7 @@ public slots:
     void receiveData(){
         udpProtocol->receiveData();
         rec_data = udpProtocol->rec_data;
-        uv_server.parseFullMessage(rec_data);
+        uv_server.parseFullMessage(rec_data, 0);
         emit dataReceived();
     }
 public:

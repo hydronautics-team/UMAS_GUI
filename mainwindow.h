@@ -99,6 +99,8 @@ private:
      */
     void setBottom_setupIMU_check();
 
+    void setBottom_selectAgent();
+
     /*!
      * \brief setTab устанавливает названия вкладкам.
      */
@@ -242,6 +244,9 @@ private slots:
 
     void useKeyBoard();
     void useJoyStick();
+
+    void pushButton_selectAgent1(bool stateBottom);
+    void pushButton_selectAgent2(bool stateBottom);
 
 
 signals:

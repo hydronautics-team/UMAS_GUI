@@ -7,20 +7,25 @@ IUserInterfaceData::IUserInterfaceData() : IBasicData()
 
 // set-функции
 
+void IUserInterfaceData::setCurrentAgent(int newAgent)
+{
+    currentAgent = newAgent;
+}
+
 void IUserInterfaceData::setFlagAH127C_pult(FlagAH127C_pult flagAH127C_pult)
 {
-    agent.flagAH127C_pult = flagAH127C_pult;
+    agent[getCurrentAgent()].flagAH127C_pult = flagAH127C_pult;
 }
 
 void IUserInterfaceData::setPowerMode(power_Mode mode) {
-    agent.pMode = mode;
+    agent[getCurrentAgent()].pMode = mode;
     displayText_toConsole("Включен " + QString::number(static_cast<int>(mode) + 2) + " режим питания");
 }
 
 void IUserInterfaceData::setControlContoursFlags(e_StabilizationContours contour, bool value) {
     switch (contour) {
     case e_StabilizationContours::CONTOUR_DEPTH:
-        agent.controlContoursFlags.depth = value;
+        agent[getCurrentAgent()].controlContoursFlags.depth = value;
         if (value)
             emit displayText_toConsole("Контур глубины замкнут");
         else
@@ -28,7 +33,7 @@ void IUserInterfaceData::setControlContoursFlags(e_StabilizationContours contour
         break;
 
     case e_StabilizationContours::CONTOUR_LAG:
-        agent.controlContoursFlags.lag = value;
+        agent[getCurrentAgent()].controlContoursFlags.lag = value;
         if (value){
             emit displayText_toConsole("Контур лага замкнут");
         }else
@@ -36,7 +41,7 @@ void IUserInterfaceData::setControlContoursFlags(e_StabilizationContours contour
         break;
 
     case e_StabilizationContours::CONTOUR_MARCH:
-        agent.controlContoursFlags.march = value;
+        agent[getCurrentAgent()].controlContoursFlags.march = value;
         if (value)
             emit displayText_toConsole("Контур марша замкнут");
         else
@@ -44,7 +49,7 @@ void IUserInterfaceData::setControlContoursFlags(e_StabilizationContours contour
         break;
 
     case e_StabilizationContours::CONTOUR_PITCH:
-        agent.controlContoursFlags.pitch = value;
+        agent[getCurrentAgent()].controlContoursFlags.pitch = value;
         if (value)
             emit displayText_toConsole("Контур дифферента замкнут");
         else
@@ -52,7 +57,7 @@ void IUserInterfaceData::setControlContoursFlags(e_StabilizationContours contour
         break;
 
     case e_StabilizationContours::CONTOUR_ROLL:
-        agent.controlContoursFlags.roll = value;
+        agent[getCurrentAgent()].controlContoursFlags.roll = value;
         if (value)
             emit displayText_toConsole("Контур крена замкнут");
         else
@@ -60,7 +65,7 @@ void IUserInterfaceData::setControlContoursFlags(e_StabilizationContours contour
         break;
 
     case e_StabilizationContours::CONTOUR_YAW:
-        agent.controlContoursFlags.yaw = value;
+        agent[getCurrentAgent()].controlContoursFlags.yaw = value;
         if (value)
             emit displayText_toConsole("Контур курса замкнут");
         else
@@ -70,7 +75,7 @@ void IUserInterfaceData::setControlContoursFlags(e_StabilizationContours contour
 }
 
 void IUserInterfaceData::setCSMode(e_CSMode mode) {
-    agent.cSMode = mode;
+    agent[getCurrentAgent()].cSMode = mode;
     if (static_cast<int>(mode))
         emit displayText_toConsole("Включен автоматизированный режим");
     else
@@ -78,7 +83,7 @@ void IUserInterfaceData::setCSMode(e_CSMode mode) {
 }
 
 void IUserInterfaceData::setModeSelection(bool mode) {
-    agent.modeAUV_selection = mode;
+    agent[getCurrentAgent()].modeAUV_selection = mode;
     if (static_cast<int>(mode))
         emit displayText_toConsole("Установлен вывод данных на модель");
     else
@@ -87,76 +92,81 @@ void IUserInterfaceData::setModeSelection(bool mode) {
 
 void IUserInterfaceData::setDataPultUWB(PultUWB pultUWB)
 {
-    agent.pultUWB = pultUWB;
+    agent[getCurrentAgent()].pultUWB = pultUWB;
 }
 
 // get-функции
 
+int IUserInterfaceData::getCurrentAgent()
+{
+    return currentAgent;
+}
+
 int IUserInterfaceData::getChecksumMsgAgentSend() {
-    return agent.checksum_msg_agent_send;
+    return agent[getCurrentAgent()].checksum_msg_agent_send;
 }
 
 int IUserInterfaceData::getChecksumMsgGuiSend() {
-    return agent.checksum_msg_gui_send;
+    return agent[getCurrentAgent()].checksum_msg_gui_send;
 }
 
 int IUserInterfaceData::getChecksumMsgGuiReceived() {
-    return agent.checksum_msg_gui_received;
+    return agent[getCurrentAgent()].checksum_msg_gui_received;
 }
 
 ControlContoursFlags IUserInterfaceData::getControlContoursFlags()
 {
-    return agent.controlContoursFlags;
+    return agent[getCurrentAgent()].controlContoursFlags;
 }
 
 bool IUserInterfaceData::getModeSelection()
 {
-    return agent.modeAUV_selection;
+    return agent[getCurrentAgent()].modeAUV_selection;
 }
 
 FlagAH127C_bort IUserInterfaceData::getFlagAH127C_bort()
 {
-    return agent.flagAH127C_bort;
+    return agent[getCurrentAgent()].flagAH127C_bort;
 }
 
 FlagAH127C_pult IUserInterfaceData::getFlagAH127C_pult()
 {
-    return agent.flagAH127C_pult;
+    return agent[getCurrentAgent()].flagAH127C_pult;
 }
 
 power_Mode IUserInterfaceData::getPowerMode()
 {
-    return agent.pMode;
+    return agent[getCurrentAgent()].pMode;
 }
 
 bool IUserInterfaceData::getCSMode()
 {
-    if (agent.cSMode == e_CSMode::MODE_AUTOMATED)
+    if (agent[getCurrentAgent()].cSMode == e_CSMode::MODE_AUTOMATED)
         return true;
     else
         return false;
 }
 
 ControlData IUserInterfaceData::getControlData() {
-    return agent.control;
+    return agent[getCurrentAgent()].control;
 }
 
 DataAH127C IUserInterfaceData::getImuData() {
-    return agent.imuData;
+    return agent[getCurrentAgent()].imuData;
 }
 
 Header IUserInterfaceData::getHeader() {
-    return agent.header;
+    return agent[getCurrentAgent()].header;
 }
 
 AUVCurrentData IUserInterfaceData::getAUVCurrentData() {
-    return agent.auvData;
+    return agent[getCurrentAgent()].auvData;
 }
 
 DataPressure IUserInterfaceData::getDataPressure() {
-    return agent.dataPressure;
+    return agent[getCurrentAgent()].dataPressure;
 }
 
 DataUWB IUserInterfaceData::getDataUWB() {
-    return agent.dataUWB;
+    return agent[getCurrentAgent()].dataUWB;
 }

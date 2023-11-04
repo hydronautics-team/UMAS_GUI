@@ -111,6 +111,7 @@ void MainWindow::setBottom()
     setBottom_modeSelection();
     setBottom_setupIMU();
     setBottom_setupIMU_check();
+    setBottom_selectAgent();
 }
 
 void MainWindow::setBottom_mode()
@@ -391,6 +392,35 @@ void MainWindow::setBottom_setupIMU_check()
     connect(
         ui->pushButton_setupIMU_check, SIGNAL(clicked()),
         this, SLOT(getWindow_setupIMU_check()));
+}
+
+void MainWindow::setBottom_selectAgent()
+{
+    ui->pushButton_selectAgent1->setCheckable(true);
+    ui->pushButton_selectAgent2->setCheckable(true);
+    QButtonGroup *buttonGroup_selectAgent = new QButtonGroup(this);
+    buttonGroup_selectAgent->addButton(ui->pushButton_selectAgent1);
+    buttonGroup_selectAgent->addButton(ui->pushButton_selectAgent2);
+    buttonGroup_selectAgent->setExclusive(true);
+
+    ui->pushButton_selectAgent1->setChecked(true);
+
+    connect(ui->pushButton_selectAgent1, &QAbstractButton::toggled,
+            this, &MainWindow::pushButton_selectAgent1);
+    connect(ui->pushButton_selectAgent2, &QAbstractButton::toggled,
+            this, &MainWindow::pushButton_selectAgent2);
+}
+
+void MainWindow::pushButton_selectAgent1(bool stateBottom)
+{
+    if (stateBottom)
+        uv_interface.setCurrentAgent(0);
+}
+
+void MainWindow::pushButton_selectAgent2(bool stateBottom)
+{
+    if (stateBottom)
+        uv_interface.setCurrentAgent(1);
 }
 
 void MainWindow::getWindow_setupIMU_check()
