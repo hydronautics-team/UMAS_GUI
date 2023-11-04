@@ -170,3 +170,8 @@ DataPressure IUserInterfaceData::getDataPressure() {
 DataUWB IUserInterfaceData::getDataUWB() {
     return agent[getCurrentAgent()].dataUWB;
 }
+
+DataUWB IUserInterfaceData::getDataUWB(int selectAgent)
+{
+    return agent[selectAgent].dataUWB;
+}

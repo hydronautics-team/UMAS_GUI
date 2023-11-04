@@ -43,6 +43,7 @@ public:
     AUVCurrentData          getAUVCurrentData();
     DataPressure            getDataPressure();
     DataUWB                 getDataUWB();
+    DataUWB                 getDataUWB(int selectAgent);
 };
 
 #endif // IUSERINTERFACEDATA_H

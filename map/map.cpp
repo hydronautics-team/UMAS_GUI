@@ -29,7 +29,8 @@ void Map::createPlot()
 {
     beacon = new QScatterSeries();
 
-    agentCoords = new QScatterSeries();
+    agent1Coords = new QScatterSeries();
+    agent2Coords = new QScatterSeries();
 
     circle1 = new QLineSeries();
     circle1->setColor(QColor(0, 0, 255));
@@ -43,7 +44,8 @@ void Map::createPlot()
     chart->addSeries(circle1);
     chart->addSeries(circle2);
     chart->addSeries(circle3);
-    chart->addSeries(agentCoords);
+    chart->addSeries(agent1Coords);
+    chart->addSeries(agent2Coords);
     chart->createDefaultAxes();
     chart->axes(Qt::Vertical).first()->setRange(-50,100);
     chart->axes(Qt::Vertical).first()->setTitleText("Y, см");
@@ -59,7 +61,7 @@ void Map::createPlot()
 
 void Map::updateUi_map(DataUWB dataUWB)
 {
-    drawCurrentCoords(dataUWB.locationX, dataUWB.locationY);
+    drawCurrent1Coords(dataUWB.locationX, dataUWB.locationY);
 
     range[0] = dataUWB.distanceToBeacon[0];
     range[1] = dataUWB.distanceToBeacon[1];
@@ -68,6 +70,11 @@ void Map::updateUi_map(DataUWB dataUWB)
     drawCircle(circle1, 0, range[0]);
     drawCircle(circle2, 1, range[1]);
     drawCircle(circle3, 2, range[2]);
+}
+
+void Map::updateUi_map2(DataUWB dataUWB)
+{
+    drawCurrent2Coords(dataUWB.locationX, dataUWB.locationY);
 }
 
 void Map::addRowUWB()
@@ -124,10 +131,16 @@ void Map::drawCircle(QLineSeries *circle, int index, double R)
     }
 }
 
-void Map::drawCurrentCoords(double x, double y)
+void Map::drawCurrent1Coords(double x, double y)
 {
-    agentCoords->clear();
-    agentCoords->append(x,y);
+    agent1Coords->clear();
+    agent1Coords->append(x,y);
+}
+
+void Map::drawCurrent2Coords(double x, double y)
+{
+    agent2Coords->clear();
+    agent2Coords->append(x,y);
 }
 
 Map::~Map()

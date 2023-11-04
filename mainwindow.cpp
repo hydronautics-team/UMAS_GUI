@@ -313,15 +313,21 @@ void MainWindow::setConnection()
     ui->pushButton_breakConnection->setEnabled(true);
 
 
-    pultProtocol = new Pult::PC_Protocol(QHostAddress("192.168.1.173"), 13051,
-                                         QHostAddress("192.168.1.182"), 13050, 10);
+    communicationAgent1 = new Pult::PC_Protocol(QHostAddress("192.168.1.173"), 13051,
+                                                QHostAddress("192.168.1.182"), 13050, 10);
+    communicationAgent2 = new Pult::PC_Protocol(QHostAddress("192.168.1.173"), 13053,
+                                                QHostAddress("192.168.1.182"), 13052, 10);
 
-    pultProtocol->startExchange();
+    communicationAgent1->startExchange();
+    communicationAgent2->startExchange();
 
-    if (pultProtocol->bindState()) {
+    if (communicationAgent1->bindState() || communicationAgent2->bindState()) {
         displayText("Соединение установлено");
-        connect(pultProtocol, SIGNAL(dataReceived()),
-                this, SLOT(updateUi_fromAgent()));
+
+        connect(communicationAgent1, SIGNAL(dataReceived()),
+                this, SLOT(updateUi_fromAgent1()));
+        connect(communicationAgent2, SIGNAL(dataReceived()),
+                this, SLOT(updateUi_fromAgent2()));
     } else {
         ui->pushButton_connection->setEnabled(true);
         ui->pushButton_breakConnection->setEnabled(false);
@@ -329,7 +335,7 @@ void MainWindow::setConnection()
     }
 }
 
-void MainWindow::updateUi_fromAgent() {
+void MainWindow::updateUi_fromAgent1() {
     DataAH127C imuData = uv_interface.getImuData();
     DataUWB dataUWB = uv_interface.getDataUWB();
 
@@ -339,14 +345,20 @@ void MainWindow::updateUi_fromAgent() {
     emit updateMap(dataUWB);
 }
 
+void MainWindow::updateUi_fromAgent2()
+{
+    DataUWB dataUWB_agent2 = uv_interface.getDataUWB(1);
+    emit updateMapForAgent2(dataUWB_agent2);
+}
+
 void MainWindow::breakConnection()
 {
     ui->pushButton_connection->setEnabled(true);
 
     displayText("Соединение разорвано");
-    pultProtocol->stopExhange();
+    communicationAgent1->stopExhange();
 
-    delete pultProtocol;
+    delete communicationAgent1;
 
     ui->pushButton_breakConnection->setEnabled(false);
 }
@@ -413,14 +425,18 @@ void MainWindow::setBottom_selectAgent()
 
 void MainWindow::pushButton_selectAgent1(bool stateBottom)
 {
-    if (stateBottom)
+    if (stateBottom){
         uv_interface.setCurrentAgent(0);
+        displayText("Установлен ввод и вывод данных с агента 1");
+    }
 }
 
 void MainWindow::pushButton_selectAgent2(bool stateBottom)
 {
-    if (stateBottom)
+    if (stateBottom){
         uv_interface.setCurrentAgent(1);
+        displayText("Установлен ввод и вывод данных с агента 2");
+    }
 }
 
 void MainWindow::getWindow_setupIMU_check()
@@ -476,6 +492,8 @@ void MainWindow::setUpdateUI()
 
     connect(this, SIGNAL(updateMap(DataUWB)),
             ui->map,SLOT(updateUi_map(DataUWB)));
+    connect(this, SIGNAL(updateMapForAgent2(DataUWB)),
+            ui->map,SLOT(updateUi_map2(DataUWB)));
 }
 
 void MainWindow::updateUi_Compass(float yaw) {

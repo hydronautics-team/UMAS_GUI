@@ -203,9 +203,11 @@ private slots:
      */
     void setConnection();
     /*!
-     * \brief updateUi_fromAgent слот вызова сигналов обновления UI формы.
+     * \brief updateUi_fromAgent1 слот вызова сигналов обновления UI формы.
      */
-    void updateUi_fromAgent();
+    void updateUi_fromAgent1();
+    void updateUi_fromAgent2();
+
     /*!
      * \brief breakConnection слот разрыва соединения.
      */
@@ -267,6 +269,7 @@ signals:
     void updateSetupMsg();
 
     void updateMap(DataUWB dataUWB);
+    void updateMapForAgent2(DataUWB dataUWB_agent2);
 
 protected:
     /*!
@@ -298,9 +301,12 @@ protected:
      */
     IUserInterfaceData uv_interface;
     /*!
-     * \brief pultProtocol указатель на объект класса для UDP соединения.
+     * \brief communicationAgent1 указатель на объект класса для UDP соединения.
      */
-    Pult::PC_Protocol* pultProtocol;
+    Pult::PC_Protocol   *communicationAgent1;
+
+    Pult::PC_Protocol   *communicationAgent2;
+
 
     /*!
      * \brief pult объект класса для обновления задающих воздействий

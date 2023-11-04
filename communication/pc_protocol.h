@@ -22,6 +22,7 @@ explicit PC_Protocol(QHostAddress _receiverIP, int _receiverPort, QHostAddress _
     set_port_receiver(udpProtocol->port_receiver());
     set_port_sender (udpProtocol->port_sender());
 }
+    int nmbAgent;
 signals:
     void dataReceived();
 public slots:
@@ -34,7 +35,7 @@ public slots:
         timer->stop();
     }
     void sendData(){
-        send_data = uv_server.generateFullMessage(0);
+        send_data = uv_server.generateFullMessage(nmbAgent);
         udpProtocol->send_data = send_data;
         udpProtocol->sendData();
     }
@@ -42,7 +43,7 @@ public slots:
     void receiveData(){
         udpProtocol->receiveData();
         rec_data = udpProtocol->rec_data;
-        uv_server.parseFullMessage(rec_data, 0);
+        uv_server.parseFullMessage(rec_data, nmbAgent);
         emit dataReceived();
     }
 public:

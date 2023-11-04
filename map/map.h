@@ -45,7 +45,9 @@ public:
      * \param x координата агента по оси X.
      * \param y координата агента по оси Y.
      */
-    void drawCurrentCoords(double x, double y);
+    void drawCurrent1Coords(double x, double y);
+
+    void drawCurrent2Coords(double x, double y);
 
 protected:
     /*!
@@ -69,7 +71,8 @@ protected:
     QChartView *chartView = nullptr;
     QChart *chart = nullptr;
     QScatterSeries *beacon = nullptr;
-    QScatterSeries *agentCoords = nullptr;
+    QScatterSeries *agent1Coords = nullptr;
+    QScatterSeries *agent2Coords = nullptr;
     QLineSeries *circle1 = nullptr;
     QLineSeries *circle2 = nullptr;
     QLineSeries *circle3 = nullptr;
@@ -87,6 +90,7 @@ public slots:
      * \param dataUWB структура с информацией об расположении агента.
      */
     void updateUi_map(DataUWB dataUWB);
+    void updateUi_map2(DataUWB dataUWB);
 
     /*!
      * \brief addRowUWB слот добавления строк и цветов модулей в таблицу.
