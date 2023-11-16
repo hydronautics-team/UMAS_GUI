@@ -17,7 +17,7 @@ enum class e_CSMode : quint8 {
  * \brief e_StabilizationContours enum класс для работы с замыканием и
  *  размыканием контуров управления.
  */
-enum class e_StabilizationContours: unsigned char {
+enum class e_StabilizationContours : unsigned char {
     CONTOUR_DEPTH = 0,
     CONTOUR_MARCH,
     CONTOUR_LAG,

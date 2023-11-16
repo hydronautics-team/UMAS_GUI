@@ -11,16 +11,17 @@ class PC_Protocol: public QObject, public MetaUdpProtocol {
     Q_OBJECT
 public:
 explicit PC_Protocol(QHostAddress _receiverIP, int _receiverPort, QHostAddress _senderIP, \
-                         int _senderPort, int freq, QObject *parent = 0)
+                         int _senderPort, int freq, int selectAgent, QObject *parent = 0)
 {
     udpProtocol = new UdpProtocol <ToPult, FromPult> (_receiverIP, _receiverPort, _senderIP, _senderPort, \
-                                                    freq, parent);
+                                                    freq, selectAgent, parent);
     connect(timer,SIGNAL(timeout()),SLOT(sendData()));
     connect(udpProtocol->getReceiveSocket(),SIGNAL(readyRead()),SLOT(receiveData()));
     set_ip_receiver(udpProtocol->ip_receiver());
     set_ip_sender (udpProtocol->ip_sender());
     set_port_receiver(udpProtocol->port_receiver());
     set_port_sender (udpProtocol->port_sender());
+    nmbAgent = selectAgent;
 }
     int nmbAgent;
 signals:

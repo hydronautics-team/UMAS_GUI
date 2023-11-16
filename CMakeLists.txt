@@ -16,9 +16,6 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Network)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Gui)
 
-
-
-
 include_directories("${PROJECT_SOURCE_DIR}/compass")
 include_directories("${PROJECT_SOURCE_DIR}/remote_control")
 include_directories("${PROJECT_SOURCE_DIR}/uv")

@@ -9,6 +9,8 @@ FromPult IServerData::generateFullMessage(int nmbAgent) {
     FromPult data;
 
     data.controlData = agent[nmbAgent].control;
+    qDebug() << "nmbAgent = " << nmbAgent;
+    qDebug() << "yaw = " << data.controlData.yaw;
     data.cSMode = agent[nmbAgent].cSMode;
     data.pultUWB = agent[nmbAgent].pultUWB;
     data.controlContoursFlags = agent[nmbAgent].controlContoursFlags;

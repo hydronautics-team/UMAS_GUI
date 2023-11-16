@@ -312,11 +312,10 @@ void MainWindow::setConnection()
     ui->pushButton_connection->setEnabled(false);
     ui->pushButton_breakConnection->setEnabled(true);
 
-
-    communicationAgent1 = new Pult::PC_Protocol(QHostAddress("192.168.1.173"), 13051,
-                                                QHostAddress("192.168.1.182"), 13050, 10);
-    communicationAgent2 = new Pult::PC_Protocol(QHostAddress("192.168.1.173"), 13053,
-                                                QHostAddress("192.168.1.182"), 13052, 10);
+    communicationAgent2 = new Pult::PC_Protocol(QHostAddress("192.168.1.146"), 13053,
+                                                QHostAddress("192.168.1.72"), 13052, 10, 0);
+    communicationAgent1 = new Pult::PC_Protocol(QHostAddress("192.168.1.146"), 13051,
+                                                QHostAddress("192.168.1.11"), 13050, 10, 1);
 
     communicationAgent1->startExchange();
     communicationAgent2->startExchange();
@@ -332,6 +331,21 @@ void MainWindow::setConnection()
         ui->pushButton_connection->setEnabled(true);
         ui->pushButton_breakConnection->setEnabled(false);
         displayText("Попробуйте снова");
+    }
+
+    if (communicationAgent1->bindState()){
+        ui->pushButton_selectAgent1->setStyleSheet("background-color: green");
+        displayText("Соединение c 1 агентом установлено");
+    } else {
+        ui->pushButton_selectAgent1->setStyleSheet("background-color: red");
+        displayText("Соединение c 1 агентом не установлено");
+    }
+    if (communicationAgent2->bindState()){
+        ui->pushButton_selectAgent2->setStyleSheet("background-color: green");
+        displayText("Соединение c 2 агентом установлено");
+    } else {
+        ui->pushButton_selectAgent2->setStyleSheet("background-color: red");
+        displayText("Соединение c 2 агентом не установлено");
     }
 }
 
