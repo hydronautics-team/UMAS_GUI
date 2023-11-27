@@ -78,6 +78,8 @@ private:
      *  связанные с автоматическим режимом управления.
      */
     void setBottom_modeAutomatic();
+
+
     /*!
      * \brief setBottom_powerMode устанавливает кнопки и слоты,
      *  связанные с режимами питания.
@@ -128,6 +130,8 @@ private slots:
      * \param str является выводимой строкой.
      */
     void displayText(QString str);
+
+    void test_automatic_after();
 
     /*!
      * \brief setLocationUWB слот записи данных о месторасположении

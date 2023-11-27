@@ -106,6 +106,7 @@ void MainWindow::setBottom()
 {
     setBottom_mode();
     setBottom_modeAutomated();
+    setBottom_modeAutomatic();
     setBottom_powerMode();
     setBottom_connection();
     setBottom_modeSelection();
@@ -152,10 +153,19 @@ void MainWindow::e_CSModeAutomatedToggled() {
 void MainWindow::e_CSModeAutomaticToggled()
 {
     uv_interface.setCSMode(e_CSMode::MODE_AUTOMATIC);
+    ui->stackedWidget_mode->setCurrentIndex(1);
 }
 
 void MainWindow::setBottom_modeAutomatic()
 {
+    connect(
+        ui->pushButton_after, SIGNAL(clicked()),
+        this, SLOT(test_automatic_after()));
+}
+
+void MainWindow::test_automatic_after()
+{
+    ui->stackedWidget_mode->setCurrentIndex(0);
 }
 
 void MainWindow::setBottom_modeAutomated()
