@@ -76,10 +76,17 @@ void IUserInterfaceData::setControlContoursFlags(e_StabilizationContours contour
 
 void IUserInterfaceData::setCSMode(e_CSMode mode) {
     agent[getCurrentAgent()].cSMode = mode;
-    if (static_cast<int>(mode))
-        emit displayText_toConsole("Включен автоматизированный режим");
-    else
+    switch (static_cast<int>(mode)) {
+    case 0:
         emit displayText_toConsole("Включен ручной режим");
+        break;
+    case 1:
+        emit displayText_toConsole("Включен автоматизированный режим");
+        break;
+    case 2:
+        emit displayText_toConsole("Включен автоматический режим");
+        break;
+    }
 }
 
 void IUserInterfaceData::setModeSelection(bool mode) {

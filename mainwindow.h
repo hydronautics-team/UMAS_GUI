@@ -70,9 +70,14 @@ private:
     void setBottom_mode();
     /*!
      * \brief setBottom_modeAutomated устанавливает кнопки и слоты,
-     *  связанные с автоматическим режимом управления.
+     *  связанные с автоматизированным режимом управления.
      */
     void setBottom_modeAutomated();
+    /*!
+     * \brief setBottom_modeAutomatic устанавливает кнопки и слоты,
+     *  связанные с автоматическим режимом управления.
+     */
+    void setBottom_modeAutomatic();
     /*!
      * \brief setBottom_powerMode устанавливает кнопки и слоты,
      *  связанные с режимами питания.
@@ -144,10 +149,15 @@ private slots:
      */
     void e_CSModeManualToggled();
     /*!
-     * \brief e_CSModeAutomatedToggled слот для установки автоматического
+     * \brief e_CSModeAutomatedToggled слот для установки автоматизированного
      *  режима управления.
      */
     void e_CSModeAutomatedToggled();
+    /*!
+     * \brief e_CSModeAutomaticToggled слот для установки автоматического
+     *  режима управления.
+     */
+    void e_CSModeAutomaticToggled();
 
     /*!
      * \brief stabilizeYawToggled слот для переключения канала курса.
@@ -174,6 +184,12 @@ private slots:
      * \param state состояние нажатия кнопки.
      */
     void stabilizeLagToggled(bool state);
+
+    /*!
+     * \brief stabilizeDepthToggled слот для переключения канала глубины.
+     * \param state состояние нажатия кнопки.
+     */
+    void stabilizeDepthToggled(bool state);
 
     /*!
      * \brief pushButton_on_powerMode_2 слот установки 2 режима питания.

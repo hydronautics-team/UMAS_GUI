@@ -26,6 +26,7 @@ protected:
     sf::Joystick::Axis impactAxisRoll;
     sf::Joystick::Axis impactAxisPitch;
     sf::Joystick::Axis impactAxisYaw;
+    sf::Joystick::Axis impactAxisLag;
 
 };
 

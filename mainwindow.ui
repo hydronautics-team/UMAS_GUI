@@ -3114,7 +3114,7 @@
          </widget>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout" stretch="5,1,5,4">
+         <layout class="QVBoxLayout" name="verticalLayout" stretch="5,1,5,4,1,5">
           <item>
            <widget class="QPushButton" name="pushButton_modeManual">
             <property name="sizePolicy">
@@ -3230,7 +3230,46 @@
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_modeAutomated_depth">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>z</string>
+              </property>
+             </widget>
+            </item>
            </layout>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_modeAutomatic">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Автоматический</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>

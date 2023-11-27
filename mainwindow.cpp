@@ -118,9 +118,11 @@ void MainWindow::setBottom_mode()
 {
     ui->pushButton_modeManual->setCheckable(true);
     ui->pushButton_modeAutomated->setCheckable(true);
+    ui->pushButton_modeAutomatic->setCheckable(true);
     QButtonGroup *mode = new QButtonGroup(this);
     mode->addButton(ui->pushButton_modeManual);
     mode->addButton(ui->pushButton_modeAutomated);
+    mode->addButton(ui->pushButton_modeAutomatic);
     mode->setExclusive(true);
 
     ui->pushButton_modeManual->setChecked(true);
@@ -133,6 +135,10 @@ void MainWindow::setBottom_mode()
     connect(
         ui->pushButton_modeAutomated, SIGNAL(clicked()),
         this, SLOT(e_CSModeAutomatedToggled()));
+
+    connect(
+        ui->pushButton_modeAutomatic, SIGNAL(clicked()),
+        this, SLOT(e_CSModeAutomaticToggled()));
 }
 
 void MainWindow::e_CSModeManualToggled() {
@@ -143,6 +149,15 @@ void MainWindow::e_CSModeAutomatedToggled() {
     uv_interface.setCSMode(e_CSMode::MODE_AUTOMATED);
 }
 
+void MainWindow::e_CSModeAutomaticToggled()
+{
+    uv_interface.setCSMode(e_CSMode::MODE_AUTOMATIC);
+}
+
+void MainWindow::setBottom_modeAutomatic()
+{
+}
+
 void MainWindow::setBottom_modeAutomated()
 {
     ui->pushButton_modeAutomated_march->setCheckable(true);
@@ -150,12 +165,14 @@ void MainWindow::setBottom_modeAutomated()
     ui->pushButton_modeAutomated_psi->setCheckable(true);
     ui->pushButton_modeAutomated_tetta->setCheckable(true);
     ui->pushButton_modeAutomated_gamma->setCheckable(true);
+    ui->pushButton_modeAutomated_depth->setCheckable(true);
     QButtonGroup *modeAutomated = new QButtonGroup(this);
     modeAutomated->addButton(ui->pushButton_modeAutomated_march);
     modeAutomated->addButton(ui->pushButton_modeAutomated_lag);
     modeAutomated->addButton(ui->pushButton_modeAutomated_psi);
     modeAutomated->addButton(ui->pushButton_modeAutomated_tetta);
     modeAutomated->addButton(ui->pushButton_modeAutomated_gamma);
+    modeAutomated->addButton(ui->pushButton_modeAutomated_depth);
     modeAutomated->setExclusive(false);
 
     ui->pushButton_modeAutomated_gamma->setChecked(true);
@@ -163,6 +180,7 @@ void MainWindow::setBottom_modeAutomated()
     ui->pushButton_modeAutomated_march->setChecked(true);
     ui->pushButton_modeAutomated_psi->setChecked(true);
     ui->pushButton_modeAutomated_tetta->setChecked(true);
+    ui->pushButton_modeAutomated_depth->setChecked(true);
 
     connect(
         ui->pushButton_modeAutomated_gamma, SIGNAL(toggled(bool)),
@@ -183,6 +201,10 @@ void MainWindow::setBottom_modeAutomated()
     connect(
         ui->pushButton_modeAutomated_tetta, SIGNAL(toggled(bool)),
         this, SLOT(stabilizePitchToggled(bool)));
+
+    connect(
+        ui->pushButton_modeAutomated_depth, SIGNAL(toggled(bool)),
+        this, SLOT(stabilizeDepthToggled(bool)));
 }
 
 void MainWindow::stabilizeRollToggled(bool state) {
@@ -203,6 +225,10 @@ void MainWindow::stabilizeYawToggled(bool state) {
 
 void MainWindow::stabilizePitchToggled(bool state) {
     uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_PITCH, state);
+}
+
+void MainWindow::stabilizeDepthToggled(bool state) {
+    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_DEPTH, state);
 }
 
 void MainWindow::setBottom_powerMode()
