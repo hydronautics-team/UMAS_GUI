@@ -25,6 +25,7 @@ public:
     void    setCSMode(e_CSMode mode);
     void    setModeSelection(bool mode);
     void    setDataPultUWB(PultUWB pultUWB);
+    void    setMissionControl(mission_Control missionControl);
 
 
     int                     getCurrentAgent();
@@ -44,6 +45,7 @@ public:
     DataPressure            getDataPressure();
     DataUWB                 getDataUWB();
     DataUWB                 getDataUWB(int selectAgent);
+    mission_Status          getMissionStatus();
 };
 
 #endif // IUSERINTERFACEDATA_H

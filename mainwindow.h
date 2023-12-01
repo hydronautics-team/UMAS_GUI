@@ -270,6 +270,13 @@ private slots:
     void pushButton_selectAgent1(bool stateBottom);
     void pushButton_selectAgent2(bool stateBottom);
 
+    void slot_pushButton_missionControl_modeIdle();
+    void slot_pushButton_missionControl_modeStart();
+    void slot_pushButton_missionControl_modeCancel();
+    void slot_pushButton_missionControl_modeStop();
+    void slot_pushButton_missionControl_modeComplete();
+
+    void updateUi_DataMission();
 
 signals:
     /*!
@@ -287,6 +294,8 @@ signals:
      *  данных на UI форме.
      */
     void updateSetupMsg();
+
+    void updateDataMission();
 
     void updateMap(DataUWB dataUWB);
     void updateMapForAgent2(DataUWB dataUWB_agent2);

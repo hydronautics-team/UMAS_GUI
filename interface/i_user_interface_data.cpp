@@ -102,6 +102,28 @@ void IUserInterfaceData::setDataPultUWB(PultUWB pultUWB)
     agent[getCurrentAgent()].pultUWB = pultUWB;
 }
 
+void IUserInterfaceData::setMissionControl(mission_Control missionControl)
+{
+    agent[getCurrentAgent()].missionControl = missionControl;
+    switch (static_cast<int>(missionControl)) {
+    case 0:
+        emit displayText_toConsole("Включен режим ожидания команд в автоматическом режиме");
+        break;
+    case 1:
+        emit displayText_toConsole("Отправлен запрос на выполнение миссии");
+        break;
+    case 2:
+        emit displayText_toConsole("Выполнение миссии отменено");
+        break;
+    case 3:
+        emit displayText_toConsole("Выполнение миссии приостановлено");
+        break;
+    case 4:
+        emit displayText_toConsole("Миссия завершена");
+        break;
+    }
+}
+
 // get-функции
 
 int IUserInterfaceData::getCurrentAgent()
@@ -181,4 +203,9 @@ DataUWB IUserInterfaceData::getDataUWB() {
 DataUWB IUserInterfaceData::getDataUWB(int selectAgent)
 {
     return agent[selectAgent].dataUWB;
+}
+
+mission_Status IUserInterfaceData::getMissionStatus()
+{
+    return agent[getCurrentAgent()].missionStatus;
 }

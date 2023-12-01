@@ -161,11 +161,71 @@ void MainWindow::setBottom_modeAutomatic()
     connect(
         ui->pushButton_after, SIGNAL(clicked()),
         this, SLOT(test_automatic_after()));
+
+    connect(
+        ui->pushButton_missionControl_modeIdle, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_missionControl_modeIdle);
+    connect(
+        ui->pushButton_missionControl_modeStart, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_missionControl_modeStart);
+    connect(
+        ui->pushButton_missionControl_modeCancel, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_missionControl_modeComplete);
+    connect(
+        ui->pushButton_missionControl_modeStop, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_missionControl_modeStop);
+    connect(
+        ui->pushButton_missionControl_modeComplete, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_missionControl_modeCancel);
+
 }
 
 void MainWindow::test_automatic_after()
 {
     ui->stackedWidget_mode->setCurrentIndex(0);
+}
+
+void MainWindow::slot_pushButton_missionControl_modeIdle()
+{
+    uv_interface.setMissionControl(mission_Control::MODE_IDLE);
+}
+void MainWindow::slot_pushButton_missionControl_modeStart()
+{
+    uv_interface.setMissionControl(mission_Control::MODE_START);
+}
+void MainWindow::slot_pushButton_missionControl_modeCancel()
+{
+    uv_interface.setMissionControl(mission_Control::MODE_CANCEL);
+}
+void MainWindow::slot_pushButton_missionControl_modeStop()
+{
+    uv_interface.setMissionControl(mission_Control::MODE_STOP);
+}
+void MainWindow::slot_pushButton_missionControl_modeComplete()
+{
+    uv_interface.setMissionControl(mission_Control::MODE_COMPLETE);
+}
+
+void MainWindow::updateUi_DataMission()
+{
+    int missionStatus = static_cast<int>(uv_interface.getMissionStatus());
+    switch (missionStatus) {
+    case 0:
+        ui->label_missonStatus->setText("ожидание");
+        break;
+    case 1:
+        ui->label_missonStatus->setText("ошибка инициализации миссии");
+        break;
+    case 2:
+        ui->label_missonStatus->setText("миссия запущена и выполняется");
+        break;
+    case 3:
+        ui->label_missonStatus->setText("миссия приостановлена, на паузе");
+        break;
+    case 4:
+        ui->label_missonStatus->setText("миссия завершена");
+        break;
+    }
 }
 
 void MainWindow::setBottom_modeAutomated()
@@ -393,6 +453,7 @@ void MainWindow::updateUi_fromAgent1() {
     emit updateIMU(imuData);
     emit updateSetupMsg();
     emit updateMap(dataUWB);
+    emit updateDataMission();
 }
 
 void MainWindow::updateUi_fromAgent2()
@@ -539,6 +600,8 @@ void MainWindow::setUpdateUI()
             this, SLOT(updateUi_IMU(DataAH127C)));
     connect(this, SIGNAL(updateSetupMsg()),
             this, SLOT(updateUi_SetupMsg()));
+    connect(this, SIGNAL(updateDataMission()),
+            this, SLOT(updateUi_DataMission()));
 
     connect(this, SIGNAL(updateMap(DataUWB)),
             ui->map,SLOT(updateUi_map(DataUWB)));

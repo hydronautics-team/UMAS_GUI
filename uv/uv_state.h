@@ -40,6 +40,31 @@ enum class power_Mode : quint8
 #pragma pack(push,1)
 
 /*!
+ * \brief The mission_Control enum - команды управления миссией
+ */
+enum class mission_Control : quint8
+{
+    MODE_IDLE = 0,  //!ожидание
+    MODE_START,     //!отправка запроса на выполнение миссии
+    MODE_CANCEL,    //!отмена выполнения миссии
+    MODE_STOP,      //!пауза, остановить временно
+    MODE_COMPLETE   //!завершить миссию
+};
+
+/*!
+ * \brief The mission_Status enum состояния миссий
+ */
+enum class mission_Status : quint8
+{
+    MODE_IDLE = 0,  //!ожидание
+    MODE_ERROR,     //!ошибка инициализации миссии
+    MODE_RUNNING,   //!миссия запущена и выполняется
+    MODE_STOPPED,   //!миссия приостановлена, на паузе
+    MODE_PERFOMED,  //!миссия завершена
+};
+
+
+/*!
  * \brief FlagAH127C_bort class структура, передаваемая на пульт.
  *  Используется для калибровки БСО.
  */
@@ -193,6 +218,8 @@ struct ToPult
     DataPressure dataPressure;          //! Данные с датчика давления
     DataUWB dataUWB;                    //! Данные с UWB
     FlagAH127C_bort flagAH127C_bort;    //! Флаги для настрой
+    quint8 ID_mission;
+    mission_Status missionStatus;
     uint checksum;
 };
 
@@ -208,6 +235,8 @@ struct FromPult
     quint8 modeAUV_selection;                       //! Текущий выбор модель/реальный НПА
     power_Mode pMode;                               //! Режим работы системы питания
     FlagAH127C_pult flagAH127C_pult;
+    quint8 ID_mission_AUV;
+    mission_Control missionControl;
     uint checksum;
 };
 
@@ -237,6 +266,11 @@ public:
     ControlContoursFlags controlContoursFlags;
     ControlData control;
     power_Mode pMode;
+
+    quint8 ID_mission;
+    mission_Status missionStatus;
+    quint8 ID_mission_AUV;
+    mission_Control missionControl;
 
     int checksum_msg_gui_send;
     int checksum_msg_agent_send;
