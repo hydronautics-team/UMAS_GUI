@@ -276,6 +276,9 @@ private slots:
     void slot_pushButton_missionControl_modeStop();
     void slot_pushButton_missionControl_modeComplete();
 
+    void slot_pushButton_missionPlanning_goto();
+    void slot_pushButton_missionPlanning_following();
+
     void updateUi_DataMission();
 
 signals:

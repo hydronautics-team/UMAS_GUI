@@ -26,6 +26,7 @@ public:
     void    setModeSelection(bool mode);
     void    setDataPultUWB(PultUWB pultUWB);
     void    setMissionControl(mission_Control missionControl);
+    void    setID_mission_AUV(quint8 ID_mission_AUV);
 
 
     int                     getCurrentAgent();
@@ -46,6 +47,7 @@ public:
     DataUWB                 getDataUWB();
     DataUWB                 getDataUWB(int selectAgent);
     mission_Status          getMissionStatus();
+
 };
 
 #endif // IUSERINTERFACEDATA_H

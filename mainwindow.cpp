@@ -178,6 +178,13 @@ void MainWindow::setBottom_modeAutomatic()
         ui->pushButton_missionControl_modeComplete, &QPushButton::clicked,
         this, &MainWindow::slot_pushButton_missionControl_modeCancel);
 
+    connect(
+        ui->pushButton_missionPlanning_goto, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_missionPlanning_goto);
+    connect(
+        ui->pushButton_missionPlanning_following, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_missionPlanning_following);
+
 }
 
 void MainWindow::test_automatic_after()
@@ -204,6 +211,16 @@ void MainWindow::slot_pushButton_missionControl_modeStop()
 void MainWindow::slot_pushButton_missionControl_modeComplete()
 {
     uv_interface.setMissionControl(mission_Control::MODE_COMPLETE);
+}
+
+void MainWindow::slot_pushButton_missionPlanning_goto()
+{
+    uv_interface.setID_mission_AUV(1);
+}
+
+void MainWindow::slot_pushButton_missionPlanning_following()
+{
+    uv_interface.setID_mission_AUV(2);
 }
 
 void MainWindow::updateUi_DataMission()
