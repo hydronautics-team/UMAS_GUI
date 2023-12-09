@@ -183,7 +183,7 @@ struct DataPressure {
  */
 struct DataUWB
 {
-    uint8_t error_code = 0;
+    uint16_t error_code = 0;
     uint16_t connection_field = 0;
     float locationX = 0;            //! Координата аппарата по оси X
     float locationY = 0;            //! Координата аппарата по оси Y

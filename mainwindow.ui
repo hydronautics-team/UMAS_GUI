@@ -3326,14 +3326,14 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_missionPlanning_following">
+               <widget class="QPushButton" name="pushButton_missionPlanning_f">
                 <property name="text">
                  <string>Выход в точку</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_missionPlanning_goto">
+               <widget class="QPushButton" name="pushButton_missionPlanning_following">
                 <property name="text">
                  <string>Следование</string>
                 </property>

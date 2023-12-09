@@ -31,7 +31,7 @@ void JoyStick::updateImpact() {
         setDepth(3*sf::Joystick::getAxisPosition(id, impactAxisDepth)/4);
         setRoll(sf::Joystick::getAxisPosition(id, impactAxisRoll) + imuData.roll * getCSMode());
         setPitch(sf::Joystick::getAxisPosition(id, impactAxisPitch)/10 + imuData.pitch * getCSMode());
-        setYaw((sf::Joystick::getAxisPosition(id, impactAxisYaw)/3 /*+ imuData.yaw * getCSMode()*/));
+        setYaw((sf::Joystick::getAxisPosition(id, impactAxisYaw)/3));
     }
 }
 

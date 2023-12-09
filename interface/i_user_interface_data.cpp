@@ -118,9 +118,6 @@ void IUserInterfaceData::setMissionControl(mission_Control missionControl)
     case 3:
         emit displayText_toConsole("Выполнение миссии приостановлено");
         break;
-    case 4:
-        emit displayText_toConsole("Миссия завершена");
-        break;
     }
 }
 
@@ -128,6 +125,9 @@ void IUserInterfaceData::setID_mission_AUV(quint8 ID_mission_AUV)
 {
     agent[getCurrentAgent()].ID_mission_AUV = ID_mission_AUV;
     switch (static_cast<int>(ID_mission_AUV)) {
+    case 0:
+        emit displayText_toConsole("Миссия завершена, флаг сброшен");
+        break;
     case 1:
         emit displayText_toConsole("запущена миссия выхода в точку");
         break;

@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+    #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -91,9 +91,9 @@ void MainWindow::updateUi_fromControl(){
     bool mode = uv_interface.getCSMode();
 
     ui->label_impactDataDepth->setText(QString::number(control.depth, 'f', 2));
-    ui->label_impactDataRoll->setText(QString::number(control.roll, 'f', 2));
-    ui->label_impactDataPitch->setText(QString::number(control.pitch, 'f', 2));
-    ui->label_impactDataYaw->setText(QString::number(control.yaw, 'f', 2));
+    ui->label_impactDataRoll->setText(QString::number(control.roll + imuData.roll * uv_interface.getCSMode(), 'f', 2));
+    ui->label_impactDataPitch->setText(QString::number(control.pitch + imuData.pitch * uv_interface.getCSMode(), 'f', 2));
+    ui->label_impactDataYaw->setText(QString::number(control.yaw + imuData.yaw * uv_interface.getCSMode(), 'f', 2));
     ui->label_impactDataMarch->setText(QString::number(control.march, 'f', 2));
     ui->label_impactDataLag->setText(QString::number(control.lag, 'f', 2));
 
@@ -170,13 +170,13 @@ void MainWindow::setBottom_modeAutomatic()
         this, &MainWindow::slot_pushButton_missionControl_modeStart);
     connect(
         ui->pushButton_missionControl_modeCancel, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionControl_modeComplete);
+        this, &MainWindow::slot_pushButton_missionControl_modeCancel);
     connect(
         ui->pushButton_missionControl_modeStop, &QPushButton::clicked,
         this, &MainWindow::slot_pushButton_missionControl_modeStop);
     connect(
         ui->pushButton_missionControl_modeComplete, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionControl_modeCancel);
+        this, &MainWindow::slot_pushButton_missionControl_modeComplete);
 
     connect(
         ui->pushButton_missionPlanning_goto, &QPushButton::clicked,
@@ -211,6 +211,7 @@ void MainWindow::slot_pushButton_missionControl_modeStop()
 void MainWindow::slot_pushButton_missionControl_modeComplete()
 {
     uv_interface.setMissionControl(mission_Control::MODE_COMPLETE);
+    uv_interface.setID_mission_AUV(0);
 }
 
 void MainWindow::slot_pushButton_missionPlanning_goto()
@@ -424,11 +425,10 @@ void MainWindow::setConnection()
 {
     ui->pushButton_connection->setEnabled(false);
     ui->pushButton_breakConnection->setEnabled(true);
-
+    communicationAgent1 = new Pult::PC_Protocol(QHostAddress("192.168.1.10"), 13051,
+                                                QHostAddress("192.168.1.11"), 13050, 10, 0);
     communicationAgent2 = new Pult::PC_Protocol(QHostAddress("192.168.1.146"), 13053,
-                                                QHostAddress("192.168.1.72"), 13052, 10, 0);
-    communicationAgent1 = new Pult::PC_Protocol(QHostAddress("192.168.1.146"), 13051,
-                                                QHostAddress("192.168.1.11"), 13050, 10, 1);
+                                                QHostAddress("192.168.1.110"), 13054, 10, 1);
 
     communicationAgent1->startExchange();
     communicationAgent2->startExchange();

@@ -9,8 +9,6 @@ FromPult IServerData::generateFullMessage(int nmbAgent) {
     FromPult data;
 
     data.controlData = agent[nmbAgent].control;
-    qDebug() << "nmbAgent = " << nmbAgent;
-    qDebug() << "yaw = " << data.controlData.yaw;
     data.cSMode = agent[nmbAgent].cSMode;
     data.pultUWB = agent[nmbAgent].pultUWB;
     data.controlContoursFlags = agent[nmbAgent].controlContoursFlags;
@@ -41,7 +39,6 @@ void IServerData::parseFullMessage(ToPult message, int nmbAgent) {
 
     agent[nmbAgent].ID_mission = message.ID_mission;
     agent[nmbAgent].missionStatus = message.missionStatus;
-
 
     agent[nmbAgent].checksum_msg_agent_send = message.checksum;
     agent[nmbAgent].checksum_msg_gui_received = sizeof(message);
