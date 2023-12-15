@@ -82,6 +82,12 @@ void MainWindow::useJoyStick()
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     keyBoard->keyPressEvent(event);
+
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event)
+{
+  keyBoard->keyReleaseEvent(event);
 }
 
 void MainWindow::updateUi_fromControl(){
@@ -93,7 +99,7 @@ void MainWindow::updateUi_fromControl(){
     ui->label_impactDataDepth->setText(QString::number(control.depth, 'f', 2));
     ui->label_impactDataRoll->setText(QString::number(control.roll + imuData.roll * uv_interface.getCSMode(), 'f', 2));
     ui->label_impactDataPitch->setText(QString::number(control.pitch + imuData.pitch * uv_interface.getCSMode(), 'f', 2));
-    ui->label_impactDataYaw->setText(QString::number(control.yaw + imuData.yaw * uv_interface.getCSMode(), 'f', 2));
+    ui->label_impactDataYaw->setText(QString::number(control.yaw /*+ imuData.yaw * uv_interface.getCSMode()*/, 'f', 2));
     ui->label_impactDataMarch->setText(QString::number(control.march, 'f', 2));
     ui->label_impactDataLag->setText(QString::number(control.lag, 'f', 2));
 
@@ -182,8 +188,24 @@ void MainWindow::setBottom_modeAutomatic()
         ui->pushButton_missionPlanning_goto, &QPushButton::clicked,
         this, &MainWindow::slot_pushButton_missionPlanning_goto);
     connect(
+        ui->pushButton_missionPlanning_goto_update, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_missionPlanning_goto_update);
+    connect(
+        this, &MainWindow::signal_pushButton_missionPlanning_goto_updateMap,
+        ui->map, &Map::updateUi_missionPlanning_goto_goal);
+    connect(
+        ui->pushButton_missionPlanning_goto_back, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_missionPlanning_goto_back);
+    connect(
+        ui->pushButton_missionPlanning_goto_clean, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_missionPlanning_goto_clean);
+
+    connect(
         ui->pushButton_missionPlanning_following, &QPushButton::clicked,
         this, &MainWindow::slot_pushButton_missionPlanning_following);
+    connect(
+        ui->pushButton_missionPlanning_go_trajectory, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_missionPlanning_go_trajectory);
 
 }
 
@@ -217,11 +239,39 @@ void MainWindow::slot_pushButton_missionControl_modeComplete()
 void MainWindow::slot_pushButton_missionPlanning_goto()
 {
     uv_interface.setID_mission_AUV(1);
+    ui->stackedWidget_missionPlanning->setCurrentIndex(1);
+    displayText("Задайте параметры для выхода в точку");
+}
+
+void MainWindow::slot_pushButton_missionPlanning_goto_update()
+{
+    double x =ui->doubleSpinBox_missionPlanning_goto_x->value();
+    double y =ui->doubleSpinBox_missionPlanning_goto_y->value();
+    double r =ui->doubleSpinBox_missionPlanning_goto_r->value();
+
+    emit signal_pushButton_missionPlanning_goto_updateMap(x,y,r);
+    displayText("Установлена координата для выхода в точку и"
+                " радиус удержания позиции");
+}
+
+void MainWindow::slot_pushButton_missionPlanning_goto_back()
+{
+    ui->stackedWidget_missionPlanning->setCurrentIndex(0);
+}
+
+void MainWindow::slot_pushButton_missionPlanning_goto_clean()
+{
+    emit signal_pushButton_missionPlanning_goto_updateMap(0,0,0);
 }
 
 void MainWindow::slot_pushButton_missionPlanning_following()
 {
     uv_interface.setID_mission_AUV(2);
+}
+
+void MainWindow::slot_pushButton_missionPlanning_go_trajectory()
+{
+    uv_interface.setID_mission_AUV(3);
 }
 
 void MainWindow::updateUi_DataMission()

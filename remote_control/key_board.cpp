@@ -14,41 +14,82 @@ void KeyBoard::keyPressEvent(QKeyEvent *event)
     ControlData control = getControlData();
     switch (event->key()) {
     case Qt::Key_O:
-        setMarch(control.march + 10);
+        setMarch(1);
         break;
     case Qt::Key_L:
-        setMarch(control.march - 10);
+        setMarch(-1);
         break;
     case Qt::Key_W:
-        setPitch(control.pitch + 10);
+        setPitch(1);
         break;
     case Qt::Key_S:
-        setPitch(control.pitch - 10);
+        setPitch(-1);
         break;
     case Qt::Key_A:
-        qDebug()<<"key A pressed";
-        setYaw(control.yaw + 10);
+        setYaw(1);
         break;
     case Qt::Key_D:
-        setYaw(control.yaw - 10);
+        setYaw(-1);
         break;
     case Qt::Key_C:
-        setDepth(control.depth + 10);
+        setDepth(1);
         break;
     case Qt::Key_V:
-        setDepth(control.depth - 10);
+        setDepth(-1);
         break;
     case Qt::Key_Q:
-        setRoll(control.roll + 10);
+        setRoll(1);
         break;
     case Qt::Key_E:
-        setRoll(control.roll - 10);
+        setRoll(-1);
         break;
     case Qt::Key_K:
-        setLag(control.lag + 10);
+        setLag(1);
         break;
     case Qt::Key_Semicolon:
-        setLag(control.lag - 10);
+        setLag(-1);
         break;
     }
+}
+
+void KeyBoard::keyReleaseEvent(QKeyEvent *event)
+{
+        switch (event->key()) {
+        case Qt::Key_O:
+            setMarch(0);
+            break;
+        case Qt::Key_L:
+            setMarch(0);
+            break;
+        case Qt::Key_W:
+            setPitch(0);
+            break;
+        case Qt::Key_S:
+            setPitch(0);
+            break;
+        case Qt::Key_A:
+            setYaw(0);
+            break;
+        case Qt::Key_D:
+            setYaw(0);
+            break;
+        case Qt::Key_C:
+            setDepth(0);
+            break;
+        case Qt::Key_V:
+            setDepth(0);
+            break;
+        case Qt::Key_Q:
+            setRoll(0);
+            break;
+        case Qt::Key_E:
+            setRoll(0);
+            break;
+        case Qt::Key_K:
+            setLag(0);
+            break;
+        case Qt::Key_Semicolon:
+            setLag(0);
+            break;
+        }
 }

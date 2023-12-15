@@ -277,7 +277,12 @@ private slots:
     void slot_pushButton_missionControl_modeComplete();
 
     void slot_pushButton_missionPlanning_goto();
+    void slot_pushButton_missionPlanning_goto_update();
+    void slot_pushButton_missionPlanning_goto_back();
+    void slot_pushButton_missionPlanning_goto_clean();
+
     void slot_pushButton_missionPlanning_following();
+    void slot_pushButton_missionPlanning_go_trajectory();
 
     void updateUi_DataMission();
 
@@ -302,6 +307,7 @@ signals:
 
     void updateMap(DataUWB dataUWB);
     void updateMapForAgent2(DataUWB dataUWB_agent2);
+    void signal_pushButton_missionPlanning_goto_updateMap(double x, double y, double r);
 
 protected:
     /*!
@@ -317,6 +323,7 @@ protected:
     JoyStick *joyStick = nullptr;
     KeyBoard *keyBoard = nullptr;
     void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
 
     /*!
      * \brief timer_off_powerMode_5 таймер переключения 5 режима питания.

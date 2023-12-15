@@ -129,10 +129,13 @@ void IUserInterfaceData::setID_mission_AUV(quint8 ID_mission_AUV)
         emit displayText_toConsole("Миссия завершена, флаг сброшен");
         break;
     case 1:
-        emit displayText_toConsole("запущена миссия выхода в точку");
+        emit displayText_toConsole("Запущена миссия выхода в точку");
         break;
     case 2:
-        emit displayText_toConsole("запущена миссия следования");
+        emit displayText_toConsole("Запущена миссия следования");
+        break;
+    case 3:
+        emit displayText_toConsole("Запущена миссия движения по траектории");
         break;
     }
 }

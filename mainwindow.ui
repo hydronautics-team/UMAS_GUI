@@ -3306,8 +3306,11 @@
            </widget>
           </item>
           <item>
-           <widget class="QStackedWidget" name="stackedWidget">
-            <widget class="QWidget" name="page">
+           <widget class="QStackedWidget" name="stackedWidget_missionPlanning">
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <widget class="QWidget" name="page_missionPlanning">
              <layout class="QVBoxLayout" name="verticalLayout_10">
               <item>
                <widget class="QLabel" name="label_50">
@@ -3326,7 +3329,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_missionPlanning_f">
+               <widget class="QPushButton" name="pushButton_missionPlanning_goto">
                 <property name="text">
                  <string>Выход в точку</string>
                 </property>
@@ -3336,6 +3339,13 @@
                <widget class="QPushButton" name="pushButton_missionPlanning_following">
                 <property name="text">
                  <string>Следование</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_missionPlanning_go_trajectory">
+                <property name="text">
+                 <string>Движение по траектории</string>
                 </property>
                </widget>
               </item>
@@ -3354,7 +3364,88 @@
               </item>
              </layout>
             </widget>
-            <widget class="QWidget" name="page_2"/>
+            <widget class="QWidget" name="page_missionPlanning_goto">
+             <layout class="QVBoxLayout" name="verticalLayout_11" stretch="0,0,0,0,0,0">
+              <item>
+               <widget class="QLabel" name="label_53">
+                <property name="text">
+                 <string>Введите параметры точки</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_11">
+                <item>
+                 <widget class="QLabel" name="label_missionPlanning_goto_x">
+                  <property name="text">
+                   <string>x, см</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_goto_x"/>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_55">
+                  <property name="text">
+                   <string>y, см</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_goto_y"/>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_56">
+                  <property name="text">
+                   <string>Радиус, см</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_goto_r"/>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_missionPlanning_goto_update">
+                <property name="text">
+                 <string>Обновить</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_missionPlanning_goto_clean">
+                <property name="text">
+                 <string>Очистить цель</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_missionPlanning_goto_back">
+                <property name="text">
+                 <string>Вернуться к выбору миссий</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_6">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
            </widget>
           </item>
           <item>

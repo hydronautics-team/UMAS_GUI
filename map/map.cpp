@@ -31,6 +31,8 @@ void Map::createPlot()
 
     agent1Coords = new QScatterSeries();
     agent2Coords = new QScatterSeries();
+    missionPlanning_goto_goal = new QScatterSeries();
+    missionPlanning_goto_goal->setColor(QColor(255, 51, 153));
 
     circle1 = new QLineSeries();
     circle1->setColor(QColor(0, 0, 255));
@@ -38,14 +40,18 @@ void Map::createPlot()
     circle2->setColor(QColor(0, 255, 0));
     circle3 = new QLineSeries();
     circle3->setColor(QColor(255, 165, 0));
+    missionPlanning_goto_goal_radius = new QLineSeries();
+    missionPlanning_goto_goal_radius->setColor(QColor(255, 51, 153));
 
     chart = new QChart();
     chart->addSeries(beacon);
     chart->addSeries(circle1);
     chart->addSeries(circle2);
     chart->addSeries(circle3);
+    chart->addSeries(missionPlanning_goto_goal_radius);
     chart->addSeries(agent1Coords);
     chart->addSeries(agent2Coords);
+    chart->addSeries(missionPlanning_goto_goal);
     chart->createDefaultAxes();
     chart->axes(Qt::Vertical).first()->setRange(-50,100);
     chart->axes(Qt::Vertical).first()->setTitleText("Y, см");
@@ -61,20 +67,26 @@ void Map::createPlot()
 
 void Map::updateUi_map(DataUWB dataUWB)
 {
-    drawCurrent1Coords(dataUWB.locationX, dataUWB.locationY);
+    drawCurrentCoords(agent1Coords, dataUWB.locationX, dataUWB.locationY);
 
     range[0] = dataUWB.distanceToBeacon[0];
     range[1] = dataUWB.distanceToBeacon[1];
     range[2] = dataUWB.distanceToBeacon[2];
 
-    drawCircle(circle1, 0, range[0]);
-    drawCircle(circle2, 1, range[1]);
-    drawCircle(circle3, 2, range[2]);
+    drawCircle(circle1, x[0], y[0], range[0]);
+    drawCircle(circle2, x[1], y[1], range[1]);
+    drawCircle(circle3, x[2], y[2], range[2]);
 }
 
 void Map::updateUi_map2(DataUWB dataUWB)
 {
-    drawCurrent2Coords(dataUWB.locationX, dataUWB.locationY);
+    drawCurrentCoords(agent2Coords, dataUWB.locationX, dataUWB.locationY);
+}
+
+void Map::updateUi_missionPlanning_goto_goal(double x, double y, double r)
+{
+    drawCurrentCoords(missionPlanning_goto_goal, x, y);
+    drawCircle(missionPlanning_goto_goal_radius, x, y, r);
 }
 
 void Map::addRowUWB()
@@ -103,9 +115,9 @@ void Map::updateLocationUWB()
     }
     emit sendLocationUWB(&x[0],&y[0]);
     beacon->clear();
-    drawCircle(circle1, 0, range[0]);
-    drawCircle(circle2, 1, range[1]);
-    drawCircle(circle3, 2, range[2]);
+    drawCircle(circle1, x[0], y[0], range[0]);
+    drawCircle(circle2, x[1], y[1], range[1]);
+    drawCircle(circle3, x[2], y[2], range[2]);
 }
 
 void Map::plotScaling(bool state)
@@ -117,30 +129,24 @@ void Map::plotScaling(bool state)
 
 }
 
-void Map::drawCircle(QLineSeries *circle, int index, double R)
+void Map::drawCircle(QLineSeries *circle, double x, double y, double R)
 {
     circle->clear();
 
-    beacon->append(x[index],y[index]);
+    beacon->append(x,y);
 
     for(int i=0; i<=360; i++){
         double alpha = i*M_PI/180;
-        double plot_x = x[index]+R*cos(alpha);
-        double plot_y = y[index]+R*sin(alpha);
+        double plot_x = x+R*cos(alpha);
+        double plot_y = y+R*sin(alpha);
         circle->append(plot_x,plot_y);
     }
 }
 
-void Map::drawCurrent1Coords(double x, double y)
+void Map::drawCurrentCoords(QScatterSeries *agentCoords, double x, double y)
 {
-    agent1Coords->clear();
-    agent1Coords->append(x,y);
-}
-
-void Map::drawCurrent2Coords(double x, double y)
-{
-    agent2Coords->clear();
-    agent2Coords->append(x,y);
+    agentCoords->clear();
+    agentCoords->append(x,y);
 }
 
 Map::~Map()

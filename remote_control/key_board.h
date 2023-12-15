@@ -15,6 +15,7 @@ public:
 
 public:
     void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
 
 private slots:
     void updateImpact();

@@ -36,18 +36,15 @@ public:
     /*!
      * \brief drawCircle метод рисования расстояние от модуля до агента.
      * \param circle окружность.
-     * \param index номер модуля.
      * \param R расстояние от модуля до агетна.
      */
-    void drawCircle(QLineSeries *circle, int index, double R);
+    void drawCircle(QLineSeries *circle, double x, double y, double R);
     /*!
      * \brief drawCurrentCoords метод отображения агента.
      * \param x координата агента по оси X.
      * \param y координата агента по оси Y.
      */
-    void drawCurrent1Coords(double x, double y);
-
-    void drawCurrent2Coords(double x, double y);
+    void drawCurrentCoords(QScatterSeries *agentCoords, double x, double y);
 
 protected:
     /*!
@@ -73,6 +70,8 @@ protected:
     QScatterSeries *beacon = nullptr;
     QScatterSeries *agent1Coords = nullptr;
     QScatterSeries *agent2Coords = nullptr;
+    QScatterSeries *missionPlanning_goto_goal = nullptr;
+    QLineSeries *missionPlanning_goto_goal_radius = nullptr;
     QLineSeries *circle1 = nullptr;
     QLineSeries *circle2 = nullptr;
     QLineSeries *circle3 = nullptr;
@@ -91,6 +90,7 @@ public slots:
      */
     void updateUi_map(DataUWB dataUWB);
     void updateUi_map2(DataUWB dataUWB);
+    void updateUi_missionPlanning_goto_goal(double x, double y, double r);
 
     /*!
      * \brief addRowUWB слот добавления строк и цветов модулей в таблицу.
