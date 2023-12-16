@@ -3365,7 +3365,7 @@
              </layout>
             </widget>
             <widget class="QWidget" name="page_missionPlanning_goto">
-             <layout class="QVBoxLayout" name="verticalLayout_11" stretch="0,0,0,0,0,0">
+             <layout class="QVBoxLayout" name="verticalLayout_11" stretch="0,0,0,0,0,0,0,0">
               <item>
                <widget class="QLabel" name="label_53">
                 <property name="text">
@@ -3386,7 +3386,11 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_goto_x"/>
+                 <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_goto_x">
+                  <property name="maximum">
+                   <double>10000.000000000000000</double>
+                  </property>
+                 </widget>
                 </item>
                 <item>
                  <widget class="QLabel" name="label_55">
@@ -3396,7 +3400,11 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_goto_y"/>
+                 <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_goto_y">
+                  <property name="maximum">
+                   <double>10000.000000000000000</double>
+                  </property>
+                 </widget>
                 </item>
                 <item>
                  <widget class="QLabel" name="label_56">
@@ -3406,7 +3414,11 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_goto_r"/>
+                 <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_goto_r">
+                  <property name="maximum">
+                   <double>10000.000000000000000</double>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </item>
@@ -3421,6 +3433,20 @@
                <widget class="QPushButton" name="pushButton_missionPlanning_goto_clean">
                 <property name="text">
                  <string>Очистить цель</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_missionPlanning_goto_on_trajectory">
+                <property name="text">
+                 <string>Включить/выключить запись траектории</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_missionPlanning_goto_on_trajectory_clear">
+                <property name="text">
+                 <string>Очистить траекторию</string>
                 </property>
                </widget>
               </item>

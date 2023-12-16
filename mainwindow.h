@@ -279,7 +279,6 @@ private slots:
     void slot_pushButton_missionPlanning_goto();
     void slot_pushButton_missionPlanning_goto_update();
     void slot_pushButton_missionPlanning_goto_back();
-    void slot_pushButton_missionPlanning_goto_clean();
 
     void slot_pushButton_missionPlanning_following();
     void slot_pushButton_missionPlanning_go_trajectory();

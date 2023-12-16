@@ -38,7 +38,7 @@ public:
      * \param circle окружность.
      * \param R расстояние от модуля до агетна.
      */
-    void drawCircle(QLineSeries *circle, double x, double y, double R);
+    void drawCircle(QLineSeries *circle, QScatterSeries *point, double x, double y, double R);
     /*!
      * \brief drawCurrentCoords метод отображения агента.
      * \param x координата агента по оси X.
@@ -67,14 +67,18 @@ protected:
 
     QChartView *chartView = nullptr;
     QChart *chart = nullptr;
-    QScatterSeries *beacon = nullptr;
+    QScatterSeries *beacon1 = nullptr;
+    QScatterSeries *beacon2 = nullptr;
+    QScatterSeries *beacon3 = nullptr;
     QScatterSeries *agent1Coords = nullptr;
     QScatterSeries *agent2Coords = nullptr;
     QScatterSeries *missionPlanning_goto_goal = nullptr;
     QLineSeries *missionPlanning_goto_goal_radius = nullptr;
+    QLineSeries *missionPlanning_goto_traj = nullptr;
     QLineSeries *circle1 = nullptr;
     QLineSeries *circle2 = nullptr;
     QLineSeries *circle3 = nullptr;
+    int flag_traj=0;
 
     QStringList color = { "Синий", "Зеленый", "Оранжевый" };
 
@@ -91,6 +95,7 @@ public slots:
     void updateUi_map(DataUWB dataUWB);
     void updateUi_map2(DataUWB dataUWB);
     void updateUi_missionPlanning_goto_goal(double x, double y, double r);
+    void updateUi_missionPlanning_goto_goal_clear();
 
     /*!
      * \brief addRowUWB слот добавления строк и цветов модулей в таблицу.
@@ -105,6 +110,10 @@ public slots:
      * \param state состояние нажатия кнопки.
      */
     void plotScaling(bool state);
+
+    void updateUi_missionPlanning_goto_traj_onoff();
+    void updateUi_missionPlanning_goto_traj_clear();
+
 
 signals:
     /*!

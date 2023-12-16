@@ -97,8 +97,8 @@ void MainWindow::updateUi_fromControl(){
     bool mode = uv_interface.getCSMode();
 
     ui->label_impactDataDepth->setText(QString::number(control.depth, 'f', 2));
-    ui->label_impactDataRoll->setText(QString::number(control.roll + imuData.roll * uv_interface.getCSMode(), 'f', 2));
-    ui->label_impactDataPitch->setText(QString::number(control.pitch + imuData.pitch * uv_interface.getCSMode(), 'f', 2));
+    ui->label_impactDataRoll->setText(QString::number(control.roll/* + imuData.roll * uv_interface.getCSMode()*/, 'f', 2));
+    ui->label_impactDataPitch->setText(QString::number(control.pitch/* + imuData.pitch * uv_interface.getCSMode()*/, 'f', 2));
     ui->label_impactDataYaw->setText(QString::number(control.yaw /*+ imuData.yaw * uv_interface.getCSMode()*/, 'f', 2));
     ui->label_impactDataMarch->setText(QString::number(control.march, 'f', 2));
     ui->label_impactDataLag->setText(QString::number(control.lag, 'f', 2));
@@ -198,7 +198,14 @@ void MainWindow::setBottom_modeAutomatic()
         this, &MainWindow::slot_pushButton_missionPlanning_goto_back);
     connect(
         ui->pushButton_missionPlanning_goto_clean, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_goto_clean);
+        ui->map, &Map::updateUi_missionPlanning_goto_goal_clear);
+    connect(
+        ui->pushButton_missionPlanning_goto_on_trajectory, &QPushButton::clicked,
+        ui->map, &Map::updateUi_missionPlanning_goto_traj_onoff);
+    connect(
+        ui->pushButton_missionPlanning_goto_on_trajectory_clear, &QPushButton::clicked,
+        ui->map, &Map::updateUi_missionPlanning_goto_traj_clear);
+
 
     connect(
         ui->pushButton_missionPlanning_following, &QPushButton::clicked,
@@ -257,11 +264,6 @@ void MainWindow::slot_pushButton_missionPlanning_goto_update()
 void MainWindow::slot_pushButton_missionPlanning_goto_back()
 {
     ui->stackedWidget_missionPlanning->setCurrentIndex(0);
-}
-
-void MainWindow::slot_pushButton_missionPlanning_goto_clean()
-{
-    emit signal_pushButton_missionPlanning_goto_updateMap(0,0,0);
 }
 
 void MainWindow::slot_pushButton_missionPlanning_following()
