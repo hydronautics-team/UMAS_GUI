@@ -6,7 +6,7 @@
 #include <QMouseEvent>
 #include <cmath>
 #include <ui_compass.h>
-
+#include "uv_state.h"
 
 class Compass : public QFrame, private Ui::Compass{
 Q_OBJECT
@@ -26,7 +26,7 @@ public slots:
      * \param YawFromIMU текущее значение курса.
      * \param mode ручной или
      */
-    void setYawDesirable(double yawDesirableNew, double YawFromIMU, bool mode);
+    void setYawDesirable(double yawDesirableNew, double YawFromIMU, e_CSMode mode);
 
 protected:
     void paintEvent(QPaintEvent *e);

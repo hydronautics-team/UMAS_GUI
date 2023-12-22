@@ -1,6 +1,6 @@
 #include "i_basic_data.h"
 
-UVState IBasicData::agent[1];
+UVState IBasicData::agent[2];
 int IBasicData::currentAgent;
 
 

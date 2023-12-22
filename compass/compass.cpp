@@ -4,7 +4,7 @@ Compass::Compass(QWidget *parent) :
     QFrame(parent) {
     setupUi(this);
     setYaw(0);
-    setYawDesirable(0, 0, 0);
+    setYawDesirable(0, 0, e_CSMode::MODE_MANUAL);
 }
 
 void Compass::paintEvent(QPaintEvent *e) {
@@ -51,8 +51,8 @@ void Compass::setYaw(double yawNew) {
     update();
 }
 
-void Compass::setYawDesirable(double yawDesirableNew, double YawFromIMU, bool mode) {
-    if (mode == 0)
+void Compass::setYawDesirable(double yawDesirableNew, double YawFromIMU, e_CSMode mode) {
+    if (mode == e_CSMode::MODE_AUTOMATED)
         yawDesirable = yawDesirableNew + YawFromIMU;
     else
         yawDesirable = yawDesirableNew;

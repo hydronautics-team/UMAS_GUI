@@ -38,13 +38,13 @@ public:
      * \param circle окружность.
      * \param R расстояние от модуля до агетна.
      */
-    void drawCircle(QLineSeries *circle, QScatterSeries *point, double x, double y, double R);
+    void drawCircle(QLineSeries *circle, QScatterSeries *point, double x, double y, double R, int flag_clear);
     /*!
      * \brief drawCurrentCoords метод отображения агента.
      * \param x координата агента по оси X.
      * \param y координата агента по оси Y.
      */
-    void drawCurrentCoords(QScatterSeries *agentCoords, double x, double y);
+    void drawCurrentCoords(QScatterSeries *agentCoords, QLineSeries *traj, double x, double y);
 
 protected:
     /*!
@@ -94,7 +94,7 @@ public slots:
      */
     void updateUi_map(DataUWB dataUWB);
     void updateUi_map2(DataUWB dataUWB);
-    void updateUi_missionPlanning_goto_goal(double x, double y, double r);
+    void updateUi_missionPlanning_goto_goal(double x, double y, double r, int flag_clear);
     void updateUi_missionPlanning_goto_goal_clear();
 
     /*!

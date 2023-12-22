@@ -89,7 +89,8 @@ void IUserInterfaceData::setCSMode(e_CSMode mode) {
     }
 }
 
-void IUserInterfaceData::setModeSelection(bool mode) {
+void IUserInterfaceData::setModeSelection(bool mode)
+{
     agent[getCurrentAgent()].modeAUV_selection = mode;
     if (static_cast<int>(mode))
         emit displayText_toConsole("Установлен вывод данных на модель");
@@ -184,12 +185,9 @@ power_Mode IUserInterfaceData::getPowerMode()
     return agent[getCurrentAgent()].pMode;
 }
 
-bool IUserInterfaceData::getCSMode()
+e_CSMode IUserInterfaceData::getCSMode()
 {
-    if (agent[getCurrentAgent()].cSMode == e_CSMode::MODE_AUTOMATED)
-        return true;
-    else
-        return false;
+    return agent[getCurrentAgent()].cSMode;
 }
 
 ControlData IUserInterfaceData::getControlData() {

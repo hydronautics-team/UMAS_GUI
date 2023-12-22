@@ -94,16 +94,15 @@ void MainWindow::updateUi_fromControl(){
 
     ControlData control = uv_interface.getControlData();
     DataAH127C imuData = uv_interface.getImuData();
-    bool mode = uv_interface.getCSMode();
 
     ui->label_impactDataDepth->setText(QString::number(control.depth, 'f', 2));
-    ui->label_impactDataRoll->setText(QString::number(control.roll/* + imuData.roll * uv_interface.getCSMode()*/, 'f', 2));
-    ui->label_impactDataPitch->setText(QString::number(control.pitch/* + imuData.pitch * uv_interface.getCSMode()*/, 'f', 2));
-    ui->label_impactDataYaw->setText(QString::number(control.yaw /*+ imuData.yaw * uv_interface.getCSMode()*/, 'f', 2));
+    ui->label_impactDataRoll->setText(QString::number(control.roll, 'f', 2));
+    ui->label_impactDataPitch->setText(QString::number(control.pitch, 'f', 2));
+    ui->label_impactDataYaw->setText(QString::number(control.yaw, 'f', 2));
     ui->label_impactDataMarch->setText(QString::number(control.march, 'f', 2));
     ui->label_impactDataLag->setText(QString::number(control.lag, 'f', 2));
 
-    ui->compass->setYawDesirable(control.yaw, imuData.yaw, mode);
+    ui->compass->setYawDesirable(control.yaw, imuData.yaw, uv_interface.getCSMode());
 }
 
 //
@@ -206,6 +205,19 @@ void MainWindow::setBottom_modeAutomatic()
         ui->pushButton_missionPlanning_goto_on_trajectory_clear, &QPushButton::clicked,
         ui->map, &Map::updateUi_missionPlanning_goto_traj_clear);
 
+    connect(
+        ui->pushButton_missionPlanning_go_trajectory_update, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_missionPlanning_go_trajectory_update);
+    connect(
+        this, &MainWindow::signal_pushButton_missionPlanning_go_trajectory_updateMap,
+        ui->map, &Map::updateUi_missionPlanning_goto_goal);
+    connect(
+        ui->pushButton_missionPlanning_go_trajectory_back, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_missionPlanning_go_trajectory_back);
+    connect(
+        ui->pushButton_missionPlanning_go_trajectory_clean, &QPushButton::clicked,
+        ui->map, &Map::updateUi_missionPlanning_goto_goal_clear);
+
 
     connect(
         ui->pushButton_missionPlanning_following, &QPushButton::clicked,
@@ -219,6 +231,7 @@ void MainWindow::setBottom_modeAutomatic()
 void MainWindow::test_automatic_after()
 {
     ui->stackedWidget_mode->setCurrentIndex(0);
+    ui->stackedWidget_missionPlanning->setCurrentIndex(0);
 }
 
 void MainWindow::slot_pushButton_missionControl_modeIdle()
@@ -246,22 +259,48 @@ void MainWindow::slot_pushButton_missionControl_modeComplete()
 void MainWindow::slot_pushButton_missionPlanning_goto()
 {
     uv_interface.setID_mission_AUV(1);
-    ui->stackedWidget_missionPlanning->setCurrentIndex(1);
+    ui->stackedWidget_missionPlanning->setCurrentIndex(2);
     displayText("Задайте параметры для выхода в точку");
 }
 
 void MainWindow::slot_pushButton_missionPlanning_goto_update()
 {
-    double x =ui->doubleSpinBox_missionPlanning_goto_x->value();
-    double y =ui->doubleSpinBox_missionPlanning_goto_y->value();
-    double r =ui->doubleSpinBox_missionPlanning_goto_r->value();
+    double x = ui->doubleSpinBox_missionPlanning_goto_x->value();
+    double y = ui->doubleSpinBox_missionPlanning_goto_y->value();
+    double r = ui->doubleSpinBox_missionPlanning_goto_r->value();
 
-    emit signal_pushButton_missionPlanning_goto_updateMap(x,y,r);
+    emit signal_pushButton_missionPlanning_goto_updateMap(x,y,r,0);
     displayText("Установлена координата для выхода в точку и"
                 " радиус удержания позиции");
 }
 
 void MainWindow::slot_pushButton_missionPlanning_goto_back()
+{
+    ui->stackedWidget_missionPlanning->setCurrentIndex(0);
+}
+
+void MainWindow::slot_pushButton_missionPlanning_go_trajectory_update()
+{
+    double x1 = ui->doubleSpinBox_missionPlanning_go_trajectory_x_1->value();
+    double y1 = ui->doubleSpinBox_missionPlanning_go_trajectory_y_1->value();
+    double r1 = ui->doubleSpinBox_missionPlanning_go_trajectory_r_1->value();
+
+    double x2 = ui->doubleSpinBox_missionPlanning_go_trajectory_x_2->value();
+    double y2 = ui->doubleSpinBox_missionPlanning_go_trajectory_y_2->value();
+    double r2 = ui->doubleSpinBox_missionPlanning_go_trajectory_r_2->value();
+
+    double x3 = ui->doubleSpinBox_missionPlanning_go_trajectory_x_3->value();
+    double y3 = ui->doubleSpinBox_missionPlanning_go_trajectory_y_3->value();
+    double r3 = ui->doubleSpinBox_missionPlanning_go_trajectory_r_3->value();
+
+    emit signal_pushButton_missionPlanning_go_trajectory_updateMap(x1,y1,r1,0);
+    emit signal_pushButton_missionPlanning_go_trajectory_updateMap(x2,y2,r2,0);
+    emit signal_pushButton_missionPlanning_go_trajectory_updateMap(x3,y3,r3,0);
+    displayText("Установлены координаты для движения по траектории и"
+                " радиус удержания позиций");
+}
+
+void MainWindow::slot_pushButton_missionPlanning_go_trajectory_back()
 {
     ui->stackedWidget_missionPlanning->setCurrentIndex(0);
 }
@@ -274,6 +313,7 @@ void MainWindow::slot_pushButton_missionPlanning_following()
 void MainWindow::slot_pushButton_missionPlanning_go_trajectory()
 {
     uv_interface.setID_mission_AUV(3);
+    ui->stackedWidget_missionPlanning->setCurrentIndex(1);
 }
 
 void MainWindow::updateUi_DataMission()
@@ -297,6 +337,8 @@ void MainWindow::updateUi_DataMission()
         break;
     }
 }
+
+
 
 void MainWindow::setBottom_modeAutomated()
 {
@@ -477,10 +519,16 @@ void MainWindow::setConnection()
 {
     ui->pushButton_connection->setEnabled(false);
     ui->pushButton_breakConnection->setEnabled(true);
-    communicationAgent1 = new Pult::PC_Protocol(QHostAddress("192.168.1.10"), 13051,
-                                                QHostAddress("192.168.1.11"), 13050, 10, 0);
-    communicationAgent2 = new Pult::PC_Protocol(QHostAddress("192.168.1.146"), 13053,
-                                                QHostAddress("192.168.1.110"), 13054, 10, 1);
+    communicationAgent1 = new Pult::PC_Protocol(QHostAddress("192.168.1.10"), 13053,
+                                                QHostAddress("192.168.1.11"), 13052, 10, 0);
+    communicationAgent2 = new Pult::PC_Protocol(QHostAddress("192.168.1.102"), 13053,
+                                                QHostAddress("192.168.1.3"), 13052, 10, 1);
+
+//    communicationAgent1 = new Pult::PC_Protocol(QHostAddress("192.168.1.10"), 13055,
+//                                                QHostAddress("192.168.1.3"), 13054, 10, 0);
+//    communicationAgent2 = new Pult::PC_Protocol(QHostAddress("192.168.1.10"), 13053,
+//                                                QHostAddress("192.168.1.11"), 13052, 10, 1);
+
 
     communicationAgent1->startExchange();
     communicationAgent2->startExchange();
@@ -492,6 +540,8 @@ void MainWindow::setConnection()
                 this, SLOT(updateUi_fromAgent1()));
         connect(communicationAgent2, SIGNAL(dataReceived()),
                 this, SLOT(updateUi_fromAgent2()));
+        updateStatePushButton();
+
     } else {
         ui->pushButton_connection->setEnabled(true);
         ui->pushButton_breakConnection->setEnabled(false);
@@ -555,11 +605,12 @@ void MainWindow::setBottom_modeSelection()
 
 void MainWindow::setModeSelection(int index)
 {
+
     if (index == 1){
-        uv_interface.setModeSelection(false); //агент
+        uv_interface.setModeSelection(0); //агент
     }
     else{
-        uv_interface.setModeSelection(true); //модель
+        uv_interface.setModeSelection(1); //модель
     }
 }
 
@@ -601,6 +652,8 @@ void MainWindow::setBottom_selectAgent()
             this, &MainWindow::pushButton_selectAgent1);
     connect(ui->pushButton_selectAgent2, &QAbstractButton::toggled,
             this, &MainWindow::pushButton_selectAgent2);
+    connect(this, &MainWindow::updateStatePushButton,
+            this, &MainWindow::updateUi_statePushButton);
 }
 
 void MainWindow::pushButton_selectAgent1(bool stateBottom)
@@ -609,6 +662,7 @@ void MainWindow::pushButton_selectAgent1(bool stateBottom)
         uv_interface.setCurrentAgent(0);
         displayText("Установлен ввод и вывод данных с агента 1");
     }
+    updateStatePushButton();
 }
 
 void MainWindow::pushButton_selectAgent2(bool stateBottom)
@@ -617,6 +671,75 @@ void MainWindow::pushButton_selectAgent2(bool stateBottom)
         uv_interface.setCurrentAgent(1);
         displayText("Установлен ввод и вывод данных с агента 2");
     }
+    updateStatePushButton();
+}
+
+void MainWindow::updateUi_statePushButton()
+{
+    // вывод данных: модель/агент
+    if (uv_interface.getModeSelection())
+        ui->comboBox_modeSelection->setCurrentIndex(0);
+    else
+        ui->comboBox_modeSelection->setCurrentIndex(1);
+
+    // режим питания
+    switch (uv_interface.getPowerMode()) {
+    case power_Mode::MODE_2:
+        ui->pushButton_powerMode_2->setChecked(true);
+        break;
+    case power_Mode::MODE_3:
+        ui->pushButton_powerMode_3->setChecked(true);
+        break;
+    case power_Mode::MODE_4:
+        ui->pushButton_powerMode_4->setChecked(true);
+        break;
+    case power_Mode::MODE_5:
+        ui->pushButton_powerMode_5->setChecked(true);
+        break;
+    }
+
+    //
+    switch (uv_interface.getCSMode()) {
+    case e_CSMode::MODE_MANUAL:
+        ui->pushButton_modeManual->setChecked(true);
+        break;
+    case e_CSMode::MODE_AUTOMATED:
+        ui->pushButton_modeAutomated->setChecked(true);
+        break;
+    case e_CSMode::MODE_AUTOMATIC:
+        ui->pushButton_modeAutomatic->setChecked(true);
+        break;
+    }
+
+    ControlContoursFlags state_controlContoursFlags = uv_interface.getControlContoursFlags();
+    if (state_controlContoursFlags.yaw)
+        ui->pushButton_modeAutomated_psi->setChecked(true);
+    else
+        ui->pushButton_modeAutomated_psi->setChecked(false);
+    if (state_controlContoursFlags.roll)
+        ui->pushButton_modeAutomated_gamma->setChecked(true);
+    else
+        ui->pushButton_modeAutomated_gamma->setChecked(false);
+    if (state_controlContoursFlags.pitch)
+        ui->pushButton_modeAutomated_tetta->setChecked(true);
+    else
+        ui->pushButton_modeAutomated_tetta->setChecked(false);
+    if (state_controlContoursFlags.march)
+        ui->pushButton_modeAutomated_march->setChecked(true);
+    else
+        ui->pushButton_modeAutomated_march->setChecked(false);
+    if (state_controlContoursFlags.lag)
+        ui->pushButton_modeAutomated_lag->setChecked(true);
+    else
+        ui->pushButton_modeAutomated_lag->setChecked(false);
+    if (state_controlContoursFlags.depth)
+        ui->pushButton_modeAutomated_depth->setChecked(true);
+    else
+        ui->pushButton_modeAutomated_depth->setChecked(false);
+
+
+
+
 }
 
 void MainWindow::getWindow_setupIMU_check()
@@ -709,7 +832,7 @@ void MainWindow::updateUi_SetupMsg()
 {
     power_Mode pMode = uv_interface.getPowerMode();
     bool modeSelection = uv_interface.getModeSelection();
-    bool CsMode = uv_interface.getCSMode();
+
     ControlContoursFlags controlContoursFlags = uv_interface.getControlContoursFlags();
     ControlData control = uv_interface.getControlData();
     AUVCurrentData auvData = uv_interface.getAUVCurrentData();
@@ -728,10 +851,16 @@ void MainWindow::updateUi_SetupMsg()
     else
         ui->label_tab_setupMsg_send_modeAUV_selection_mode->setText("агент");
 
-    if (static_cast<int>(CsMode)){
-        ui->label_tab_setupMsg_send_cSMode_count->setText("автоматизированный");
-    } else {
+    switch (uv_interface.getCSMode()) {
+    case e_CSMode::MODE_MANUAL:
         ui->label_tab_setupMsg_send_cSMode_count->setText("ручной");
+        break;
+    case e_CSMode::MODE_AUTOMATED:
+        ui->label_tab_setupMsg_send_cSMode_count->setText("автоматизированный");
+        break;
+    case e_CSMode::MODE_AUTOMATIC:
+        ui->label_tab_setupMsg_send_cSMode_count->setText("автоматический");
+        break;
     }
 
     if (controlContoursFlags.yaw) {

@@ -38,7 +38,7 @@ public:
     FlagAH127C_bort         getFlagAH127C_bort();
     FlagAH127C_pult         getFlagAH127C_pult();
     power_Mode              getPowerMode();
-    bool                    getCSMode();
+    e_CSMode                getCSMode();
     ControlData             getControlData();
     DataAH127C              getImuData();
     Header                  getHeader();

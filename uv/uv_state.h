@@ -2,6 +2,7 @@
 #define UVSTATE_H
 
 #include <QObject>
+#include <QDebug>
 
 /*!
  * \brief e_CSMode enum класс режимов работы системы управления.

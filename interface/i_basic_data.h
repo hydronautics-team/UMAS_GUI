@@ -17,7 +17,7 @@ public:
     explicit IBasicData(QObject *parent = nullptr);
 
     // Static UV_State variable, which we will be accessing
-    static UVState agent[1];
+    static UVState agent[2];
     static int currentAgent;
 };
 

@@ -280,10 +280,15 @@ private slots:
     void slot_pushButton_missionPlanning_goto_update();
     void slot_pushButton_missionPlanning_goto_back();
 
+    void slot_pushButton_missionPlanning_go_trajectory_update();
+    void slot_pushButton_missionPlanning_go_trajectory_back();
+
     void slot_pushButton_missionPlanning_following();
     void slot_pushButton_missionPlanning_go_trajectory();
 
     void updateUi_DataMission();
+
+    void updateUi_statePushButton();
 
 signals:
     /*!
@@ -306,7 +311,11 @@ signals:
 
     void updateMap(DataUWB dataUWB);
     void updateMapForAgent2(DataUWB dataUWB_agent2);
-    void signal_pushButton_missionPlanning_goto_updateMap(double x, double y, double r);
+    void signal_pushButton_missionPlanning_goto_updateMap(double x, double y, double r, int flag_clear);
+    void signal_pushButton_missionPlanning_go_trajectory_updateMap(double x, double y, double r, int flag_clear);
+
+
+    void updateStatePushButton();
 
 protected:
     /*!

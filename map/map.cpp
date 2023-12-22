@@ -74,26 +74,26 @@ void Map::createPlot()
 
 void Map::updateUi_map(DataUWB dataUWB)
 {
-    drawCurrentCoords(agent1Coords, dataUWB.locationX, dataUWB.locationY);
+    drawCurrentCoords(agent1Coords, missionPlanning_goto_traj, dataUWB.locationX, dataUWB.locationY);
 
     range[0] = dataUWB.distanceToBeacon[0];
     range[1] = dataUWB.distanceToBeacon[1];
     range[2] = dataUWB.distanceToBeacon[2];
 
-    drawCircle(circle1, beacon1, x[0], y[0], range[0]);
-    drawCircle(circle2, beacon2, x[1], y[1], range[1]);
-    drawCircle(circle3, beacon3, x[2], y[2], range[2]);
+    drawCircle(circle1, beacon1, x[0], y[0], range[0], 1);
+    drawCircle(circle2, beacon2, x[1], y[1], range[1], 1);
+    drawCircle(circle3, beacon3, x[2], y[2], range[2], 1);
 }
 
 void Map::updateUi_map2(DataUWB dataUWB)
 {
-    drawCurrentCoords(agent2Coords, dataUWB.locationX, dataUWB.locationY);
+    drawCurrentCoords(agent2Coords, missionPlanning_goto_traj, dataUWB.locationX, dataUWB.locationY);
 }
 
-void Map::updateUi_missionPlanning_goto_goal(double x, double y, double r)
+void Map::updateUi_missionPlanning_goto_goal(double x, double y, double r, int flag_clear)
 {
 //    drawCurrentCoords(missionPlanning_goto_goal, x, y);
-    drawCircle(missionPlanning_goto_goal_radius, missionPlanning_goto_goal, x, y, r);
+    drawCircle( missionPlanning_goto_goal_radius, missionPlanning_goto_goal, x, y, r, flag_clear);
 }
 
 void Map::updateUi_missionPlanning_goto_goal_clear()
@@ -127,9 +127,9 @@ void Map::updateLocationUWB()
         }
     }
     emit sendLocationUWB(&x[0],&y[0]);
-    drawCircle(circle1, beacon1, x[0], y[0], range[0]);
-    drawCircle(circle2, beacon2, x[1], y[1], range[1]);
-    drawCircle(circle3, beacon3, x[2], y[2], range[2]);
+    drawCircle(circle1, beacon1, x[0], y[0], range[0], 1);
+    drawCircle(circle2, beacon2, x[1], y[1], range[1], 1);
+    drawCircle(circle3, beacon3, x[2], y[2], range[2], 1);
 }
 
 void Map::plotScaling(bool state)
@@ -154,10 +154,16 @@ void Map::updateUi_missionPlanning_goto_traj_clear()
     missionPlanning_goto_traj->clear();
 }
 
-void Map::drawCircle(QLineSeries *circle, QScatterSeries *point, double x, double y, double R)
+void Map::drawCircle(QLineSeries *circle, QScatterSeries *point, double x, double y, double R, int flag_clear)
 {
-    circle->clear();
-    point->clear();
+    if (flag_clear) {
+        circle->clear();
+        point->clear();
+    }
+
+//    circle = new QLineSeries();
+//    circle->setColor(QColor(0, 0, 255));
+//    chart->addSeries(circle);
 
     point->append(x,y);
 
@@ -169,12 +175,12 @@ void Map::drawCircle(QLineSeries *circle, QScatterSeries *point, double x, doubl
     }
 }
 
-void Map::drawCurrentCoords(QScatterSeries *agentCoords, double x, double y)
+void Map::drawCurrentCoords(QScatterSeries *agentCoords, QLineSeries *traj, double x, double y)
 {
     agentCoords->clear();
     agentCoords->append(x,y);
     if (flag_traj)
-        missionPlanning_goto_traj->append(x,y);
+        traj->append(x,y);
 }
 
 Map::~Map()
