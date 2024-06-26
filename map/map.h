@@ -13,6 +13,7 @@
 #include <QtWidgets/QGraphicsView>
 #include <QLineSeries>
 #include <QColor>
+#include <QtCharts/QValueAxis>
 
 #include "uv_state.h"
 #include "database.h"
@@ -20,7 +21,7 @@
 namespace Ui {
 class Map;
 }
-//using namespace QtCharts;
+using namespace QtCharts;
 
 /*!
  * \brief Map class класс отображения данных об UWB и агентов.
@@ -65,6 +66,9 @@ protected:
      */
     Ui::Map *ui;
 
+    
+    QScatterSeries *series = nullptr;
+
     QChartView *chartView = nullptr;
     QChart *chart = nullptr;
     QScatterSeries *beacon1 = nullptr;
@@ -82,10 +86,21 @@ protected:
 
     QStringList color = { "Синий", "Зеленый", "Оранжевый" };
 
+    //cpp
+    void mousePressEvent(QMouseEvent *event) override;
+
+
 private:
     DataBase *db;
 
     void createPlot();
+
+    //cpp
+    void addPointToChart(qreal x, qreal y);
+    bool missionPlanningEnabled = 0;
+
+
+
 
 public slots:
     /*!
@@ -114,6 +129,15 @@ public slots:
     void updateUi_missionPlanning_goto_traj_onoff();
     void updateUi_missionPlanning_goto_traj_clear();
 
+    //cpp
+    void updateChart(QLineSeries *lineSeries);
+    void clearLines();
+    void onPlotLineSeries(QLineSeries* series);
+    void setMissionPlanning_cpp_Enabled(bool enabled);
+
+
+
+
 
 signals:
     /*!
@@ -122,6 +146,10 @@ signals:
      * \param y координаты модулей по оси Y.
      */
     void sendLocationUWB(double *x, double *y);
+
+    //cpp
+    void pointAdded(qreal x, qreal y);
+
 };
 
 #endif // MAP_H

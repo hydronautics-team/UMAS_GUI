@@ -226,7 +226,148 @@ void MainWindow::setBottom_modeAutomatic()
         ui->pushButton_missionPlanning_go_trajectory, &QPushButton::clicked,
         this, &MainWindow::slot_pushButton_missionPlanning_go_trajectory);
 
+        setModeAutomatic_mission_cpp();
+
 }
+
+//cpp start
+
+void MainWindow::setModeAutomatic_mission_cpp()
+{
+    ui->tableWidget_missionPlanning_cpp_zonaResearch->setColumnCount(2);
+    ui->tableWidget_missionPlanning_cpp_zonaResearch->setHorizontalHeaderLabels(QStringList() << "X" << "Y");
+    ui->pushButton_missionPlanning_cpp_on_off->setCheckable(true);
+
+
+    connect(ui->map, &Map::pointAdded, this, &MainWindow::addPointToTable);
+    connect(ui->pushButton_missionPlanning_cpp_make, &QPushButton::clicked, this, &MainWindow::slot_pushButton_missionPlanning_cpp_make);
+    connect(ui->pushButton_missionPlanning_cpp_make_clean, &QPushButton::clicked, this, &MainWindow::slot_pushButton_missionPlanning_cpp_make_clean);
+    connect(this, &MainWindow::requestUpdateChart, ui->map, &Map::updateChart);
+    connect(this, &MainWindow::requestClearLines, ui->map, &Map::clearLines);
+    connect(this, &MainWindow::plotLineSeries, ui->map, &Map::onPlotLineSeries);
+    // Подключение кнопки для переключения состояния
+    connect(ui->pushButton_missionPlanning_cpp_on_off, &QPushButton::toggled,
+                ui->map, &Map::setMissionPlanning_cpp_Enabled);
+
+    connect(
+        ui->pushButton_missionPlanning_cpp_back, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_missionPlanning_cpp_back);
+
+    connect(
+        ui->pushButton_missionPlanning_cpp, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_missionPlanning_goto_back);
+
+    connect(
+        ui->pushButton_missionPlanning_cpp, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_missionPlanning_cpp);
+}
+
+void MainWindow::addPointToTable(qreal x, qreal y) {
+    int row = ui->tableWidget_missionPlanning_cpp_zonaResearch->rowCount();
+    ui->tableWidget_missionPlanning_cpp_zonaResearch->insertRow(row);
+    ui->tableWidget_missionPlanning_cpp_zonaResearch->setItem(row, 0, new QTableWidgetItem(QString::number(x)));
+    ui->tableWidget_missionPlanning_cpp_zonaResearch->setItem(row, 1, new QTableWidgetItem(QString::number(y)));
+}
+
+void MainWindow::slot_pushButton_missionPlanning_cpp_make() {
+    QLineSeries *lineSeries = new QLineSeries();
+    int rowCount = ui->tableWidget_missionPlanning_cpp_zonaResearch->rowCount();
+
+    QStringList pointList;
+
+    for (int i = 0; i < rowCount; ++i) {
+        qreal x = ui->tableWidget_missionPlanning_cpp_zonaResearch->item(i, 0)->text().toDouble();
+        qreal y = ui->tableWidget_missionPlanning_cpp_zonaResearch->item(i, 1)->text().toDouble();
+        lineSeries->append(x, y);
+
+        pointList.append(QString::number(x) + "," + QString::number(y));
+    }
+
+    if (rowCount > 0) {
+        // Замкнуть фигуру, соединяя последнюю точку с первой
+        qreal firstX = ui->tableWidget_missionPlanning_cpp_zonaResearch->item(0, 0)->text().toDouble();
+        qreal firstY = ui->tableWidget_missionPlanning_cpp_zonaResearch->item(0, 1)->text().toDouble();
+        lineSeries->append(firstX, firstY);
+    }
+    emit requestUpdateChart(lineSeries);
+
+    QString pointsString = pointList.join(" ");
+
+    // Получение значения из doubleSpinBox
+    double distanceTack = ui->doubleSpinBox_missionPlanning_cpp_distanceTack->value();
+    QString distanceTackStr = QString::number(distanceTack);
+
+    qDebug() << "Python start:";
+    qDebug() << "Generated points string:" << pointsString;
+    qDebug() << "Distance Tack:" << distanceTackStr;
+
+
+
+    // Создание и настройка QProcess
+    QProcess process;
+    QString program = "python3";
+    QStringList arguments;
+    arguments << "execute_algorithm.py" << pointsString << distanceTackStr;
+
+    process.setProgram(program);
+    process.setArguments(arguments);
+    process.setWorkingDirectory("/home/shakuevda/Desktop/pult/UMAS_GUI"); // Укажите путь к директории скрипта
+
+    process.start();
+
+    // Проверка запуска процесса
+    if (!process.waitForStarted()) {
+        qDebug() << "Failed to start process:" << process.errorString();
+        return;
+    }
+
+    // Ожидание завершения процесса
+    process.waitForFinished();
+
+    // Чтение стандартного вывода и ошибок
+    QString output(process.readAllStandardOutput());
+    QString error(process.readAllStandardError());
+
+    if (!error.isEmpty()) {
+        qDebug() << "Python error:" << error;
+    } else {
+        qDebug() << "Python output:" << output;
+
+        // Парсинг результата и создание QLineSeries
+        QLineSeries *resultSeries = new QLineSeries();
+        output.remove('[').remove(']').replace("(", "").replace(")", "").replace(" ", "");
+        QStringList pointStrings = output.split(',');
+
+        for (int i = 0; i < pointStrings.size(); i += 2) {
+            qreal x = pointStrings[i].toDouble();
+            qreal y = pointStrings[i + 1].toDouble();
+            resultSeries->append(x, y);
+        }
+
+        emit plotLineSeries(resultSeries); // Отправка сигнала с QLineSeries
+    }
+    qDebug() << "Python finish";
+
+}
+
+void MainWindow::slot_pushButton_missionPlanning_cpp_make_clean() {
+    ui->tableWidget_missionPlanning_cpp_zonaResearch->clearContents();
+    ui->tableWidget_missionPlanning_cpp_zonaResearch->setRowCount(0);
+    emit requestClearLines();
+}
+
+void MainWindow::slot_pushButton_missionPlanning_cpp_back()
+{
+    ui->stackedWidget_missionPlanning->setCurrentIndex(0);
+}
+
+void MainWindow::slot_pushButton_missionPlanning_cpp()
+{
+    ui->stackedWidget_missionPlanning->setCurrentIndex(3);
+    displayText("Задайте параметры для покрытия области");
+}
+
+//cpp finish
 
 void MainWindow::test_automatic_after()
 {

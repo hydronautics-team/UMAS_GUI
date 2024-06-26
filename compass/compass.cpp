@@ -33,7 +33,7 @@ void Compass::paintEvent(QPaintEvent *e) {
             painter.drawLine(0, -55, 0, -60);
         else {
             painter.drawLine(0, -50, 0, -60);
-            font.setPointSize(5);
+            font.setPointSize(3);
             painter.setFont(font);
             painter.drawText(-20, -85, 40, 40, Qt::AlignCenter | Qt::AlignTop, QString::number(i * 6));
         }

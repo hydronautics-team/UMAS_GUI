@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QDebug>
+#include <QProcess>
+
 
 #include <QTime>
 
@@ -23,7 +25,6 @@
 
 #include "joy_stick.h"
 #include "key_board.h"
-
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -122,6 +123,16 @@ private:
      * \brief setUpdateUI устанавливает слоты обновления для UI формы.
      */
     void setUpdateUI();
+
+    void setModeAutomatic_mission_cpp();
+
+public slots:
+
+    //cpp
+    void addPointToTable(qreal x, qreal y);
+    void slot_pushButton_missionPlanning_cpp_make();
+    void slot_pushButton_missionPlanning_cpp_make_clean();
+
 
 
 private slots:
@@ -290,6 +301,9 @@ private slots:
 
     void updateUi_statePushButton();
 
+    void slot_pushButton_missionPlanning_cpp_back();
+    void slot_pushButton_missionPlanning_cpp();
+
 signals:
     /*!
      * \brief updateCompass сигнал запуска обновления компаса на UI форме.
@@ -314,8 +328,18 @@ signals:
     void signal_pushButton_missionPlanning_goto_updateMap(double x, double y, double r, int flag_clear);
     void signal_pushButton_missionPlanning_go_trajectory_updateMap(double x, double y, double r, int flag_clear);
 
-
     void updateStatePushButton();
+
+    void pointAdded(qreal x, qreal y);
+
+    //cpp
+    void requestUpdateChart(QLineSeries *lineSeries);
+    void requestClearLines();
+    void plotLineSeries(QLineSeries* series);
+
+    void toggleMissionPlanning_cppPointsEnabled();
+
+
 
 protected:
     /*!

@@ -48,6 +48,7 @@ void Map::createPlot()
     missionPlanning_goto_traj->setColor(QColor(255, 0, 0));
 
     chart = new QChart();
+
     chart->addSeries(beacon1);
     chart->addSeries(beacon2);
     chart->addSeries(beacon3);
@@ -59,11 +60,20 @@ void Map::createPlot()
     chart->addSeries(agent1Coords);
     chart->addSeries(agent2Coords);
     chart->addSeries(missionPlanning_goto_goal);
+
+    // cpp start
+    series = new QScatterSeries();
+    chart->addSeries(series);
+    //cpp end
+
     chart->createDefaultAxes();
-    chart->axes(Qt::Vertical).first()->setRange(-50,100);
+
+    chart->axes(Qt::Vertical).first()->setRange(0,50);
     chart->axes(Qt::Vertical).first()->setTitleText("Y, см");
-    chart->axes(Qt::Horizontal).first()->setRange(-50,150);
+    chart->axes(Qt::Horizontal).first()->setRange(0, 50);
     chart->axes(Qt::Horizontal).first()->setTitleText("X, см");
+
+
     chartView = new QChartView(chart);
 
     ui->verticalLayout_map->addWidget(chartView);
@@ -71,6 +81,42 @@ void Map::createPlot()
     connect(ui->pushButton_scaling, &QPushButton::toggled,
             this, &Map::plotScaling);
 }
+
+void Map::mousePressEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton && missionPlanningEnabled) {
+        QPointF point = chartView->mapToScene(event->pos());
+        QPointF value = chart->mapToValue(point, series);
+        addPointToChart(value.x(), value.y());
+        emit pointAdded(value.x(), value.y());
+    }
+}
+
+void Map::addPointToChart(qreal x, qreal y) {
+    series->append(x, y);
+}
+
+void Map::updateChart(QLineSeries *lineSeries) {
+//    chart->removeAllSeries();
+//    chart->addSeries(series);
+    chart->addSeries(lineSeries);
+    chart->createDefaultAxes();
+}
+
+void Map::clearLines() {
+    QList<QAbstractSeries *> allSeries = chart->series();
+    for (QAbstractSeries *s : allSeries) {
+        if (dynamic_cast<QLineSeries *>(s)) {
+            chart->removeSeries(s);
+        }
+    }
+    series->clear();
+}
+
+void Map::onPlotLineSeries(QLineSeries* series_cpp) {
+    chart->addSeries(series_cpp);
+    chart->createDefaultAxes();
+}
+
 
 void Map::updateUi_map(DataUWB dataUWB)
 {
@@ -181,6 +227,11 @@ void Map::drawCurrentCoords(QScatterSeries *agentCoords, QLineSeries *traj, doub
     agentCoords->append(x,y);
     if (flag_traj)
         traj->append(x,y);
+}
+
+void Map::setMissionPlanning_cpp_Enabled(bool enabled)
+{
+    missionPlanningEnabled = enabled;
 }
 
 Map::~Map()

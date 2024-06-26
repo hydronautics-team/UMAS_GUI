@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1920</width>
-    <height>1080</height>
+    <width>3840</width>
+    <height>2400</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,13 +16,13 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,1">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,1">
+     <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,30">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <widget class="QComboBox" name="comboBox_modeSelection">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -42,7 +42,7 @@
         <item>
          <widget class="QPushButton" name="pushButton_connection">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -67,6 +67,12 @@
         </item>
         <item>
          <widget class="QPushButton" name="pushButton_breakConnection">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
            <string>Разорвать соединение</string>
           </property>
@@ -75,16 +81,16 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,1">
+       <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,20">
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_7">
+         <layout class="QVBoxLayout" name="verticalLayout_7" stretch="1,1,20">
           <item>
            <widget class="QPushButton" name="pushButton_selectAgent1">
             <property name="enabled">
              <bool>true</bool>
             </property>
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Ignored" vsizetype="Minimum">
+             <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -106,7 +112,7 @@
              <bool>true</bool>
             </property>
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Ignored" vsizetype="Minimum">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -2539,6 +2545,9 @@
           <property name="text">
            <string>Информация</string>
           </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
          </widget>
         </item>
         <item>
@@ -3350,6 +3359,13 @@
                </widget>
               </item>
               <item>
+               <widget class="QPushButton" name="pushButton_missionPlanning_cpp">
+                <property name="text">
+                 <string>Покрытие акватории</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <spacer name="verticalSpacer_5">
                 <property name="orientation">
                  <enum>Qt::Vertical</enum>
@@ -3644,6 +3660,76 @@
               </item>
              </layout>
             </widget>
+            <widget class="QWidget" name="page_missionPlanning_cpp">
+             <layout class="QVBoxLayout" name="verticalLayout_13" stretch="0,0,0,1,0,0">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_15">
+                <item>
+                 <widget class="QLabel" name="label_63">
+                  <property name="text">
+                   <string>Межгалсовое расстояние</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_cpp_distanceTack">
+                  <property name="value">
+                   <double>1.000000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_missionPlanning_cpp_on_off">
+                <property name="text">
+                 <string>Расствить границы осмотра акватории</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QTableWidget" name="tableWidget_missionPlanning_cpp_zonaResearch"/>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_16">
+                <item>
+                 <widget class="QPushButton" name="pushButton_missionPlanning_cpp_make">
+                  <property name="text">
+                   <string>Построить</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton_missionPlanning_cpp_make_clean">
+                  <property name="text">
+                   <string>Очистить</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_8">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_missionPlanning_cpp_back">
+                <property name="text">
+                 <string>Вернуться к выбору миссий</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
            </widget>
           </item>
           <item>
@@ -3768,7 +3854,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1920</width>
+     <width>3840</width>
      <height>22</height>
     </rect>
    </property>
