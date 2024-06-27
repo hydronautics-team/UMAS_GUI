@@ -1,12 +1,10 @@
 import sys
-import os
 import warnings
 
 # Игнорировать предупреждения Matplotlib
 warnings.filterwarnings("ignore", category=UserWarning, module='matplotlib')
 
-sys.path.append('/home/shakuevda/Desktop/final_work')
-
+sys.path.append('./algorithm_cpp')
 from coveragePathPlanningAlgorithm import coverage_path_planning_algorithm
 
 def parse_points(points_str):
