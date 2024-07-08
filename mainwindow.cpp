@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    setWidget();
     setConsole();
     setTimer_updateImpact(20);
     setBottom();
@@ -112,7 +113,6 @@ void MainWindow::setBottom()
     setBottom_mode();
     setBottom_modeAutomated();
     setBottom_modeAutomatic();
-    setBottom_powerMode();
     setBottom_connection();
     setBottom_modeSelection();
     setBottom_setupIMU();
@@ -259,7 +259,14 @@ void MainWindow::setModeAutomatic_mission_cpp()
 
     connect(
         ui->pushButton_missionPlanning_cpp, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_cpp);
+                this, &MainWindow::slot_pushButton_missionPlanning_cpp);
+}
+
+void MainWindow::setWidget()
+{
+    powerSystem = new PowerSystem(this);
+    ui->horizontalLayout_for_powerSystem->addWidget(powerSystem);
+
 }
 
 void MainWindow::addPointToTable(qreal x, qreal y) {
@@ -554,95 +561,6 @@ void MainWindow::stabilizeDepthToggled(bool state) {
     uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_DEPTH, state);
 }
 
-void MainWindow::setBottom_powerMode()
-{
-    QButtonGroup *powerMode = new QButtonGroup(this);
-    powerMode->addButton(ui->pushButton_powerMode_2);
-    powerMode->addButton(ui->pushButton_powerMode_3);
-    powerMode->addButton(ui->pushButton_powerMode_4);
-    powerMode->addButton(ui->pushButton_powerMode_5);
-
-    ui->pushButton_powerMode_2->setCheckable(true);
-    ui->pushButton_powerMode_3->setCheckable(true);
-    ui->pushButton_powerMode_4->setCheckable(true);
-    ui->pushButton_powerMode_5->setCheckable(true);
-
-    uv_interface.setPowerMode(power_Mode::MODE_2);
-    ui->pushButton_powerMode_2->setChecked(true);
-
-    connect(
-        ui->pushButton_powerMode_2, SIGNAL(clicked()),
-        this, SLOT(pushButton_on_powerMode_2()));
-
-    connect(
-        ui->pushButton_powerMode_3, SIGNAL(clicked()),
-        this, SLOT(pushButton_on_powerMode_3()));
-
-    connect(
-        ui->pushButton_powerMode_4, SIGNAL(clicked()),
-        this, SLOT(pushButton_on_powerMode_4()));
-
-    connect(
-        ui->pushButton_powerMode_5, SIGNAL(clicked()),
-        this, SLOT(pushButton_on_powerMode_5()));
-}
-
-void MainWindow::pushButton_on_powerMode_2()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_2);
-}
-
-void MainWindow::pushButton_on_powerMode_3()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_3);
-}
-
-void MainWindow::pushButton_on_powerMode_4()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_4);
-}
-
-void MainWindow::pushButton_on_powerMode_5()
-{
-    before_powerMode = uv_interface.getPowerMode();
-    uv_interface.setPowerMode(power_Mode::MODE_5);
-
-    ui->pushButton_powerMode_2->setEnabled(false);
-    ui->pushButton_powerMode_3->setEnabled(false);
-    ui->pushButton_powerMode_4->setEnabled(false);
-    ui->pushButton_powerMode_5->setEnabled(false);
-
-    timer_off_powerMode_5 = new QTimer(this);
-    connect(
-        timer_off_powerMode_5, SIGNAL(timeout()),
-        this, SLOT(off_powerMode_5()));
-    timer_off_powerMode_5->start(5000);
-}
-
-void MainWindow::off_powerMode_5()
-{
-    timer_off_powerMode_5->stop();
-    uv_interface.setPowerMode(before_powerMode);
-
-    switch (before_powerMode) {
-    case power_Mode::MODE_2:
-        ui->pushButton_powerMode_2->setChecked(true);
-        break;
-
-    case power_Mode::MODE_3:
-        ui->pushButton_powerMode_3->setChecked(true);
-        break;
-
-    case power_Mode::MODE_4:
-        ui->pushButton_powerMode_4->setChecked(true);
-        break;
-    }
-
-    ui->pushButton_powerMode_2->setEnabled(true);
-    ui->pushButton_powerMode_3->setEnabled(true);
-    ui->pushButton_powerMode_4->setEnabled(true);
-    ui->pushButton_powerMode_5->setEnabled(true);
-}
 
 void MainWindow::setBottom_connection()
 {
@@ -823,21 +741,6 @@ void MainWindow::updateUi_statePushButton()
     else
         ui->comboBox_modeSelection->setCurrentIndex(1);
 
-    // режим питания
-    switch (uv_interface.getPowerMode()) {
-    case power_Mode::MODE_2:
-        ui->pushButton_powerMode_2->setChecked(true);
-        break;
-    case power_Mode::MODE_3:
-        ui->pushButton_powerMode_3->setChecked(true);
-        break;
-    case power_Mode::MODE_4:
-        ui->pushButton_powerMode_4->setChecked(true);
-        break;
-    case power_Mode::MODE_5:
-        ui->pushButton_powerMode_5->setChecked(true);
-        break;
-    }
 
     //
     switch (uv_interface.getCSMode()) {

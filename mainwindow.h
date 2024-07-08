@@ -5,10 +5,7 @@
 #include <QTimer>
 #include <QDebug>
 #include <QProcess>
-
-
 #include <QTime>
-
 #include <QButtonGroup>
 
 #include "remote_control.h"
@@ -16,15 +13,14 @@
 #include "i_user_interface_data.h"
 #include "pc_protocol.h"
 #include "i_server_data.h"
-
 #include "setup_imu.h"
 #include "setupimu_check.h"
 #include "map.h"
-
 #include "i_basic_data.h"
-
 #include "joy_stick.h"
 #include "key_board.h"
+#include "power_system.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -81,15 +77,6 @@ private:
     void setBottom_modeAutomatic();
 
 
-    /*!
-     * \brief setBottom_powerMode устанавливает кнопки и слоты,
-     *  связанные с режимами питания.
-     */
-    void setBottom_powerMode();
-    /*!
-     * \brief setBottom_connection устанавливает кнопки и слоты,
-     *  связанные с установкой соединения к аппарата.
-     */
     void setBottom_connection();
     /*!
      * \brief setBottom_modeSelection устанавливает кнопки и слоты,
@@ -125,6 +112,9 @@ private:
     void setUpdateUI();
 
     void setModeAutomatic_mission_cpp();
+
+    void setWidget();
+    PowerSystem *powerSystem;
 
 public slots:
 
@@ -206,28 +196,6 @@ private slots:
      */
     void stabilizeDepthToggled(bool state);
 
-    /*!
-     * \brief pushButton_on_powerMode_2 слот установки 2 режима питания.
-     */
-    void pushButton_on_powerMode_2();
-    /*!
-     * \brief pushButton_on_powerMode_3 слот установки 3 режима питания.
-     */
-    void pushButton_on_powerMode_3();
-    /*!
-     * \brief pushButton_on_powerMode_4 слот установки 4 режима питания.
-     */
-    void pushButton_on_powerMode_4();
-    /*!
-     * \brief pushButton_on_powerMode_5 слот установки 5 режима питания
-     *  и запуск таймера переключения режима питания на предыдущий.
-     */
-    void pushButton_on_powerMode_5();
-    /*!
-     * \brief off_powerMode_5 слот выключения таймера 5 режима питания
-     *  и переключение режима питания на предыдущий.
-     */
-    void off_powerMode_5();
 
     /*!
      * \brief setConnection слот установления соединения.
@@ -356,15 +324,6 @@ protected:
     KeyBoard *keyBoard = nullptr;
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
-
-    /*!
-     * \brief timer_off_powerMode_5 таймер переключения 5 режима питания.
-     */
-    QTimer *timer_off_powerMode_5;
-    /*!
-     * \brief before_powerMode режим питания, используемый перед 5.
-     */
-    power_Mode before_powerMode;
 
     /*!
      * \brief uv_interface интерфейс взаимодействия с глобальной переменной,

@@ -26,6 +26,7 @@ include_directories("${PROJECT_SOURCE_DIR}/map")
 include_directories("${PROJECT_SOURCE_DIR}/communication")
 include_directories("${PROJECT_SOURCE_DIR}/ui_utils")
 include_directories("${PROJECT_SOURCE_DIR}/missions")
+include_directories("${PROJECT_SOURCE_DIR}/tabs")
 include_directories("${PROJECT_SOURCE_DIR}")
 
 include_directories(${Python3_INCLUDE_DIRS})
@@ -77,6 +78,7 @@ set(PROJECT_SOURCES
         ui_utils/database.cpp
         remote_control/key_board.h remote_control/key_board.cpp
         remote_control/joy_stick.h remote_control/joy_stick.cpp
+        tabs/power_system.h tabs/power_system.cpp tabs/power_system.ui
 )
 
 
