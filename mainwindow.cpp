@@ -104,6 +104,11 @@ void MainWindow::updateUi_fromControl(){
     ui->label_impactDataLag->setText(QString::number(control.lag, 'f', 2));
 
     ui->compass->setYawDesirable(control.yaw, imuData.yaw, uv_interface.getCSMode());
+
+    ui->label_IMUdata_yaw->setText(QString::number(imuData.yaw, 'f', 2));
+    ui->label_IMUdata_pitch->setText(QString::number(imuData.pitch, 'f', 2));
+    ui->label_IMUdata_roll->setText(QString::number(imuData.roll, 'f', 2));
+
 }
 
 //
@@ -115,8 +120,6 @@ void MainWindow::setBottom()
     setBottom_modeAutomatic();
     setBottom_connection();
     setBottom_modeSelection();
-    setBottom_setupIMU();
-    setBottom_setupIMU_check();
     setBottom_selectAgent();
 }
 
@@ -268,6 +271,9 @@ void MainWindow::setWidget()
     ui->horizontalLayout_for_powerSystem->addWidget(powerSystem);
     checkMsg = new CheckMsg(this);
     ui->horizontalLayout_for_checkMsg->addWidget(checkMsg);
+    checkImu = new CheckImu(this);
+    ui->horizontalLayout_for_checkImu->addWidget(checkImu);
+
 }
 
 void MainWindow::addPointToTable(qreal x, qreal y) {
@@ -674,28 +680,10 @@ void MainWindow::setModeSelection(int index)
     }
 }
 
-void MainWindow::setBottom_setupIMU()
-{
-    connect(
-        ui->pushButton_setupIMU, SIGNAL(clicked()),
-        this, SLOT(getWindow_setupIMU()));
-}
-
-void MainWindow::getWindow_setupIMU()
-{
-    SetupIMU window_setupIMU;
-    window_setupIMU.setModal(false);
-    window_setupIMU.exec();
-}
 
 //
 
-void MainWindow::setBottom_setupIMU_check()
-{
-    connect(
-        ui->pushButton_setupIMU_check, SIGNAL(clicked()),
-        this, SLOT(getWindow_setupIMU_check()));
-}
+
 
 void MainWindow::setBottom_selectAgent()
 {
@@ -782,17 +770,9 @@ void MainWindow::updateUi_statePushButton()
     else
         ui->pushButton_modeAutomated_depth->setChecked(false);
 
-
-
-
 }
 
-void MainWindow::getWindow_setupIMU_check()
-{
-    SetupIMU_check window_setupIMU_check;
-    window_setupIMU_check.setModal(false);
-    window_setupIMU_check.exec();
-}
+
 
 //
 
@@ -834,7 +814,7 @@ void MainWindow::setUpdateUI()
     connect(this, SIGNAL(updateCompass(float)),
             this, SLOT(updateUi_Compass(float)));
     connect(this, SIGNAL(updateIMU(DataAH127C)),
-            this, SLOT(updateUi_IMU(DataAH127C)));
+            checkImu, SLOT(updateUi_imu(DataAH127C)));
     connect(this, SIGNAL(updateSetupMsg()),
             checkMsg, SLOT(updateUi_checkMsg()));
     connect(this, SIGNAL(updateDataMission()),
@@ -848,29 +828,6 @@ void MainWindow::setUpdateUI()
 
 void MainWindow::updateUi_Compass(float yaw) {
     ui->compass->setYaw(yaw);
-}
-
-void MainWindow::updateUi_IMU(DataAH127C imuData){
-    ui->label_IMUdata_accel_X->setText(QString::number(imuData.X_accel, 'f', 2));
-    ui->label_IMUdata_accel_Y->setText(QString::number(imuData.Y_accel, 'f', 2));
-    ui->label_IMUdata_accel_Z->setText(QString::number(imuData.Z_accel, 'f', 2));
-
-    ui->label_IMUdata_rate_X->setText(QString::number(imuData.X_rate, 'f', 2));
-    ui->label_IMUdata_rate_Y->setText(QString::number(imuData.Y_rate, 'f', 2));
-    ui->label_IMUdata_rate_Z->setText(QString::number(imuData.Z_rate, 'f', 2));
-
-    ui->label_IMUdata_magn_X->setText(QString::number(imuData.X_magn, 'f', 2));
-    ui->label_IMUdata_magn_Y->setText(QString::number(imuData.Y_magn, 'f', 2));
-    ui->label_IMUdata_magn_Z->setText(QString::number(imuData.Z_magn, 'f', 2));
-
-    ui->label_IMUdata_q0->setText(QString::number(imuData.quat[0], 'f', 2));
-    ui->label_IMUdata_q1->setText(QString::number(imuData.quat[1], 'f', 2));
-    ui->label_IMUdata_q2->setText(QString::number(imuData.quat[2], 'f', 2));
-    ui->label_IMUdata_q3->setText(QString::number(imuData.quat[3], 'f', 2));
-
-    ui->label_IMUdata_yaw->setText(QString::number(imuData.yaw, 'f', 2));
-    ui->label_IMUdata_pitch->setText(QString::number(imuData.pitch, 'f', 2));
-    ui->label_IMUdata_roll->setText(QString::number(imuData.roll, 'f', 2));
 }
 
 MainWindow::~MainWindow()

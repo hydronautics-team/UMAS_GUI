@@ -80,6 +80,7 @@ set(PROJECT_SOURCES
         remote_control/joy_stick.h remote_control/joy_stick.cpp
         tabs/power_system.h tabs/power_system.cpp tabs/power_system.ui
         tabs/check_msg.h tabs/check_msg.cpp tabs/check_msg.ui
+        tabs/check_imu.h tabs/check_imu.cpp tabs/check_imu.ui
 )
 
 

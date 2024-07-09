@@ -13,14 +13,13 @@
 #include "i_user_interface_data.h"
 #include "pc_protocol.h"
 #include "i_server_data.h"
-#include "setup_imu.h"
-#include "setupimu_check.h"
 #include "map.h"
 #include "i_basic_data.h"
 #include "joy_stick.h"
 #include "key_board.h"
 #include "power_system.h"
 #include "check_msg.h"
+#include "check_imu.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -84,16 +83,6 @@ private:
      *  связанные с режимом вывода данных.
      */
     void setBottom_modeSelection();
-    /*!
-     * \brief setBottom_setupIMU устанавливает на нажатие кнопки слот
-     *  вызова окна настройки БСО.
-     */
-    void setBottom_setupIMU();
-    /*!
-     * \brief setBottom_setupIMU_check устанавливает на нажатие кнопки
-     *  слот вызова окна настройки БСО.
-     */
-    void setBottom_setupIMU_check();
 
     void setBottom_selectAgent();
 
@@ -117,6 +106,7 @@ private:
     void setWidget();
     PowerSystem *powerSystem;
     CheckMsg    *checkMsg;
+    CheckImu    *checkImu;
 
 public slots:
 
@@ -221,24 +211,10 @@ private slots:
     void setModeSelection(int index);
 
     /*!
-     * \brief getWindow_setupIMU слот вызова окна настройки БСО.
-     */
-    void getWindow_setupIMU();
-    /*!
-     * \brief getWindow_setupIMU_check слот вызова окна настройки БСО.
-     */
-    void getWindow_setupIMU_check();
-
-    /*!
      * \brief updateUi_Compass слот обновления компаса на UI форме.
      * \param yaw новое значение курса.
      */
     void updateUi_Compass(float yaw);
-    /*!
-     * \brief updateUi_IMU слот обновления данных с БСО на UI форме.
-     * \param imuData структура данных с обновленными значениями с БСО.
-     */
-    void updateUi_IMU(DataAH127C imuData);
 
     void useKeyBoard();
     void useJoyStick();
