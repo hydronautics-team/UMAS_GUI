@@ -20,6 +20,7 @@
 #include "joy_stick.h"
 #include "key_board.h"
 #include "power_system.h"
+#include "check_msg.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -115,6 +116,7 @@ private:
 
     void setWidget();
     PowerSystem *powerSystem;
+    CheckMsg    *checkMsg;
 
 public slots:
 
@@ -237,11 +239,6 @@ private slots:
      * \param imuData структура данных с обновленными значениями с БСО.
      */
     void updateUi_IMU(DataAH127C imuData);
-    /*!
-     * \brief updateUi_SetupMsg слот обновления отправленных и полученных
-     *  данных на UI форме.
-     */
-    void updateUi_SetupMsg();
 
     void useKeyBoard();
     void useJoyStick();
