@@ -1,4 +1,4 @@
-    #include "mainwindow.h"
+#include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -17,6 +17,62 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 //
+
+void MainWindow::setWidget()
+{
+    powerSystem = new PowerSystem(this);
+    ui->horizontalLayout_for_powerSystem->addWidget(powerSystem);
+    checkMsg = new CheckMsg(this);
+    ui->horizontalLayout_for_checkMsg->addWidget(checkMsg);
+    checkImu = new CheckImu(this);
+    ui->horizontalLayout_for_checkImu->addWidget(checkImu);
+    modeAutomatic = new ModeAutomatic(this);
+    ui->verticalLayout_modeAutomatic->addWidget(modeAutomatic);
+    // setMission_map
+    connect(
+        modeAutomatic->ui->pushButton_missionPlanning_goto_clean, &QPushButton::clicked,
+        ui->map, &Map::updateUi_missionPlanning_goto_goal_clear);
+    connect(
+        modeAutomatic->ui->pushButton_missionPlanning_goto_on_trajectory, &QPushButton::clicked,
+        ui->map, &Map::updateUi_missionPlanning_goto_traj_onoff);
+    connect(
+        modeAutomatic->ui->pushButton_missionPlanning_goto_on_trajectory_clear, &QPushButton::clicked,
+        ui->map, &Map::updateUi_missionPlanning_goto_traj_clear);
+    // setMission_goTo
+    connect(
+        modeAutomatic, &ModeAutomatic::signal_pushButton_missionPlanning_goto_updateMap,
+        ui->map, &Map::updateUi_missionPlanning_goto_goal);
+    // setMission_go_trajectory
+    connect(
+        modeAutomatic, &ModeAutomatic::signal_pushButton_missionPlanning_go_trajectory_updateMap,
+        ui->map, &Map::updateUi_missionPlanning_goto_goal);
+    connect(
+        modeAutomatic->ui->pushButton_missionPlanning_go_trajectory_clean, &QPushButton::clicked,
+        ui->map, &Map::updateUi_missionPlanning_goto_goal_clear);
+    // setMission_cpp
+    connect(
+        ui->map, &Map::pointAdded,
+        modeAutomatic, &ModeAutomatic::addPointToTable);
+    connect(
+        modeAutomatic, &ModeAutomatic::requestUpdateChart,
+        ui->map, &Map::updateChart);
+    connect(
+        modeAutomatic, &ModeAutomatic::requestClearLines,
+        ui->map, &Map::clearLines);
+    connect(
+        modeAutomatic, &ModeAutomatic::plotLineSeries,
+        ui->map, &Map::onPlotLineSeries);
+        // Подключение кнопки для переключения состояния
+    connect(
+        modeAutomatic->ui->pushButton_missionPlanning_cpp_on_off, &QPushButton::toggled,
+        ui->map, &Map::setMissionPlanning_cpp_Enabled);
+    connect(
+        modeAutomatic,&ModeAutomatic::displayText_toConsole,
+        this, &MainWindow::displayText);
+    connect(
+        modeAutomatic, &ModeAutomatic::set_stackedWidget_mode,
+        ui->stackedWidget_mode, &QStackedWidget::setCurrentIndex);
+}
 
 void MainWindow::setConsole()
 {
@@ -117,7 +173,6 @@ void MainWindow::setBottom()
 {
     setBottom_mode();
     setBottom_modeAutomated();
-    setBottom_modeAutomatic();
     setBottom_connection();
     setBottom_modeSelection();
     setBottom_selectAgent();
@@ -163,337 +218,6 @@ void MainWindow::e_CSModeAutomaticToggled()
     uv_interface.setCSMode(e_CSMode::MODE_AUTOMATIC);
     ui->stackedWidget_mode->setCurrentIndex(1);
 }
-
-void MainWindow::setBottom_modeAutomatic()
-{
-    connect(
-        ui->pushButton_after, SIGNAL(clicked()),
-        this, SLOT(test_automatic_after()));
-
-    connect(
-        ui->pushButton_missionControl_modeIdle, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionControl_modeIdle);
-    connect(
-        ui->pushButton_missionControl_modeStart, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionControl_modeStart);
-    connect(
-        ui->pushButton_missionControl_modeCancel, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionControl_modeCancel);
-    connect(
-        ui->pushButton_missionControl_modeStop, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionControl_modeStop);
-    connect(
-        ui->pushButton_missionControl_modeComplete, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionControl_modeComplete);
-
-    connect(
-        ui->pushButton_missionPlanning_goto, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_goto);
-    connect(
-        ui->pushButton_missionPlanning_goto_update, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_goto_update);
-    connect(
-        this, &MainWindow::signal_pushButton_missionPlanning_goto_updateMap,
-        ui->map, &Map::updateUi_missionPlanning_goto_goal);
-    connect(
-        ui->pushButton_missionPlanning_goto_back, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_goto_back);
-    connect(
-        ui->pushButton_missionPlanning_goto_clean, &QPushButton::clicked,
-        ui->map, &Map::updateUi_missionPlanning_goto_goal_clear);
-    connect(
-        ui->pushButton_missionPlanning_goto_on_trajectory, &QPushButton::clicked,
-        ui->map, &Map::updateUi_missionPlanning_goto_traj_onoff);
-    connect(
-        ui->pushButton_missionPlanning_goto_on_trajectory_clear, &QPushButton::clicked,
-        ui->map, &Map::updateUi_missionPlanning_goto_traj_clear);
-
-    connect(
-        ui->pushButton_missionPlanning_go_trajectory_update, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_go_trajectory_update);
-    connect(
-        this, &MainWindow::signal_pushButton_missionPlanning_go_trajectory_updateMap,
-        ui->map, &Map::updateUi_missionPlanning_goto_goal);
-    connect(
-        ui->pushButton_missionPlanning_go_trajectory_back, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_go_trajectory_back);
-    connect(
-        ui->pushButton_missionPlanning_go_trajectory_clean, &QPushButton::clicked,
-        ui->map, &Map::updateUi_missionPlanning_goto_goal_clear);
-
-
-    connect(
-        ui->pushButton_missionPlanning_following, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_following);
-    connect(
-        ui->pushButton_missionPlanning_go_trajectory, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_go_trajectory);
-
-        setModeAutomatic_mission_cpp();
-
-}
-
-//cpp start
-
-void MainWindow::setModeAutomatic_mission_cpp()
-{
-    ui->tableWidget_missionPlanning_cpp_zonaResearch->setColumnCount(2);
-    ui->tableWidget_missionPlanning_cpp_zonaResearch->setHorizontalHeaderLabels(QStringList() << "X" << "Y");
-    ui->pushButton_missionPlanning_cpp_on_off->setCheckable(true);
-
-
-    connect(ui->map, &Map::pointAdded, this, &MainWindow::addPointToTable);
-    connect(ui->pushButton_missionPlanning_cpp_make, &QPushButton::clicked, this, &MainWindow::slot_pushButton_missionPlanning_cpp_make);
-    connect(ui->pushButton_missionPlanning_cpp_make_clean, &QPushButton::clicked, this, &MainWindow::slot_pushButton_missionPlanning_cpp_make_clean);
-    connect(this, &MainWindow::requestUpdateChart, ui->map, &Map::updateChart);
-    connect(this, &MainWindow::requestClearLines, ui->map, &Map::clearLines);
-    connect(this, &MainWindow::plotLineSeries, ui->map, &Map::onPlotLineSeries);
-    // Подключение кнопки для переключения состояния
-    connect(ui->pushButton_missionPlanning_cpp_on_off, &QPushButton::toggled,
-                ui->map, &Map::setMissionPlanning_cpp_Enabled);
-
-    connect(
-        ui->pushButton_missionPlanning_cpp_back, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_cpp_back);
-
-    connect(
-        ui->pushButton_missionPlanning_cpp, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_goto_back);
-
-    connect(
-        ui->pushButton_missionPlanning_cpp, &QPushButton::clicked,
-                this, &MainWindow::slot_pushButton_missionPlanning_cpp);
-}
-
-void MainWindow::setWidget()
-{
-    powerSystem = new PowerSystem(this);
-    ui->horizontalLayout_for_powerSystem->addWidget(powerSystem);
-    checkMsg = new CheckMsg(this);
-    ui->horizontalLayout_for_checkMsg->addWidget(checkMsg);
-    checkImu = new CheckImu(this);
-    ui->horizontalLayout_for_checkImu->addWidget(checkImu);
-
-}
-
-void MainWindow::addPointToTable(qreal x, qreal y) {
-    int row = ui->tableWidget_missionPlanning_cpp_zonaResearch->rowCount();
-    ui->tableWidget_missionPlanning_cpp_zonaResearch->insertRow(row);
-    ui->tableWidget_missionPlanning_cpp_zonaResearch->setItem(row, 0, new QTableWidgetItem(QString::number(x)));
-    ui->tableWidget_missionPlanning_cpp_zonaResearch->setItem(row, 1, new QTableWidgetItem(QString::number(y)));
-}
-
-void MainWindow::slot_pushButton_missionPlanning_cpp_make() {
-    QLineSeries *lineSeries = new QLineSeries();
-    int rowCount = ui->tableWidget_missionPlanning_cpp_zonaResearch->rowCount();
-
-    QStringList pointList;
-
-    for (int i = 0; i < rowCount; ++i) {
-        qreal x = ui->tableWidget_missionPlanning_cpp_zonaResearch->item(i, 0)->text().toDouble();
-        qreal y = ui->tableWidget_missionPlanning_cpp_zonaResearch->item(i, 1)->text().toDouble();
-        lineSeries->append(x, y);
-
-        pointList.append(QString::number(x) + "," + QString::number(y));
-    }
-
-    if (rowCount > 0) {
-        // Замкнуть фигуру, соединяя последнюю точку с первой
-        qreal firstX = ui->tableWidget_missionPlanning_cpp_zonaResearch->item(0, 0)->text().toDouble();
-        qreal firstY = ui->tableWidget_missionPlanning_cpp_zonaResearch->item(0, 1)->text().toDouble();
-        lineSeries->append(firstX, firstY);
-    }
-    emit requestUpdateChart(lineSeries);
-
-    QString pointsString = pointList.join(" ");
-
-    // Получение значения из doubleSpinBox
-    double distanceTack = ui->doubleSpinBox_missionPlanning_cpp_distanceTack->value();
-    QString distanceTackStr = QString::number(distanceTack);
-
-    qDebug() << "Python start:";
-    qDebug() << "Generated points string:" << pointsString;
-    qDebug() << "Distance Tack:" << distanceTackStr;
-
-
-
-    // Создание и настройка QProcess
-    QProcess process;
-    QString program = "python3";
-    QStringList arguments;
-    arguments << "execute_algorithm.py" << pointsString << distanceTackStr;
-
-    process.setProgram(program);
-    process.setArguments(arguments);
-    process.setWorkingDirectory("/home/shakuevda/Desktop/pult/UMAS_GUI"); // Укажите путь к директории скрипта
-
-    process.start();
-
-    // Проверка запуска процесса
-    if (!process.waitForStarted()) {
-        qDebug() << "Failed to start process:" << process.errorString();
-        return;
-    }
-
-    // Ожидание завершения процесса
-    process.waitForFinished();
-
-    // Чтение стандартного вывода и ошибок
-    QString output(process.readAllStandardOutput());
-    QString error(process.readAllStandardError());
-
-    if (!error.isEmpty()) {
-        qDebug() << "Python error:" << error;
-    } else {
-        qDebug() << "Python output:" << output;
-
-        // Парсинг результата и создание QLineSeries
-        QLineSeries *resultSeries = new QLineSeries();
-        output.remove('[').remove(']').replace("(", "").replace(")", "").replace(" ", "");
-        QStringList pointStrings = output.split(',');
-
-        for (int i = 0; i < pointStrings.size(); i += 2) {
-            qreal x = pointStrings[i].toDouble();
-            qreal y = pointStrings[i + 1].toDouble();
-            resultSeries->append(x, y);
-        }
-
-        emit plotLineSeries(resultSeries); // Отправка сигнала с QLineSeries
-    }
-    qDebug() << "Python finish";
-
-}
-
-void MainWindow::slot_pushButton_missionPlanning_cpp_make_clean() {
-    ui->tableWidget_missionPlanning_cpp_zonaResearch->clearContents();
-    ui->tableWidget_missionPlanning_cpp_zonaResearch->setRowCount(0);
-    emit requestClearLines();
-}
-
-void MainWindow::slot_pushButton_missionPlanning_cpp_back()
-{
-    ui->stackedWidget_missionPlanning->setCurrentIndex(0);
-}
-
-void MainWindow::slot_pushButton_missionPlanning_cpp()
-{
-    ui->stackedWidget_missionPlanning->setCurrentIndex(3);
-    displayText("Задайте параметры для покрытия области");
-}
-
-//cpp finish
-
-void MainWindow::test_automatic_after()
-{
-    ui->stackedWidget_mode->setCurrentIndex(0);
-    ui->stackedWidget_missionPlanning->setCurrentIndex(0);
-}
-
-void MainWindow::slot_pushButton_missionControl_modeIdle()
-{
-    uv_interface.setMissionControl(mission_Control::MODE_IDLE);
-}
-void MainWindow::slot_pushButton_missionControl_modeStart()
-{
-    uv_interface.setMissionControl(mission_Control::MODE_START);
-}
-void MainWindow::slot_pushButton_missionControl_modeCancel()
-{
-    uv_interface.setMissionControl(mission_Control::MODE_CANCEL);
-}
-void MainWindow::slot_pushButton_missionControl_modeStop()
-{
-    uv_interface.setMissionControl(mission_Control::MODE_STOP);
-}
-void MainWindow::slot_pushButton_missionControl_modeComplete()
-{
-    uv_interface.setMissionControl(mission_Control::MODE_COMPLETE);
-    uv_interface.setID_mission_AUV(0);
-}
-
-void MainWindow::slot_pushButton_missionPlanning_goto()
-{
-    uv_interface.setID_mission_AUV(1);
-    ui->stackedWidget_missionPlanning->setCurrentIndex(2);
-    displayText("Задайте параметры для выхода в точку");
-}
-
-void MainWindow::slot_pushButton_missionPlanning_goto_update()
-{
-    double x = ui->doubleSpinBox_missionPlanning_goto_x->value();
-    double y = ui->doubleSpinBox_missionPlanning_goto_y->value();
-    double r = ui->doubleSpinBox_missionPlanning_goto_r->value();
-
-    emit signal_pushButton_missionPlanning_goto_updateMap(x,y,r,0);
-    displayText("Установлена координата для выхода в точку и"
-                " радиус удержания позиции");
-}
-
-void MainWindow::slot_pushButton_missionPlanning_goto_back()
-{
-    ui->stackedWidget_missionPlanning->setCurrentIndex(0);
-}
-
-void MainWindow::slot_pushButton_missionPlanning_go_trajectory_update()
-{
-    double x1 = ui->doubleSpinBox_missionPlanning_go_trajectory_x_1->value();
-    double y1 = ui->doubleSpinBox_missionPlanning_go_trajectory_y_1->value();
-    double r1 = ui->doubleSpinBox_missionPlanning_go_trajectory_r_1->value();
-
-    double x2 = ui->doubleSpinBox_missionPlanning_go_trajectory_x_2->value();
-    double y2 = ui->doubleSpinBox_missionPlanning_go_trajectory_y_2->value();
-    double r2 = ui->doubleSpinBox_missionPlanning_go_trajectory_r_2->value();
-
-    double x3 = ui->doubleSpinBox_missionPlanning_go_trajectory_x_3->value();
-    double y3 = ui->doubleSpinBox_missionPlanning_go_trajectory_y_3->value();
-    double r3 = ui->doubleSpinBox_missionPlanning_go_trajectory_r_3->value();
-
-    emit signal_pushButton_missionPlanning_go_trajectory_updateMap(x1,y1,r1,0);
-    emit signal_pushButton_missionPlanning_go_trajectory_updateMap(x2,y2,r2,0);
-    emit signal_pushButton_missionPlanning_go_trajectory_updateMap(x3,y3,r3,0);
-    displayText("Установлены координаты для движения по траектории и"
-                " радиус удержания позиций");
-}
-
-void MainWindow::slot_pushButton_missionPlanning_go_trajectory_back()
-{
-    ui->stackedWidget_missionPlanning->setCurrentIndex(0);
-}
-
-void MainWindow::slot_pushButton_missionPlanning_following()
-{
-    uv_interface.setID_mission_AUV(2);
-}
-
-void MainWindow::slot_pushButton_missionPlanning_go_trajectory()
-{
-    uv_interface.setID_mission_AUV(3);
-    ui->stackedWidget_missionPlanning->setCurrentIndex(1);
-}
-
-void MainWindow::updateUi_DataMission()
-{
-    int missionStatus = static_cast<int>(uv_interface.getMissionStatus());
-    switch (missionStatus) {
-    case 0:
-        ui->label_missonStatus->setText("ожидание");
-        break;
-    case 1:
-        ui->label_missonStatus->setText("ошибка инициализации миссии");
-        break;
-    case 2:
-        ui->label_missonStatus->setText("миссия запущена и выполняется");
-        break;
-    case 3:
-        ui->label_missonStatus->setText("миссия приостановлена, на паузе");
-        break;
-    case 4:
-        ui->label_missonStatus->setText("миссия завершена");
-        break;
-    }
-}
-
-
 
 void MainWindow::setBottom_modeAutomated()
 {
@@ -818,7 +542,7 @@ void MainWindow::setUpdateUI()
     connect(this, SIGNAL(updateSetupMsg()),
             checkMsg, SLOT(updateUi_checkMsg()));
     connect(this, SIGNAL(updateDataMission()),
-            this, SLOT(updateUi_DataMission()));
+            modeAutomatic, SLOT(updateUi_DataMission()));
 
     connect(this, SIGNAL(updateMap(DataUWB)),
             ui->map,SLOT(updateUi_map(DataUWB)));

@@ -27,6 +27,7 @@ include_directories("${PROJECT_SOURCE_DIR}/communication")
 include_directories("${PROJECT_SOURCE_DIR}/ui_utils")
 include_directories("${PROJECT_SOURCE_DIR}/missions")
 include_directories("${PROJECT_SOURCE_DIR}/tabs")
+include_directories("${PROJECT_SOURCE_DIR}/mods")
 include_directories("${PROJECT_SOURCE_DIR}")
 
 include_directories(${Python3_INCLUDE_DIRS})
@@ -81,6 +82,7 @@ set(PROJECT_SOURCES
         tabs/power_system.h tabs/power_system.cpp tabs/power_system.ui
         tabs/check_msg.h tabs/check_msg.cpp tabs/check_msg.ui
         tabs/check_imu.h tabs/check_imu.cpp tabs/check_imu.ui
+        mods/mode_automatic.h mods/mode_automatic.cpp mods/mode_automatic.ui
 )
 
 

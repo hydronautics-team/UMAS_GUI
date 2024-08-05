@@ -20,6 +20,7 @@
 #include "power_system.h"
 #include "check_msg.h"
 #include "check_imu.h"
+#include "mode_automatic.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -70,12 +71,6 @@ private:
      *  связанные с автоматизированным режимом управления.
      */
     void setBottom_modeAutomated();
-    /*!
-     * \brief setBottom_modeAutomatic устанавливает кнопки и слоты,
-     *  связанные с автоматическим режимом управления.
-     */
-    void setBottom_modeAutomatic();
-
 
     void setBottom_connection();
     /*!
@@ -107,13 +102,9 @@ private:
     PowerSystem *powerSystem;
     CheckMsg    *checkMsg;
     CheckImu    *checkImu;
+    ModeAutomatic *modeAutomatic;
 
-public slots:
 
-    //cpp
-    void addPointToTable(qreal x, qreal y);
-    void slot_pushButton_missionPlanning_cpp_make();
-    void slot_pushButton_missionPlanning_cpp_make_clean();
 
 
 
@@ -123,8 +114,6 @@ private slots:
      * \param str является выводимой строкой.
      */
     void displayText(QString str);
-
-    void test_automatic_after();
 
     /*!
      * \brief setLocationUWB слот записи данных о месторасположении
@@ -222,28 +211,8 @@ private slots:
     void pushButton_selectAgent1(bool stateBottom);
     void pushButton_selectAgent2(bool stateBottom);
 
-    void slot_pushButton_missionControl_modeIdle();
-    void slot_pushButton_missionControl_modeStart();
-    void slot_pushButton_missionControl_modeCancel();
-    void slot_pushButton_missionControl_modeStop();
-    void slot_pushButton_missionControl_modeComplete();
-
-    void slot_pushButton_missionPlanning_goto();
-    void slot_pushButton_missionPlanning_goto_update();
-    void slot_pushButton_missionPlanning_goto_back();
-
-    void slot_pushButton_missionPlanning_go_trajectory_update();
-    void slot_pushButton_missionPlanning_go_trajectory_back();
-
-    void slot_pushButton_missionPlanning_following();
-    void slot_pushButton_missionPlanning_go_trajectory();
-
-    void updateUi_DataMission();
-
     void updateUi_statePushButton();
 
-    void slot_pushButton_missionPlanning_cpp_back();
-    void slot_pushButton_missionPlanning_cpp();
 
 signals:
     /*!
@@ -266,21 +235,12 @@ signals:
 
     void updateMap(DataUWB dataUWB);
     void updateMapForAgent2(DataUWB dataUWB_agent2);
-    void signal_pushButton_missionPlanning_goto_updateMap(double x, double y, double r, int flag_clear);
-    void signal_pushButton_missionPlanning_go_trajectory_updateMap(double x, double y, double r, int flag_clear);
 
     void updateStatePushButton();
 
     void pointAdded(qreal x, qreal y);
 
-    //cpp
-    void requestUpdateChart(QLineSeries *lineSeries);
-    void requestClearLines();
-    void plotLineSeries(QLineSeries* series);
-
     void toggleMissionPlanning_cppPointsEnabled();
-
-
 
 protected:
     /*!
