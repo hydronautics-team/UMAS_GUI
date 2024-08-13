@@ -16,6 +16,8 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Network)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Gui)
 
+
+
 include_directories("${PROJECT_SOURCE_DIR}/compass")
 include_directories("${PROJECT_SOURCE_DIR}/remote_control")
 include_directories("${PROJECT_SOURCE_DIR}/uv")
@@ -23,7 +25,20 @@ include_directories("${PROJECT_SOURCE_DIR}/interface")
 include_directories("${PROJECT_SOURCE_DIR}/map")
 include_directories("${PROJECT_SOURCE_DIR}/communication")
 include_directories("${PROJECT_SOURCE_DIR}/ui_utils")
+include_directories("${PROJECT_SOURCE_DIR}/missions")
+include_directories("${PROJECT_SOURCE_DIR}/tabs")
+include_directories("${PROJECT_SOURCE_DIR}/mods")
 include_directories("${PROJECT_SOURCE_DIR}")
+
+include_directories(${Python3_INCLUDE_DIRS})
+#include_directories(${pybind11_INCLUDE_DIRS})
+
+
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+#find_package(pybind11 REQUIRED)
+
+include_directories(${Python3_INCLUDE_DIRS})
+#include_directories(${pybind11_INCLUDE_DIRS})
 
 set(PROJECT_SOURCES
         main.cpp
@@ -64,6 +79,10 @@ set(PROJECT_SOURCES
         ui_utils/database.cpp
         remote_control/key_board.h remote_control/key_board.cpp
         remote_control/joy_stick.h remote_control/joy_stick.cpp
+        tabs/power_system.h tabs/power_system.cpp tabs/power_system.ui
+        tabs/check_msg.h tabs/check_msg.cpp tabs/check_msg.ui
+        tabs/check_imu.h tabs/check_imu.cpp tabs/check_imu.ui
+        mods/mode_automatic.h mods/mode_automatic.cpp mods/mode_automatic.ui
 )
 
 
@@ -97,7 +116,10 @@ target_link_libraries(UMAS_GUI PRIVATE
     Qt${QT_VERSION_MAJOR}::Charts
     Qt${QT_VERSION_MAJOR}::Network
     Qt${QT_VERSION_MAJOR}::Sql
-    Qt${QT_VERSION_MAJOR}::Gui)
+    Qt${QT_VERSION_MAJOR}::Gui
+    Python3::Python
+#    pybind11::module
+    )
 
 
 

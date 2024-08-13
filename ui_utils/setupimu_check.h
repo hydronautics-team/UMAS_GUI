@@ -30,6 +30,7 @@
 namespace Ui {
 class SetupIMU_check;
 }
+using namespace QtCharts;
 
 /*!
  * \brief SetupIMU_check class класс проверки настройки БСО.

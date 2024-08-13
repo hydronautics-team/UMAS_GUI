@@ -4,9 +4,8 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QDebug>
-
+#include <QProcess>
 #include <QTime>
-
 #include <QButtonGroup>
 
 #include "remote_control.h"
@@ -14,15 +13,14 @@
 #include "i_user_interface_data.h"
 #include "pc_protocol.h"
 #include "i_server_data.h"
-
-#include "setup_imu.h"
-#include "setupimu_check.h"
 #include "map.h"
-
 #include "i_basic_data.h"
-
 #include "joy_stick.h"
 #include "key_board.h"
+#include "power_system.h"
+#include "check_msg.h"
+#include "check_imu.h"
+#include "mode_automatic.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -73,38 +71,13 @@ private:
      *  связанные с автоматизированным режимом управления.
      */
     void setBottom_modeAutomated();
-    /*!
-     * \brief setBottom_modeAutomatic устанавливает кнопки и слоты,
-     *  связанные с автоматическим режимом управления.
-     */
-    void setBottom_modeAutomatic();
 
-
-    /*!
-     * \brief setBottom_powerMode устанавливает кнопки и слоты,
-     *  связанные с режимами питания.
-     */
-    void setBottom_powerMode();
-    /*!
-     * \brief setBottom_connection устанавливает кнопки и слоты,
-     *  связанные с установкой соединения к аппарата.
-     */
     void setBottom_connection();
     /*!
      * \brief setBottom_modeSelection устанавливает кнопки и слоты,
      *  связанные с режимом вывода данных.
      */
     void setBottom_modeSelection();
-    /*!
-     * \brief setBottom_setupIMU устанавливает на нажатие кнопки слот
-     *  вызова окна настройки БСО.
-     */
-    void setBottom_setupIMU();
-    /*!
-     * \brief setBottom_setupIMU_check устанавливает на нажатие кнопки
-     *  слот вызова окна настройки БСО.
-     */
-    void setBottom_setupIMU_check();
 
     void setBottom_selectAgent();
 
@@ -123,6 +96,17 @@ private:
      */
     void setUpdateUI();
 
+    void setModeAutomatic_mission_cpp();
+
+    void setWidget();
+    PowerSystem *powerSystem;
+    CheckMsg    *checkMsg;
+    CheckImu    *checkImu;
+    ModeAutomatic *modeAutomatic;
+
+
+
+
 
 private slots:
     /*!
@@ -130,8 +114,6 @@ private slots:
      * \param str является выводимой строкой.
      */
     void displayText(QString str);
-
-    void test_automatic_after();
 
     /*!
      * \brief setLocationUWB слот записи данных о месторасположении
@@ -195,28 +177,6 @@ private slots:
      */
     void stabilizeDepthToggled(bool state);
 
-    /*!
-     * \brief pushButton_on_powerMode_2 слот установки 2 режима питания.
-     */
-    void pushButton_on_powerMode_2();
-    /*!
-     * \brief pushButton_on_powerMode_3 слот установки 3 режима питания.
-     */
-    void pushButton_on_powerMode_3();
-    /*!
-     * \brief pushButton_on_powerMode_4 слот установки 4 режима питания.
-     */
-    void pushButton_on_powerMode_4();
-    /*!
-     * \brief pushButton_on_powerMode_5 слот установки 5 режима питания
-     *  и запуск таймера переключения режима питания на предыдущий.
-     */
-    void pushButton_on_powerMode_5();
-    /*!
-     * \brief off_powerMode_5 слот выключения таймера 5 режима питания
-     *  и переключение режима питания на предыдущий.
-     */
-    void off_powerMode_5();
 
     /*!
      * \brief setConnection слот установления соединения.
@@ -240,29 +200,10 @@ private slots:
     void setModeSelection(int index);
 
     /*!
-     * \brief getWindow_setupIMU слот вызова окна настройки БСО.
-     */
-    void getWindow_setupIMU();
-    /*!
-     * \brief getWindow_setupIMU_check слот вызова окна настройки БСО.
-     */
-    void getWindow_setupIMU_check();
-
-    /*!
      * \brief updateUi_Compass слот обновления компаса на UI форме.
      * \param yaw новое значение курса.
      */
     void updateUi_Compass(float yaw);
-    /*!
-     * \brief updateUi_IMU слот обновления данных с БСО на UI форме.
-     * \param imuData структура данных с обновленными значениями с БСО.
-     */
-    void updateUi_IMU(DataAH127C imuData);
-    /*!
-     * \brief updateUi_SetupMsg слот обновления отправленных и полученных
-     *  данных на UI форме.
-     */
-    void updateUi_SetupMsg();
 
     void useKeyBoard();
     void useJoyStick();
@@ -270,25 +211,8 @@ private slots:
     void pushButton_selectAgent1(bool stateBottom);
     void pushButton_selectAgent2(bool stateBottom);
 
-    void slot_pushButton_missionControl_modeIdle();
-    void slot_pushButton_missionControl_modeStart();
-    void slot_pushButton_missionControl_modeCancel();
-    void slot_pushButton_missionControl_modeStop();
-    void slot_pushButton_missionControl_modeComplete();
-
-    void slot_pushButton_missionPlanning_goto();
-    void slot_pushButton_missionPlanning_goto_update();
-    void slot_pushButton_missionPlanning_goto_back();
-
-    void slot_pushButton_missionPlanning_go_trajectory_update();
-    void slot_pushButton_missionPlanning_go_trajectory_back();
-
-    void slot_pushButton_missionPlanning_following();
-    void slot_pushButton_missionPlanning_go_trajectory();
-
-    void updateUi_DataMission();
-
     void updateUi_statePushButton();
+
 
 signals:
     /*!
@@ -311,11 +235,12 @@ signals:
 
     void updateMap(DataUWB dataUWB);
     void updateMapForAgent2(DataUWB dataUWB_agent2);
-    void signal_pushButton_missionPlanning_goto_updateMap(double x, double y, double r, int flag_clear);
-    void signal_pushButton_missionPlanning_go_trajectory_updateMap(double x, double y, double r, int flag_clear);
-
 
     void updateStatePushButton();
+
+    void pointAdded(qreal x, qreal y);
+
+    void toggleMissionPlanning_cppPointsEnabled();
 
 protected:
     /*!
@@ -332,15 +257,6 @@ protected:
     KeyBoard *keyBoard = nullptr;
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
-
-    /*!
-     * \brief timer_off_powerMode_5 таймер переключения 5 режима питания.
-     */
-    QTimer *timer_off_powerMode_5;
-    /*!
-     * \brief before_powerMode режим питания, используемый перед 5.
-     */
-    power_Mode before_powerMode;
 
     /*!
      * \brief uv_interface интерфейс взаимодействия с глобальной переменной,

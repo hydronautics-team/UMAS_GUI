@@ -1,4 +1,4 @@
-    #include "mainwindow.h"
+#include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    setWidget();
     setConsole();
     setTimer_updateImpact(20);
     setBottom();
@@ -16,6 +17,62 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 //
+
+void MainWindow::setWidget()
+{
+    powerSystem = new PowerSystem(this);
+    ui->horizontalLayout_for_powerSystem->addWidget(powerSystem);
+    checkMsg = new CheckMsg(this);
+    ui->horizontalLayout_for_checkMsg->addWidget(checkMsg);
+    checkImu = new CheckImu(this);
+    ui->horizontalLayout_for_checkImu->addWidget(checkImu);
+    modeAutomatic = new ModeAutomatic(this);
+    ui->verticalLayout_modeAutomatic->addWidget(modeAutomatic);
+    // setMission_map
+    connect(
+        modeAutomatic->ui->pushButton_missionPlanning_goto_clean, &QPushButton::clicked,
+        ui->map, &Map::updateUi_missionPlanning_goto_goal_clear);
+    connect(
+        modeAutomatic->ui->pushButton_missionPlanning_goto_on_trajectory, &QPushButton::clicked,
+        ui->map, &Map::updateUi_missionPlanning_goto_traj_onoff);
+    connect(
+        modeAutomatic->ui->pushButton_missionPlanning_goto_on_trajectory_clear, &QPushButton::clicked,
+        ui->map, &Map::updateUi_missionPlanning_goto_traj_clear);
+    // setMission_goTo
+    connect(
+        modeAutomatic, &ModeAutomatic::signal_pushButton_missionPlanning_goto_updateMap,
+        ui->map, &Map::updateUi_missionPlanning_goto_goal);
+    // setMission_go_trajectory
+    connect(
+        modeAutomatic, &ModeAutomatic::signal_pushButton_missionPlanning_go_trajectory_updateMap,
+        ui->map, &Map::updateUi_missionPlanning_goto_goal);
+    connect(
+        modeAutomatic->ui->pushButton_missionPlanning_go_trajectory_clean, &QPushButton::clicked,
+        ui->map, &Map::updateUi_missionPlanning_goto_goal_clear);
+    // setMission_cpp
+    connect(
+        ui->map, &Map::pointAdded,
+        modeAutomatic, &ModeAutomatic::addPointToTable);
+    connect(
+        modeAutomatic, &ModeAutomatic::requestUpdateChart,
+        ui->map, &Map::updateChart);
+    connect(
+        modeAutomatic, &ModeAutomatic::requestClearLines,
+        ui->map, &Map::clearLines);
+    connect(
+        modeAutomatic, &ModeAutomatic::plotLineSeries,
+        ui->map, &Map::onPlotLineSeries);
+        // Подключение кнопки для переключения состояния
+    connect(
+        modeAutomatic->ui->pushButton_missionPlanning_cpp_on_off, &QPushButton::toggled,
+        ui->map, &Map::setMissionPlanning_cpp_Enabled);
+    connect(
+        modeAutomatic,&ModeAutomatic::displayText_toConsole,
+        this, &MainWindow::displayText);
+    connect(
+        modeAutomatic, &ModeAutomatic::set_stackedWidget_mode,
+        ui->stackedWidget_mode, &QStackedWidget::setCurrentIndex);
+}
 
 void MainWindow::setConsole()
 {
@@ -103,6 +160,11 @@ void MainWindow::updateUi_fromControl(){
     ui->label_impactDataLag->setText(QString::number(control.lag, 'f', 2));
 
     ui->compass->setYawDesirable(control.yaw, imuData.yaw, uv_interface.getCSMode());
+
+    ui->label_IMUdata_yaw->setText(QString::number(imuData.yaw, 'f', 2));
+    ui->label_IMUdata_pitch->setText(QString::number(imuData.pitch, 'f', 2));
+    ui->label_IMUdata_roll->setText(QString::number(imuData.roll, 'f', 2));
+
 }
 
 //
@@ -111,12 +173,8 @@ void MainWindow::setBottom()
 {
     setBottom_mode();
     setBottom_modeAutomated();
-    setBottom_modeAutomatic();
-    setBottom_powerMode();
     setBottom_connection();
     setBottom_modeSelection();
-    setBottom_setupIMU();
-    setBottom_setupIMU_check();
     setBottom_selectAgent();
 }
 
@@ -160,185 +218,6 @@ void MainWindow::e_CSModeAutomaticToggled()
     uv_interface.setCSMode(e_CSMode::MODE_AUTOMATIC);
     ui->stackedWidget_mode->setCurrentIndex(1);
 }
-
-void MainWindow::setBottom_modeAutomatic()
-{
-    connect(
-        ui->pushButton_after, SIGNAL(clicked()),
-        this, SLOT(test_automatic_after()));
-
-    connect(
-        ui->pushButton_missionControl_modeIdle, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionControl_modeIdle);
-    connect(
-        ui->pushButton_missionControl_modeStart, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionControl_modeStart);
-    connect(
-        ui->pushButton_missionControl_modeCancel, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionControl_modeCancel);
-    connect(
-        ui->pushButton_missionControl_modeStop, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionControl_modeStop);
-    connect(
-        ui->pushButton_missionControl_modeComplete, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionControl_modeComplete);
-
-    connect(
-        ui->pushButton_missionPlanning_goto, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_goto);
-    connect(
-        ui->pushButton_missionPlanning_goto_update, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_goto_update);
-    connect(
-        this, &MainWindow::signal_pushButton_missionPlanning_goto_updateMap,
-        ui->map, &Map::updateUi_missionPlanning_goto_goal);
-    connect(
-        ui->pushButton_missionPlanning_goto_back, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_goto_back);
-    connect(
-        ui->pushButton_missionPlanning_goto_clean, &QPushButton::clicked,
-        ui->map, &Map::updateUi_missionPlanning_goto_goal_clear);
-    connect(
-        ui->pushButton_missionPlanning_goto_on_trajectory, &QPushButton::clicked,
-        ui->map, &Map::updateUi_missionPlanning_goto_traj_onoff);
-    connect(
-        ui->pushButton_missionPlanning_goto_on_trajectory_clear, &QPushButton::clicked,
-        ui->map, &Map::updateUi_missionPlanning_goto_traj_clear);
-
-    connect(
-        ui->pushButton_missionPlanning_go_trajectory_update, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_go_trajectory_update);
-    connect(
-        this, &MainWindow::signal_pushButton_missionPlanning_go_trajectory_updateMap,
-        ui->map, &Map::updateUi_missionPlanning_goto_goal);
-    connect(
-        ui->pushButton_missionPlanning_go_trajectory_back, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_go_trajectory_back);
-    connect(
-        ui->pushButton_missionPlanning_go_trajectory_clean, &QPushButton::clicked,
-        ui->map, &Map::updateUi_missionPlanning_goto_goal_clear);
-
-
-    connect(
-        ui->pushButton_missionPlanning_following, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_following);
-    connect(
-        ui->pushButton_missionPlanning_go_trajectory, &QPushButton::clicked,
-        this, &MainWindow::slot_pushButton_missionPlanning_go_trajectory);
-
-}
-
-void MainWindow::test_automatic_after()
-{
-    ui->stackedWidget_mode->setCurrentIndex(0);
-    ui->stackedWidget_missionPlanning->setCurrentIndex(0);
-}
-
-void MainWindow::slot_pushButton_missionControl_modeIdle()
-{
-    uv_interface.setMissionControl(mission_Control::MODE_IDLE);
-}
-void MainWindow::slot_pushButton_missionControl_modeStart()
-{
-    uv_interface.setMissionControl(mission_Control::MODE_START);
-}
-void MainWindow::slot_pushButton_missionControl_modeCancel()
-{
-    uv_interface.setMissionControl(mission_Control::MODE_CANCEL);
-}
-void MainWindow::slot_pushButton_missionControl_modeStop()
-{
-    uv_interface.setMissionControl(mission_Control::MODE_STOP);
-}
-void MainWindow::slot_pushButton_missionControl_modeComplete()
-{
-    uv_interface.setMissionControl(mission_Control::MODE_COMPLETE);
-    uv_interface.setID_mission_AUV(0);
-}
-
-void MainWindow::slot_pushButton_missionPlanning_goto()
-{
-    uv_interface.setID_mission_AUV(1);
-    ui->stackedWidget_missionPlanning->setCurrentIndex(2);
-    displayText("Задайте параметры для выхода в точку");
-}
-
-void MainWindow::slot_pushButton_missionPlanning_goto_update()
-{
-    double x = ui->doubleSpinBox_missionPlanning_goto_x->value();
-    double y = ui->doubleSpinBox_missionPlanning_goto_y->value();
-    double r = ui->doubleSpinBox_missionPlanning_goto_r->value();
-
-    emit signal_pushButton_missionPlanning_goto_updateMap(x,y,r,0);
-    displayText("Установлена координата для выхода в точку и"
-                " радиус удержания позиции");
-}
-
-void MainWindow::slot_pushButton_missionPlanning_goto_back()
-{
-    ui->stackedWidget_missionPlanning->setCurrentIndex(0);
-}
-
-void MainWindow::slot_pushButton_missionPlanning_go_trajectory_update()
-{
-    double x1 = ui->doubleSpinBox_missionPlanning_go_trajectory_x_1->value();
-    double y1 = ui->doubleSpinBox_missionPlanning_go_trajectory_y_1->value();
-    double r1 = ui->doubleSpinBox_missionPlanning_go_trajectory_r_1->value();
-
-    double x2 = ui->doubleSpinBox_missionPlanning_go_trajectory_x_2->value();
-    double y2 = ui->doubleSpinBox_missionPlanning_go_trajectory_y_2->value();
-    double r2 = ui->doubleSpinBox_missionPlanning_go_trajectory_r_2->value();
-
-    double x3 = ui->doubleSpinBox_missionPlanning_go_trajectory_x_3->value();
-    double y3 = ui->doubleSpinBox_missionPlanning_go_trajectory_y_3->value();
-    double r3 = ui->doubleSpinBox_missionPlanning_go_trajectory_r_3->value();
-
-    emit signal_pushButton_missionPlanning_go_trajectory_updateMap(x1,y1,r1,0);
-    emit signal_pushButton_missionPlanning_go_trajectory_updateMap(x2,y2,r2,0);
-    emit signal_pushButton_missionPlanning_go_trajectory_updateMap(x3,y3,r3,0);
-    displayText("Установлены координаты для движения по траектории и"
-                " радиус удержания позиций");
-}
-
-void MainWindow::slot_pushButton_missionPlanning_go_trajectory_back()
-{
-    ui->stackedWidget_missionPlanning->setCurrentIndex(0);
-}
-
-void MainWindow::slot_pushButton_missionPlanning_following()
-{
-    uv_interface.setID_mission_AUV(2);
-}
-
-void MainWindow::slot_pushButton_missionPlanning_go_trajectory()
-{
-    uv_interface.setID_mission_AUV(3);
-    ui->stackedWidget_missionPlanning->setCurrentIndex(1);
-}
-
-void MainWindow::updateUi_DataMission()
-{
-    int missionStatus = static_cast<int>(uv_interface.getMissionStatus());
-    switch (missionStatus) {
-    case 0:
-        ui->label_missonStatus->setText("ожидание");
-        break;
-    case 1:
-        ui->label_missonStatus->setText("ошибка инициализации миссии");
-        break;
-    case 2:
-        ui->label_missonStatus->setText("миссия запущена и выполняется");
-        break;
-    case 3:
-        ui->label_missonStatus->setText("миссия приостановлена, на паузе");
-        break;
-    case 4:
-        ui->label_missonStatus->setText("миссия завершена");
-        break;
-    }
-}
-
-
 
 void MainWindow::setBottom_modeAutomated()
 {
@@ -413,95 +292,6 @@ void MainWindow::stabilizeDepthToggled(bool state) {
     uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_DEPTH, state);
 }
 
-void MainWindow::setBottom_powerMode()
-{
-    QButtonGroup *powerMode = new QButtonGroup(this);
-    powerMode->addButton(ui->pushButton_powerMode_2);
-    powerMode->addButton(ui->pushButton_powerMode_3);
-    powerMode->addButton(ui->pushButton_powerMode_4);
-    powerMode->addButton(ui->pushButton_powerMode_5);
-
-    ui->pushButton_powerMode_2->setCheckable(true);
-    ui->pushButton_powerMode_3->setCheckable(true);
-    ui->pushButton_powerMode_4->setCheckable(true);
-    ui->pushButton_powerMode_5->setCheckable(true);
-
-    uv_interface.setPowerMode(power_Mode::MODE_2);
-    ui->pushButton_powerMode_2->setChecked(true);
-
-    connect(
-        ui->pushButton_powerMode_2, SIGNAL(clicked()),
-        this, SLOT(pushButton_on_powerMode_2()));
-
-    connect(
-        ui->pushButton_powerMode_3, SIGNAL(clicked()),
-        this, SLOT(pushButton_on_powerMode_3()));
-
-    connect(
-        ui->pushButton_powerMode_4, SIGNAL(clicked()),
-        this, SLOT(pushButton_on_powerMode_4()));
-
-    connect(
-        ui->pushButton_powerMode_5, SIGNAL(clicked()),
-        this, SLOT(pushButton_on_powerMode_5()));
-}
-
-void MainWindow::pushButton_on_powerMode_2()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_2);
-}
-
-void MainWindow::pushButton_on_powerMode_3()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_3);
-}
-
-void MainWindow::pushButton_on_powerMode_4()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_4);
-}
-
-void MainWindow::pushButton_on_powerMode_5()
-{
-    before_powerMode = uv_interface.getPowerMode();
-    uv_interface.setPowerMode(power_Mode::MODE_5);
-
-    ui->pushButton_powerMode_2->setEnabled(false);
-    ui->pushButton_powerMode_3->setEnabled(false);
-    ui->pushButton_powerMode_4->setEnabled(false);
-    ui->pushButton_powerMode_5->setEnabled(false);
-
-    timer_off_powerMode_5 = new QTimer(this);
-    connect(
-        timer_off_powerMode_5, SIGNAL(timeout()),
-        this, SLOT(off_powerMode_5()));
-    timer_off_powerMode_5->start(5000);
-}
-
-void MainWindow::off_powerMode_5()
-{
-    timer_off_powerMode_5->stop();
-    uv_interface.setPowerMode(before_powerMode);
-
-    switch (before_powerMode) {
-    case power_Mode::MODE_2:
-        ui->pushButton_powerMode_2->setChecked(true);
-        break;
-
-    case power_Mode::MODE_3:
-        ui->pushButton_powerMode_3->setChecked(true);
-        break;
-
-    case power_Mode::MODE_4:
-        ui->pushButton_powerMode_4->setChecked(true);
-        break;
-    }
-
-    ui->pushButton_powerMode_2->setEnabled(true);
-    ui->pushButton_powerMode_3->setEnabled(true);
-    ui->pushButton_powerMode_4->setEnabled(true);
-    ui->pushButton_powerMode_5->setEnabled(true);
-}
 
 void MainWindow::setBottom_connection()
 {
@@ -614,28 +404,10 @@ void MainWindow::setModeSelection(int index)
     }
 }
 
-void MainWindow::setBottom_setupIMU()
-{
-    connect(
-        ui->pushButton_setupIMU, SIGNAL(clicked()),
-        this, SLOT(getWindow_setupIMU()));
-}
-
-void MainWindow::getWindow_setupIMU()
-{
-    SetupIMU window_setupIMU;
-    window_setupIMU.setModal(false);
-    window_setupIMU.exec();
-}
 
 //
 
-void MainWindow::setBottom_setupIMU_check()
-{
-    connect(
-        ui->pushButton_setupIMU_check, SIGNAL(clicked()),
-        this, SLOT(getWindow_setupIMU_check()));
-}
+
 
 void MainWindow::setBottom_selectAgent()
 {
@@ -682,21 +454,6 @@ void MainWindow::updateUi_statePushButton()
     else
         ui->comboBox_modeSelection->setCurrentIndex(1);
 
-    // режим питания
-    switch (uv_interface.getPowerMode()) {
-    case power_Mode::MODE_2:
-        ui->pushButton_powerMode_2->setChecked(true);
-        break;
-    case power_Mode::MODE_3:
-        ui->pushButton_powerMode_3->setChecked(true);
-        break;
-    case power_Mode::MODE_4:
-        ui->pushButton_powerMode_4->setChecked(true);
-        break;
-    case power_Mode::MODE_5:
-        ui->pushButton_powerMode_5->setChecked(true);
-        break;
-    }
 
     //
     switch (uv_interface.getCSMode()) {
@@ -737,17 +494,9 @@ void MainWindow::updateUi_statePushButton()
     else
         ui->pushButton_modeAutomated_depth->setChecked(false);
 
-
-
-
 }
 
-void MainWindow::getWindow_setupIMU_check()
-{
-    SetupIMU_check window_setupIMU_check;
-    window_setupIMU_check.setModal(false);
-    window_setupIMU_check.exec();
-}
+
 
 //
 
@@ -789,11 +538,11 @@ void MainWindow::setUpdateUI()
     connect(this, SIGNAL(updateCompass(float)),
             this, SLOT(updateUi_Compass(float)));
     connect(this, SIGNAL(updateIMU(DataAH127C)),
-            this, SLOT(updateUi_IMU(DataAH127C)));
+            checkImu, SLOT(updateUi_imu(DataAH127C)));
     connect(this, SIGNAL(updateSetupMsg()),
-            this, SLOT(updateUi_SetupMsg()));
+            checkMsg, SLOT(updateUi_checkMsg()));
     connect(this, SIGNAL(updateDataMission()),
-            this, SLOT(updateUi_DataMission()));
+            modeAutomatic, SLOT(updateUi_DataMission()));
 
     connect(this, SIGNAL(updateMap(DataUWB)),
             ui->map,SLOT(updateUi_map(DataUWB)));
@@ -803,165 +552,6 @@ void MainWindow::setUpdateUI()
 
 void MainWindow::updateUi_Compass(float yaw) {
     ui->compass->setYaw(yaw);
-}
-
-void MainWindow::updateUi_IMU(DataAH127C imuData){
-    ui->label_IMUdata_accel_X->setText(QString::number(imuData.X_accel, 'f', 2));
-    ui->label_IMUdata_accel_Y->setText(QString::number(imuData.Y_accel, 'f', 2));
-    ui->label_IMUdata_accel_Z->setText(QString::number(imuData.Z_accel, 'f', 2));
-
-    ui->label_IMUdata_rate_X->setText(QString::number(imuData.X_rate, 'f', 2));
-    ui->label_IMUdata_rate_Y->setText(QString::number(imuData.Y_rate, 'f', 2));
-    ui->label_IMUdata_rate_Z->setText(QString::number(imuData.Z_rate, 'f', 2));
-
-    ui->label_IMUdata_magn_X->setText(QString::number(imuData.X_magn, 'f', 2));
-    ui->label_IMUdata_magn_Y->setText(QString::number(imuData.Y_magn, 'f', 2));
-    ui->label_IMUdata_magn_Z->setText(QString::number(imuData.Z_magn, 'f', 2));
-
-    ui->label_IMUdata_q0->setText(QString::number(imuData.quat[0], 'f', 2));
-    ui->label_IMUdata_q1->setText(QString::number(imuData.quat[1], 'f', 2));
-    ui->label_IMUdata_q2->setText(QString::number(imuData.quat[2], 'f', 2));
-    ui->label_IMUdata_q3->setText(QString::number(imuData.quat[3], 'f', 2));
-
-    ui->label_IMUdata_yaw->setText(QString::number(imuData.yaw, 'f', 2));
-    ui->label_IMUdata_pitch->setText(QString::number(imuData.pitch, 'f', 2));
-    ui->label_IMUdata_roll->setText(QString::number(imuData.roll, 'f', 2));
-}
-
-void MainWindow::updateUi_SetupMsg()
-{
-    power_Mode pMode = uv_interface.getPowerMode();
-    bool modeSelection = uv_interface.getModeSelection();
-
-    ControlContoursFlags controlContoursFlags = uv_interface.getControlContoursFlags();
-    ControlData control = uv_interface.getControlData();
-    AUVCurrentData auvData = uv_interface.getAUVCurrentData();
-    FlagAH127C_bort flagAH127C_bort = uv_interface.getFlagAH127C_bort();
-    FlagAH127C_pult flagAH127C_pult = uv_interface.getFlagAH127C_pult();
-    int checksum_msg_gui_send = uv_interface.getChecksumMsgGuiSend();
-    int checksum_msg_agent_send = uv_interface.getChecksumMsgAgentSend();
-    int checksum_msg_gui_received = uv_interface.getChecksumMsgGuiReceived();
-
-//    send
-
-    ui->label_tab_setupMsg_send_powerMode_count->setNum(2+static_cast<int>(pMode));
-
-    if (modeSelection == 1)
-        ui->label_tab_setupMsg_send_modeAUV_selection_mode->setText("модель");
-    else
-        ui->label_tab_setupMsg_send_modeAUV_selection_mode->setText("агент");
-
-    switch (uv_interface.getCSMode()) {
-    case e_CSMode::MODE_MANUAL:
-        ui->label_tab_setupMsg_send_cSMode_count->setText("ручной");
-        break;
-    case e_CSMode::MODE_AUTOMATED:
-        ui->label_tab_setupMsg_send_cSMode_count->setText("автоматизированный");
-        break;
-    case e_CSMode::MODE_AUTOMATIC:
-        ui->label_tab_setupMsg_send_cSMode_count->setText("автоматический");
-        break;
-    }
-
-    if (controlContoursFlags.yaw) {
-        ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_yaw->setText("замкнут");
-    } else {
-        ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_yaw->setText("незамкнут");
-    }
-
-    if (controlContoursFlags.pitch) {
-        ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_pitch->setText("замкнут");
-    } else {
-        ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_pitch->setText("незамкнут");
-    }
-
-    if (controlContoursFlags.roll) {
-        ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_roll->setText("замкнут");
-    } else {
-        ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_roll->setText("незамкнут");
-    }
-
-    if (controlContoursFlags.march) {
-        ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_march->setText("замкнут");
-    } else {
-        ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_march->setText("незамкнут");
-    }
-
-    if (controlContoursFlags.lag) {
-        ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_lag->setText("замкнут");
-    } else {
-        ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_lag->setText("незамкнут");
-    }
-
-    ui->label_tab_setupMsg_send_Impact_data_count_yaw->setNum(control.yaw);
-    ui->label_tab_setupMsg_send_Impact_data_count_pitch->setNum(control.pitch);
-    ui->label_tab_setupMsg_send_Impact_data_count_roll->setNum(control.roll);
-    ui->label_tab_setupMsg_send_Impact_data_count_march->setNum(control.march);
-    ui->label_tab_setupMsg_send_Impact_data_count_lag->setNum(control.lag);
-    ui->label_tab_setupMsg_send_Impact_data_count_depth->setNum(control.depth);
-
-//    received
-
-    if (auvData.modeAUV_Real == 1)
-        ui->labelt_tab_setupMsg_received_modeAUV_selection_mode->setText("модель");
-    else
-        ui->labelt_tab_setupMsg_received_modeAUV_selection_mode->setText("агент");
-
-    if (auvData.modeReal) {
-        ui->label_tab_setupMsg_received_cSMode_count->setText("автоматизированный");
-    } else {
-        ui->label_tab_setupMsg_received_cSMode_count->setText("ручной");
-    }
-
-    if (auvData.controlReal.yaw) {
-        ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_yaw->setText("замкнут");
-    } else {
-        ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_yaw->setText("незамкнут");
-    }
-
-    if (auvData.controlReal.pitch) {
-        ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_pitch->setText("замкнут");
-    } else {
-        ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_pitch->setText("незамкнут");
-    }
-
-    if (auvData.controlReal.roll) {
-        ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_roll->setText("замкнут");
-    } else {
-        ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_roll->setText("незамкнут");
-    }
-
-    if (auvData.controlReal.march) {
-        ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_march->setText("замкнут");
-    } else {
-        ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_march->setText("незамкнут");
-    }
-
-    if (auvData.controlReal.lag) {
-        ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_lag->setText("замкнут");
-    } else {
-        ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_lag->setText("незамкнут");
-    }
-
-    ui->label_tab_setupMsg_received_Impact_data_count_vma1->setNum(auvData.signalVMA_real.VMA1);
-    ui->label_tab_setupMsg_received_Impact_data_count_vma2->setNum(auvData.signalVMA_real.VMA2);
-    ui->label_tab_setupMsg_received_Impact_data_count_vma3->setNum(auvData.signalVMA_real.VMA3);
-    ui->label_tab_setupMsg_received_Impact_data_count_vma4->setNum(auvData.signalVMA_real.VMA4);
-    ui->label_tab_setupMsg_received_Impact_data_count_vma5->setNum(auvData.signalVMA_real.VMA5);
-    ui->label_tab_setupMsg_received_Impact_data_count_vma6->setNum(auvData.signalVMA_real.VMA6);
-
-//    флаги для настройки БСО
-
-    ui->label_tab_setupMsg_flagsSetupIMU_pult_init->setNum(flagAH127C_pult.initCalibration);
-    ui->label_tab_setupMsg_flagsSetupIMU_pult_save->setNum(flagAH127C_pult.saveCalibration);
-    ui->label_tab_setupMsg_flagsSetupIMU_bort_end->setNum(flagAH127C_bort.startCalibration);
-    ui->label_tab_setupMsg_flagsSetupIMU_bort_start->setNum(flagAH127C_bort.endCalibration);
-
-//    количество посылок
-
-    ui->label_tab_setupMsg_send_checksum_count->setNum(checksum_msg_gui_send);
-    ui->label_tab_setupMsg_received_checksum_send_count->setNum(checksum_msg_agent_send);
-    ui->labe_tab_setupMsg_received_checksum_received_count_->setNum(checksum_msg_gui_received);
 }
 
 MainWindow::~MainWindow()
