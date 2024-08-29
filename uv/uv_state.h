@@ -169,37 +169,18 @@ struct DataAH127C {
     float quat [4];
 };
 
-/*!
- * \brief DataPressure class структура данных с датчика давления
- */
-struct DataPressure {
-    DataPressure();
-    float temperature;      //! Temperature returned in deg C.
-    float depth;            //! Depth returned in meters
-    float pressure;         //! Pressure returned in mbar or mbar*conversion rate.
-};
+struct DataGANS
+{ //структура данных с ГАНСА
 
-/*!
- * \brief DataUWB class структура данных с UWB модуля.
- */
-struct DataUWB
-{
-    uint16_t error_code = 0;
-    uint16_t connection_field = 0;
-    float locationX = 0;            //! Координата аппарата по оси X
-    float locationY = 0;            //! Координата аппарата по оси Y
-    float distanceToBeacon[4];      //! Расстоние до i-го маяка
-    float distanceToAgent[10];      //! Расстояние до i-го агента
-};
+    double azimuth     = 0; // Горизонтальный угол на ответчик, град.
+    double distance    = 0; // Дистанция до ответчика, м
+    double dataValue   = 0; // Значение запрошенного параметра
 
-/*!
- * \brief PultUWB class структура данных с выставленным положением маяков.
- *  Идет от пульта.
- */
-struct PultUWB
-{
-    float beacon_x[3];
-    float beacon_y[3];
+    double temperature      = 0; // Температура воды, °С
+    double depth            = 0; // Глубина базовой станции от поверхности, м
+
+    double roll_GANS  = 0; // Крен, °. 0 - вертикальное положение, 0..+90 - поворот на правый борт, 0..-90 - поворот на левый борт
+    double pitch_GANS = 0; // Дифферент, °. 0 - вертикальное положение, 0..+90 - крен на нос, 0..-90 - крен на корму
 };
 
 /*!
@@ -216,9 +197,8 @@ struct ToPult
     Header header;
     AUVCurrentData auvData;             //! Данные о текущих параметрах
     DataAH127C dataAH127C;              //! Данные с БСО
-    DataPressure dataPressure;          //! Данные с датчика давления
-    DataUWB dataUWB;                    //! Данные с UWB
     FlagAH127C_bort flagAH127C_bort;    //! Флаги для настрой
+    DataGANS dataGANS;
     quint8 ID_mission;
     mission_Status missionStatus;
     uint checksum;
@@ -231,7 +211,6 @@ struct FromPult
 {
     ControlData controlData;                        //! Данные, которые идут с пульта при замыканиии контуров
     e_CSMode cSMode;                                //! Режим работы
-    PultUWB pultUWB;                                //! Флаги для настрой
     ControlContoursFlags controlContoursFlags;      //! Флаги замыкания контуров (1 - замкнуты)
     quint8 modeAUV_selection;                       //! Текущий выбор модель/реальный НПА
     power_Mode pMode;                               //! Режим работы системы питания
@@ -253,9 +232,7 @@ public:
     UVState();
     Header header;
     DataAH127C imuData;
-    DataPressure dataPressure;
-    DataUWB dataUWB;
-    PultUWB pultUWB;
+    DataGANS dataGANS;
 
     AUVCurrentData auvData;
 

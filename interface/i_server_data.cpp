@@ -10,7 +10,6 @@ FromPult IServerData::generateFullMessage(int nmbAgent) {
 
     data.controlData = agent[nmbAgent].control;
     data.cSMode = agent[nmbAgent].cSMode;
-    data.pultUWB = agent[nmbAgent].pultUWB;
     data.controlContoursFlags = agent[nmbAgent].controlContoursFlags;
     data.modeAUV_selection = agent[nmbAgent].modeAUV_selection;
     data.pMode = agent[nmbAgent].pMode;
@@ -27,9 +26,9 @@ void IServerData::parseFullMessage(ToPult message, int nmbAgent) {
     agent[nmbAgent].header = message.header;
 
     agent[nmbAgent].imuData = message.dataAH127C;
-    agent[nmbAgent].dataPressure = message.dataPressure;
-    agent[nmbAgent].dataUWB = message.dataUWB;
     agent[nmbAgent].flagAH127C_bort = message.flagAH127C_bort;
+
+    agent[nmbAgent].dataGANS = message.dataGANS;
 
     agent[nmbAgent].auvData.modeReal = message.auvData.modeReal;
     agent[nmbAgent].auvData.controlReal = message.auvData.controlReal;

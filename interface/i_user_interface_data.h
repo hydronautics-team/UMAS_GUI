@@ -24,7 +24,6 @@ public:
     void    setControlContoursFlags(e_StabilizationContours contour, bool value);
     void    setCSMode(e_CSMode mode);
     void    setModeSelection(bool mode);
-    void    setDataPultUWB(PultUWB pultUWB);
     void    setMissionControl(mission_Control missionControl);
     void    setID_mission_AUV(quint8 ID_mission_AUV);
 
@@ -43,9 +42,6 @@ public:
     DataAH127C              getImuData();
     Header                  getHeader();
     AUVCurrentData          getAUVCurrentData();
-    DataPressure            getDataPressure();
-    DataUWB                 getDataUWB();
-    DataUWB                 getDataUWB(int selectAgent);
     mission_Status          getMissionStatus();
 
 };

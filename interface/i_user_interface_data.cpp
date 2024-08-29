@@ -98,11 +98,6 @@ void IUserInterfaceData::setModeSelection(bool mode)
         emit displayText_toConsole("Установлен вывод данных на агента");
 }
 
-void IUserInterfaceData::setDataPultUWB(PultUWB pultUWB)
-{
-    agent[getCurrentAgent()].pultUWB = pultUWB;
-}
-
 void IUserInterfaceData::setMissionControl(mission_Control missionControl)
 {
     agent[getCurrentAgent()].missionControl = missionControl;
@@ -204,19 +199,6 @@ Header IUserInterfaceData::getHeader() {
 
 AUVCurrentData IUserInterfaceData::getAUVCurrentData() {
     return agent[getCurrentAgent()].auvData;
-}
-
-DataPressure IUserInterfaceData::getDataPressure() {
-    return agent[getCurrentAgent()].dataPressure;
-}
-
-DataUWB IUserInterfaceData::getDataUWB() {
-    return agent[getCurrentAgent()].dataUWB;
-}
-
-DataUWB IUserInterfaceData::getDataUWB(int selectAgent)
-{
-    return agent[selectAgent].dataUWB;
 }
 
 mission_Status IUserInterfaceData::getMissionStatus()
