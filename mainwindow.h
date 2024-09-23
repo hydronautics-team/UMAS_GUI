@@ -21,8 +21,7 @@
 #include "check_msg.h"
 #include "check_imu.h"
 #include "mode_automatic.h"
-//#include "map_widget.h"
-
+#include "map_widget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -94,7 +93,7 @@ private:
     CheckMsg        *checkMsg;
     CheckImu        *checkImu;
     ModeAutomatic   *modeAutomatic;
-//    MapWidget       *mapWidget;
+    MapWidget       *mapWidget;
 
 
 

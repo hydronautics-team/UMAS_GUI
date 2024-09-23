@@ -76,6 +76,14 @@ void MainWindow::setWidget()
 //    mapWidget = new MapWidget(this);
 //    ui->horizontalLayout_mapWidget->addWidget(mapWidget);
 
+    MapWidget *mapWidget = new MapWidget(this);
+    ui->horizontalLayout_mapWidget->addWidget(mapWidget);
+    mapWidget->addPoint(55.75203, 37.56140);
+
+    // Пример добавления точки на карту
+    mapWidget->addPoint(55.7558, 37.6173);  // Москва
+
+
 }
 
 void MainWindow::setConsole()
