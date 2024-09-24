@@ -205,3 +205,18 @@ mission_Status IUserInterfaceData::getMissionStatus()
 {
     return agent[getCurrentAgent()].missionStatus;
 }
+
+GPS_angular IUserInterfaceData::getAngularGPS()
+{
+    return agent[getCurrentAgent()].angularGPS;
+}
+
+GPS_coordinate IUserInterfaceData::getCoordinateGPS()
+{
+    return agent[getCurrentAgent()].coordinateGPS;
+}
+
+Diagnostic IUserInterfaceData::getDiagnostics()
+{
+    return agent[getCurrentAgent()].diagnostics;
+}

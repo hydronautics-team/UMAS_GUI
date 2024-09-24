@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QDebug>
+#include <QTime>
+
 
 /*!
  * \brief e_CSMode enum класс режимов работы системы управления.
@@ -183,6 +185,49 @@ struct DataGANS
     double pitch_GANS = 0; // Дифферент, °. 0 - вертикальное положение, 0..+90 - крен на нос, 0..-90 - крен на корму
 };
 
+struct GPS_angular
+{
+    QTime time_UTC;    // Время UTC
+    double yaw;        // Курс (рысканье)
+    double pitch;      // Килевая качка
+    double roll;       // Бортовая качка
+    QString dataType;  // Тип данных (N - курс от GPS, G - гиро курс)
+};
+
+struct GPS_coordinate
+{
+    QTime time;           // UTC Время обсервации
+    double latitude;      // Широта
+    QString latHemisphere;// Полушарие (N/S)
+    double longitude;     // Долгота
+    QString lonHemisphere;// Полушарие (E/W)
+    int quality;          // Индикатор качества обсервации
+    int satellitesUsed;   // Количество спутников
+    double hdop;          // Величина горизонтального геометрического фактора (HDOP)
+    double altitude;      // Высота антенны над уровнем моря (геоидом)
+    QString altitudeUnit; // Единица измерения высоты (м)
+    double geoidHeight;   // Превышение геоида над эллипсоидом WGS84
+    QString geoidUnit;    // Единица измерения превышения геоида (м)
+    double dgpsAge = 0;       // Возраст дифференциальной поправки
+    int dgpsStationId = 0;    // Идентификатор ККС
+};
+
+struct Diagnostic {
+    quint16 voltage_bat;
+    quint16 voltage_5v;
+    quint16 voltage_12v;
+    quint16 voltage_4;
+    quint16 current_1;
+    quint16 current_2;
+    quint16 current_3;
+    quint16 current_4;
+    quint8 PMW1;
+    quint8 PMW2;
+    quint8 PMW3;
+    quint8 PMW4;
+};
+
+
 /*!
  * \brief ToPult class структура данных, принимаемых на пульте.
  */
@@ -199,6 +244,9 @@ struct ToPult
     DataAH127C dataAH127C;              //! Данные с БСО
     FlagAH127C_bort flagAH127C_bort;    //! Флаги для настрой
     DataGANS dataGANS;
+    GPS_angular angularGPS;
+    GPS_coordinate coordinateGPS;
+    Diagnostic diagnostics;
     quint8 ID_mission;
     mission_Status missionStatus;
     uint checksum;
@@ -233,6 +281,9 @@ public:
     Header header;
     DataAH127C imuData;
     DataGANS dataGANS;
+    GPS_angular angularGPS;
+    GPS_coordinate coordinateGPS;
+    Diagnostic diagnostics;
 
     AUVCurrentData auvData;
 

@@ -29,6 +29,9 @@ void IServerData::parseFullMessage(ToPult message, int nmbAgent) {
     agent[nmbAgent].flagAH127C_bort = message.flagAH127C_bort;
 
     agent[nmbAgent].dataGANS = message.dataGANS;
+    agent[nmbAgent].angularGPS = message.angularGPS;
+    agent[nmbAgent].coordinateGPS = message.coordinateGPS;
+    agent[nmbAgent].diagnostics = message.diagnostics;
 
     agent[nmbAgent].auvData.modeReal = message.auvData.modeReal;
     agent[nmbAgent].auvData.controlReal = message.auvData.controlReal;
