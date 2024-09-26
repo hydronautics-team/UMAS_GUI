@@ -30,24 +30,27 @@ MapWidget::~MapWidget()
     delete m_quickView;
 }
 
-void MapWidget::addPoint(double latitude, double longitude)
+void MapWidget::addPoint(const QGeoCoordinate &coordinate)
 {
-    QVariantMap params;
-    params["latitude"] = latitude;
-    params["longitude"] = longitude;
+    QVariantMap point;
+    point["latitude"] = coordinate.latitude();
+    point["longitude"] = coordinate.longitude();
 
-    QMetaObject::invokeMethod(m_quickView->rootObject(), "addMapMarker", Q_ARG(QVariant, QVariant::fromValue(params)));
+    // Передаем точку в QML
+    QMetaObject::invokeMethod(m_quickView->rootObject(), "addMapPoint", Q_ARG(QVariant, QVariant::fromValue(point)));
 }
 
-void MapWidget::addLine(const QVector<QGeoCoordinate> &points)
+void MapWidget::addLine(const QVector<QGeoCoordinate> &coordinates)
 {
     QVariantList path;
-    for (const auto &point : points) {
-        QVariantMap coords;
-        coords["latitude"] = point.latitude();
-        coords["longitude"] = point.longitude();
-        path.append(coords);
+    for (const QGeoCoordinate &coord : coordinates) {
+        QVariantMap point;
+        point["latitude"] = coord.latitude();
+        point["longitude"] = coord.longitude();
+        path.append(point);
     }
 
+    // Передаем линию в QML
     QMetaObject::invokeMethod(m_quickView->rootObject(), "addMapLine", Q_ARG(QVariant, QVariant::fromValue(path)));
 }
+

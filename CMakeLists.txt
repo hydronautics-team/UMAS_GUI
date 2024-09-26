@@ -31,6 +31,7 @@ include_directories("${PROJECT_SOURCE_DIR}/ui_utils")
 include_directories("${PROJECT_SOURCE_DIR}/missions")
 include_directories("${PROJECT_SOURCE_DIR}/tabs")
 include_directories("${PROJECT_SOURCE_DIR}/mods")
+include_directories("${PROJECT_SOURCE_DIR}/Diagnostic_bord_UI/Diagnostic_bord")
 include_directories("${PROJECT_SOURCE_DIR}")
 
 include_directories(${Python3_INCLUDE_DIRS})
@@ -85,7 +86,10 @@ set(PROJECT_SOURCES
         tabs/check_imu.h tabs/check_imu.cpp tabs/check_imu.ui
         mods/mode_automatic.h mods/mode_automatic.cpp mods/mode_automatic.ui
         map/map_widget.h map/map_widget.cpp map/map_widget.ui map/map.html
-)
+        Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.cpp
+        Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.h
+        Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.ui
+        )
 
 
 

@@ -27,6 +27,9 @@ void MainWindow::setWidget()
     ui->horizontalLayout_for_checkImu->addWidget(checkImu);
     modeAutomatic = new ModeAutomatic(this);
     ui->verticalLayout_modeAutomatic->addWidget(modeAutomatic);
+    diagnostic_board = new Diagnostic_board(this);
+    ui->horizontalLayout_diagnosticBoard->addWidget(diagnostic_board);
+
     // setMission_map
     connect(
         modeAutomatic->ui->pushButton_missionPlanning_goto_clean, &QPushButton::clicked,
@@ -72,16 +75,18 @@ void MainWindow::setWidget()
         modeAutomatic, &ModeAutomatic::set_stackedWidget_mode,
         ui->stackedWidget_mode, &QStackedWidget::setCurrentIndex);
 
-
-//    mapWidget = new MapWidget(this);
-//    ui->horizontalLayout_mapWidget->addWidget(mapWidget);
-
     MapWidget *mapWidget = new MapWidget(this);
     ui->horizontalLayout_mapWidget->addWidget(mapWidget);
-    mapWidget->addPoint(55.75203, 37.56140);
 
-    // Пример добавления точки на карту
-    mapWidget->addPoint(55.7558, 37.6173);  // Москва
+    // Пример добавления точки
+    QGeoCoordinate point(55.769975, 37.690433);
+    emit mapWidget->addPoint(point);
+
+    // Пример добавления линии
+    QVector<QGeoCoordinate> path;
+    path << QGeoCoordinate(55.7558, 37.6173) << QGeoCoordinate(55.769975, 37.690433);
+    emit mapWidget->addLine(path);
+
 
 
 }

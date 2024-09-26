@@ -17,8 +17,9 @@ public:
     ~MapWidget();
 
 public slots:
-    void addPoint(double latitude, double longitude);
-    void addLine(const QVector<QGeoCoordinate> &points);
+    void addPoint(const QGeoCoordinate &coordinate); // Слот для добавления точки
+    void addLine(const QVector<QGeoCoordinate> &coordinates); // Слот для добавления линии
+
 
 private:
     QQuickView *m_quickView;

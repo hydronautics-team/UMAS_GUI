@@ -365,14 +365,7 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_9">
           <item>
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>ДИАГНОСТИКА</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout_diagnosticBoard"/>
           </item>
          </layout>
         </item>

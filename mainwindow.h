@@ -22,6 +22,8 @@
 #include "check_imu.h"
 #include "mode_automatic.h"
 #include "map_widget.h"
+#include "diagnostic_board.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -89,11 +91,12 @@ private:
     void setModeAutomatic_mission_cpp();
 
     void setWidget();
-    PowerSystem     *powerSystem;
-    CheckMsg        *checkMsg;
-    CheckImu        *checkImu;
-    ModeAutomatic   *modeAutomatic;
-    MapWidget       *mapWidget;
+    PowerSystem         *powerSystem;
+    CheckMsg            *checkMsg;
+    CheckImu            *checkImu;
+    ModeAutomatic       *modeAutomatic;
+    MapWidget           *mapWidget;
+    Diagnostic_board    *diagnostic_board;
 
 
 
