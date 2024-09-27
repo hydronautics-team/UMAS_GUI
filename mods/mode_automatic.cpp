@@ -108,8 +108,89 @@ void ModeAutomatic::addPointToTable(qreal x, qreal y) {
     ui->tableWidget_missionPlanning_cpp_zonaResearch->setItem(row, 1, new QTableWidgetItem(QString::number(y)));
 }
 
+//void ModeAutomatic::slot_pushButton_missionPlanning_cpp_make() {
+//    QLineSeries *lineSeries = new QLineSeries();
+//    int rowCount = ui->tableWidget_missionPlanning_cpp_zonaResearch->rowCount();
+
+//    QStringList pointList;
+
+//    for (int i = 0; i < rowCount; ++i) {
+//        qreal x = ui->tableWidget_missionPlanning_cpp_zonaResearch->item(i, 0)->text().toDouble();
+//        qreal y = ui->tableWidget_missionPlanning_cpp_zonaResearch->item(i, 1)->text().toDouble();
+//        lineSeries->append(x, y);
+
+//        pointList.append(QString::number(x) + "," + QString::number(y));
+//    }
+
+//    if (rowCount > 0) {
+//        // Замкнуть фигуру, соединяя последнюю точку с первой
+//        qreal firstX = ui->tableWidget_missionPlanning_cpp_zonaResearch->item(0, 0)->text().toDouble();
+//        qreal firstY = ui->tableWidget_missionPlanning_cpp_zonaResearch->item(0, 1)->text().toDouble();
+//        lineSeries->append(firstX, firstY);
+//    }
+//    emit requestUpdateChart(lineSeries);
+
+//    QString pointsString = pointList.join(" ");
+
+//    // Получение значения из doubleSpinBox
+//    double distanceTack = ui->doubleSpinBox_missionPlanning_cpp_distanceTack->value();
+//    QString distanceTackStr = QString::number(distanceTack);
+
+//    qDebug() << "Python start:";
+//    qDebug() << "Generated points string:" << pointsString;
+//    qDebug() << "Distance Tack:" << distanceTackStr;
+
+
+
+//    // Создание и настройка QProcess
+//    QProcess process;
+//    QString program = "python3";
+//    QStringList arguments;
+//    arguments << "execute_algorithm.py" << pointsString << distanceTackStr;
+
+//    process.setProgram(program);
+//    process.setArguments(arguments);
+//    process.setWorkingDirectory("/home/shakuevda/Desktop/pult/UMAS_GUI"); // Укажите путь к директории скрипта
+
+//    process.start();
+
+//    // Проверка запуска процесса
+//    if (!process.waitForStarted()) {
+//        qDebug() << "Failed to start process:" << process.errorString();
+//        return;
+//    }
+
+//    // Ожидание завершения процесса
+//    process.waitForFinished();
+
+//    // Чтение стандартного вывода и ошибок
+//    QString output(process.readAllStandardOutput());
+//    QString error(process.readAllStandardError());
+
+//    if (!error.isEmpty()) {
+//        qDebug() << "Python error:" << error;
+//    } else {
+//        qDebug() << "Python output:" << output;
+
+//        // Парсинг результата и создание QLineSeries
+//        QLineSeries *resultSeries = new QLineSeries();
+//        output.remove('[').remove(']').replace("(", "").replace(")", "").replace(" ", "");
+//        QStringList pointStrings = output.split(',');
+
+//        for (int i = 0; i < pointStrings.size(); i += 2) {
+//            qreal x = pointStrings[i].toDouble();
+//            qreal y = pointStrings[i + 1].toDouble();
+//            resultSeries->append(x, y);
+//        }
+
+//        emit plotLineSeries(resultSeries); // Отправка сигнала с QLineSeries
+//    }
+//    qDebug() << "Python finish";
+
+//}
+
 void ModeAutomatic::slot_pushButton_missionPlanning_cpp_make() {
-    QLineSeries *lineSeries = new QLineSeries();
+    QVector<QPointF> coordinates; // Вектор для хранения исходных координат в метрах
     int rowCount = ui->tableWidget_missionPlanning_cpp_zonaResearch->rowCount();
 
     QStringList pointList;
@@ -117,18 +198,22 @@ void ModeAutomatic::slot_pushButton_missionPlanning_cpp_make() {
     for (int i = 0; i < rowCount; ++i) {
         qreal x = ui->tableWidget_missionPlanning_cpp_zonaResearch->item(i, 0)->text().toDouble();
         qreal y = ui->tableWidget_missionPlanning_cpp_zonaResearch->item(i, 1)->text().toDouble();
-        lineSeries->append(x, y);
+
+        // Добавление координат в вектор
+        coordinates.append(QPointF(x, y)); // Координаты в метрах
 
         pointList.append(QString::number(x) + "," + QString::number(y));
     }
 
+    // Замкнуть фигуру, соединяя последнюю точку с первой
     if (rowCount > 0) {
-        // Замкнуть фигуру, соединяя последнюю точку с первой
         qreal firstX = ui->tableWidget_missionPlanning_cpp_zonaResearch->item(0, 0)->text().toDouble();
         qreal firstY = ui->tableWidget_missionPlanning_cpp_zonaResearch->item(0, 1)->text().toDouble();
-        lineSeries->append(firstX, firstY);
+        coordinates.append(QPointF(firstX, firstY)); // Добавление первой точки в конец
     }
-    emit requestUpdateChart(lineSeries);
+
+    // Эмитируем сигнал для добавления линии на карте с координатами в метрах
+    emit requestAddLine(coordinates); // Эмитируем сигнал с координатами в метрах
 
     QString pointsString = pointList.join(" ");
 
@@ -139,8 +224,6 @@ void ModeAutomatic::slot_pushButton_missionPlanning_cpp_make() {
     qDebug() << "Python start:";
     qDebug() << "Generated points string:" << pointsString;
     qDebug() << "Distance Tack:" << distanceTackStr;
-
-
 
     // Создание и настройка QProcess
     QProcess process;
@@ -172,22 +255,23 @@ void ModeAutomatic::slot_pushButton_missionPlanning_cpp_make() {
     } else {
         qDebug() << "Python output:" << output;
 
-        // Парсинг результата и создание QLineSeries
-        QLineSeries *resultSeries = new QLineSeries();
+        // Парсинг результата и создание вектора координат
+        QVector<QPointF> resultCoordinates; // Вектор для хранения результата
         output.remove('[').remove(']').replace("(", "").replace(")", "").replace(" ", "");
         QStringList pointStrings = output.split(',');
 
         for (int i = 0; i < pointStrings.size(); i += 2) {
             qreal x = pointStrings[i].toDouble();
             qreal y = pointStrings[i + 1].toDouble();
-            resultSeries->append(x, y);
+            resultCoordinates.append(QPointF(x, y)); // Добавление координат в метрах
         }
 
-        emit plotLineSeries(resultSeries); // Отправка сигнала с QLineSeries
+        emit requestAddLine(resultCoordinates); // Эмитируем сигнал с результатом
     }
     qDebug() << "Python finish";
-
 }
+
+
 
 void ModeAutomatic::slot_pushButton_missionPlanning_cpp_make_clean() {
     ui->tableWidget_missionPlanning_cpp_zonaResearch->clearContents();

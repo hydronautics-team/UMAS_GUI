@@ -78,14 +78,30 @@ void MainWindow::setWidget()
     MapWidget *mapWidget = new MapWidget(this);
     ui->horizontalLayout_mapWidget->addWidget(mapWidget);
 
-    // Пример добавления точки
-    QGeoCoordinate point(55.769975, 37.690433);
-    emit mapWidget->addPoint(point);
+    connect(
+        modeAutomatic->ui->pushButton_missionPlanning_cpp_on_off, &QPushButton::toggled,
+        mapWidget, &MapWidget::toggleAddPointMode);
+    connect(
+        modeAutomatic, &ModeAutomatic::requestClearLines,
+        mapWidget, &MapWidget::clearMapItems);
+//    connect(
+//        modeAutomatic->ui->pushButton_missionPlanning_cpp_make, &QPushButton::clicked,
+//        mapWidget, &MapWidget::getAllPoints);
+    connect(
+        mapWidget, &MapWidget::signal_addPointToTable,
+        modeAutomatic, &ModeAutomatic::addPointToTable);
+    connect(
+        modeAutomatic, &ModeAutomatic::requestAddLine,
+        mapWidget, &MapWidget::addLine);
 
-    // Пример добавления линии
-    QVector<QGeoCoordinate> path;
-    path << QGeoCoordinate(55.7558, 37.6173) << QGeoCoordinate(55.769975, 37.690433);
-    emit mapWidget->addLine(path);
+//    // Пример добавления точки
+//    QGeoCoordinate point(55.769975, 37.690433);
+//    emit mapWidget->addPoint(point);
+
+//    // Пример добавления линии
+//    QVector<QGeoCoordinate> path;
+//    path << QGeoCoordinate(55.7558, 37.6173) << QGeoCoordinate(55.769975, 37.690433);
+//    emit mapWidget->addLine(path);
 
 
 

@@ -24,6 +24,30 @@ Rectangle {
         zoomLevel: 10
         activeMapType: supportedMapTypes[supportedMapTypes.length - 1]
 
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    if (addPointEnabled) {
+                        // Получаем координаты клика
+                        var coordinate = map.toCoordinate(Qt.point(mouse.x, mouse.y));
+                        var latitude = coordinate.latitude;
+                        var longitude = coordinate.longitude;
+
+                        // Создаем объект точки
+                        var point = { latitude: latitude, longitude: longitude };
+
+                        // Вызываем функцию для добавления точки на карту
+                        addMapPoint(point);
+
+                        // Вызываем сигнал для передачи координат в C++
+                        pointClicked(latitude, longitude);
+                    } else {
+                        console.log("Adding points is disabled.");
+                    }
+                }
+            }
+
+
         // Массив для хранения точек и линий
         MapItemView {
             id: pointsView
@@ -48,7 +72,18 @@ Rectangle {
 
     }
 
+    // Переменная для контроля возможности добавления точек
+    property bool addPointEnabled: false
+
+    signal pointClicked(double latitude, double longitude)
+
+    function setAddPointMode(enable) {
+            addPointEnabled = enable;
+            console.log("Add point mode:", addPointEnabled);
+        }
+
     function addMapPoint(point) {
+        console.log("Adding point to map:", point.latitude, point.longitude);
         pointsModel.append({ latitude: point.latitude, longitude: point.longitude });
     }
 
@@ -67,6 +102,26 @@ Rectangle {
         console.log("Polyline path:", polyline.path);  // Вывод текущего пути
     }
 
+    function clearMapItems() {
+        pointsModel.clear();  // Очищаем модель точек
+        polyline.path = [];   // Очищаем линию
+        console.log("All points and lines cleared.");
+    }
+
+    signal pointsRetrieved(var points)
+
+    function getAllPoints() {
+        var allPoints = [];
+        for (var i = 0; i < pointsModel.count; i++) {
+            var point = {
+                latitude: pointsModel.get(i).latitude,
+                longitude: pointsModel.get(i).longitude
+            };
+            allPoints.push(point);
+        }
+        console.log("All points:", allPoints); // Вывод всех точек в консоль
+        pointsRetrieved(allPoints); // Сигнал для передачи точек обратно
+    }
 
 
 }

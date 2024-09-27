@@ -6,6 +6,10 @@
 #include <QVBoxLayout>
 #include <QQuickItem>
 
+
+// Радиус Земли в метрах
+constexpr double EARTH_RADIUS = 6378137.0;
+
 MapWidget::MapWidget(QWidget *parent)
     : QWidget(parent),
       m_quickView(new QQuickView())
@@ -21,6 +25,11 @@ MapWidget::MapWidget(QWidget *parent)
     // Устанавливаем layout
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(m_container);
+
+    connect(m_quickView->rootObject(), SIGNAL(pointsRetrieved(QVariant)), this, SLOT(onPointsRetrieved(QVariant)));
+    // Подключаем сигнал QML к C++ слоту
+    connect(m_quickView->rootObject(), SIGNAL(pointClicked(double, double)),
+            this, SLOT(onPointClicked(double, double)));
 
     setLayout(layout);
 }
@@ -40,17 +49,173 @@ void MapWidget::addPoint(const QGeoCoordinate &coordinate)
     QMetaObject::invokeMethod(m_quickView->rootObject(), "addMapPoint", Q_ARG(QVariant, QVariant::fromValue(point)));
 }
 
-void MapWidget::addLine(const QVector<QGeoCoordinate> &coordinates)
+//void MapWidget::addLine(const QVector<QGeoCoordinate> &coordinates)
+//{
+//    if (coordinates.isEmpty()) {
+//        qDebug() << "No coordinates provided to draw a line.";
+//        return; // Не делаем ничего, если координат нет
+//    }
+
+//    QVariantList path;
+//    for (const QGeoCoordinate &coord : coordinates) {
+//        QVariantMap point;
+//        point["latitude"] = coord.latitude();
+//        point["longitude"] = coord.longitude();
+//        path.append(point);
+//        qDebug() << "Adding point: latitude =" << coord.latitude() << ", longitude =" << coord.longitude();
+//    }
+
+//    // Передаем линию в QML
+//    QMetaObject::invokeMethod(m_quickView->rootObject(), "addMapLine", Q_ARG(QVariant, QVariant::fromValue(path)));
+
+//    qDebug() << "Line added with" << coordinates.size() << "points.";
+//}
+
+void MapWidget::addLine(const QVector<QPointF> &coordinates)
 {
+    if (coordinates.isEmpty()) {
+        qDebug() << "No coordinates provided to draw a line.";
+        return; // Не делаем ничего, если координат нет
+    }
+
     QVariantList path;
-    for (const QGeoCoordinate &coord : coordinates) {
+    for (const QPointF &meters : coordinates) {
+        // Переводим из метров в широту и долготу
+        QGeoCoordinate convertedCoord = metersToLatLon(meters);
+
+        // Создаем точку для QML
         QVariantMap point;
-        point["latitude"] = coord.latitude();
-        point["longitude"] = coord.longitude();
+        point["latitude"] = convertedCoord.latitude();
+        point["longitude"] = convertedCoord.longitude();
         path.append(point);
+
+        // Логирование
+        qDebug() << "Adding point in meters: X =" << meters.x() << ", Y =" << meters.y();
+        qDebug() << "Converted to: latitude =" << convertedCoord.latitude() << ", longitude =" << convertedCoord.longitude();
     }
 
     // Передаем линию в QML
     QMetaObject::invokeMethod(m_quickView->rootObject(), "addMapLine", Q_ARG(QVariant, QVariant::fromValue(path)));
+
+    qDebug() << "Line added with" << coordinates.size() << "points.";
 }
 
+
+
+
+void MapWidget::toggleAddPointMode()
+{
+    m_canAddPoints = !m_canAddPoints; // Переключаем состояние
+    // Вы можете также передать это состояние в QML, если это нужно
+    QMetaObject::invokeMethod(m_quickView->rootObject(), "setAddPointMode", Q_ARG(QVariant, m_canAddPoints));
+}
+
+void MapWidget::clearMapItems()
+{
+    // Вызываем метод в QML для очистки точек и линий
+    QMetaObject::invokeMethod(m_quickView->rootObject(), "clearMapItems");
+}
+
+void MapWidget::getAllPoints() {
+    // Инициализируем переменную для получения значений
+    QVariant returnedPoints;
+
+    // Вызываем метод в QML для получения всех точек и сохраняем результат
+    QMetaObject::invokeMethod(m_quickView->rootObject(), "getAllPoints", Q_RETURN_ARG(QVariant, returnedPoints));
+
+    // Теперь вы можете использовать returnedPoints для дальнейшей обработки
+    points = returnedPoints; // Сохраняем результат в переменную класса, если нужно
+    qDebug() << "Received points:" << points; // Выводим полученные точки в консоль
+}
+
+
+void MapWidget::onPointsRetrieved(const QVariant &points) {
+    QVariantList pointList = points.toList();
+    for (const QVariant &point : pointList) {
+        double latitude = point.toMap().value("latitude").toDouble();
+        double longitude = point.toMap().value("longitude").toDouble();
+
+        // Переводим в метры
+        double x, y;
+        convertLatLonToMeters(latitude, longitude, x, y);
+        // Выводим результат
+        qDebug() << "Point in meters: X = " << x << ", Y = " << y;
+    }
+}
+
+void MapWidget::onPointClicked(double latitude, double longitude) {
+    // Преобразуем широту и долготу в объект QGeoCoordinate
+    QGeoCoordinate coord(latitude, longitude);
+
+    // Используем метод latLonToMeters для преобразования в метры
+    QPointF meters = latLonToMeters(coord);
+
+    // Получаем координаты X и Y
+    double x = meters.x();
+    double y = meters.y();
+
+    // Логируем координаты или выполняем дальнейшую обработку
+    qDebug() << "Clicked point: Latitude =" << latitude << ", Longitude =" << longitude;
+    qDebug() << "Converted to meters: X =" << x << ", Y =" << y;
+
+    // Дополнительно можно использовать сигнал для передачи координат в другие части программы
+    emit signal_addPointToTable(x, y);
+}
+
+
+
+// Преобразование широты и долготы в метры
+void MapWidget::convertLatLonToMeters(double latitude, double longitude, double& x, double& y) {
+    // Преобразуем широту и долготу в радианы
+    double latRad = latitude * M_PI / 180.0;
+    double lonRad = longitude * M_PI / 180.0;
+
+    // Центрируем на нулевом меридиане и экваторе
+    x = lonRad * EARTH_RADIUS * cos(latRad);
+    y = latRad * EARTH_RADIUS;
+}
+
+void MapWidget::convertMetersToLatLon(double x, double y, double& latitude, double& longitude) {
+    // Преобразование из метров обратно в радианы
+    double latRad = y / EARTH_RADIUS;
+    double lonRad = x / (EARTH_RADIUS * cos(latRad));
+
+    // Преобразование радианов в градусы
+    latitude = latRad * 180.0 / M_PI;
+    longitude = lonRad * 180.0 / M_PI;
+}
+
+// Перевод широты и долготы в метры
+QPointF MapWidget::latLonToMeters(const QGeoCoordinate& coord) const {
+    double lat0 = qDegreesToRadians(origin.latitude());
+    double lon0 = qDegreesToRadians(origin.longitude());
+
+    double lat = qDegreesToRadians(coord.latitude());
+    double lon = qDegreesToRadians(coord.longitude());
+
+    // Вычисление изменения координат
+    double x = (lon - lon0) * R * qCos(lat0);
+    double y = (lat - lat0) * R;
+
+    return QPointF(x, y);
+}
+
+// Перевод из метров обратно в широту и долготу
+QGeoCoordinate MapWidget::metersToLatLon(const QPointF& meters) const {
+    double lat0 = qDegreesToRadians(origin.latitude());
+    double lon0 = qDegreesToRadians(origin.longitude());
+
+    // Обратное преобразование
+    double deltaLat = meters.y() / R;
+    double deltaLon = meters.x() / (R * qCos(lat0));
+
+    double lat = lat0 + deltaLat;
+    double lon = lon0 + deltaLon;
+
+    return QGeoCoordinate(qRadiansToDegrees(lat), qRadiansToDegrees(lon));
+}
+
+// Метод для установки начальной точки
+void MapWidget::setOrigin(const QGeoCoordinate& newOrigin) {
+    origin = newOrigin;
+}

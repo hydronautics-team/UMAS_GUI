@@ -6,6 +6,7 @@
 #include <QButtonGroup>
 #include <QTimer>
 #include <QProcess>
+#include <QGeoCoordinate>
 
 #include "i_user_interface_data.h"
 #include "map.h"
@@ -34,6 +35,7 @@ signals:
     void displayText_toConsole(QString str);
 
     void set_stackedWidget_mode(int index);
+    void requestAddLine(const QVector<QPointF> &coordinates);
 
 private:
     IUserInterfaceData uv_interface;
