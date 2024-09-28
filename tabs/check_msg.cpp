@@ -127,8 +127,6 @@ void CheckMsg::updateUi_checkMsg()
     ui->label_tab_setupMsg_received_Impact_data_count_vma2->setNum(auvData.signalVMA_real.VMA2);
     ui->label_tab_setupMsg_received_Impact_data_count_vma3->setNum(auvData.signalVMA_real.VMA3);
     ui->label_tab_setupMsg_received_Impact_data_count_vma4->setNum(auvData.signalVMA_real.VMA4);
-    ui->label_tab_setupMsg_received_Impact_data_count_vma5->setNum(auvData.signalVMA_real.VMA5);
-    ui->label_tab_setupMsg_received_Impact_data_count_vma6->setNum(auvData.signalVMA_real.VMA6);
 
 //    флаги для настройки БСО
 

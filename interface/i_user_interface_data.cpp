@@ -206,6 +206,12 @@ mission_Status IUserInterfaceData::getMissionStatus()
     return agent[getCurrentAgent()].missionStatus;
 }
 
+DataGANS IUserInterfaceData::getDataGANS()
+{
+    return agent[getCurrentAgent()].dataGANS;
+
+}
+
 GPS_angular IUserInterfaceData::getAngularGPS()
 {
     return agent[getCurrentAgent()].angularGPS;

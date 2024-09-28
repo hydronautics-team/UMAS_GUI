@@ -43,6 +43,7 @@ public:
     Header                  getHeader();
     AUVCurrentData          getAUVCurrentData();
     mission_Status          getMissionStatus();
+    DataGANS                getDataGANS();
     GPS_angular             getAngularGPS();
     GPS_coordinate          getCoordinateGPS();
     Diagnostic              getDiagnostics();

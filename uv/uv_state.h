@@ -109,8 +109,6 @@ struct ControlVMA
     float VMA2     = 0;
     float VMA3     = 0;
     float VMA4     = 0;
-    float VMA5     = 0;
-    float VMA6     = 0;
 };
 
 /*!
