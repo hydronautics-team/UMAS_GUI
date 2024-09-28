@@ -300,29 +300,29 @@ void ModeAutomatic::test_automatic_after()
 
 void ModeAutomatic::slot_pushButton_missionControl_modeIdle()
 {
-    uv_interface.setMissionControl(mission_Control::MODE_IDLE);
+    uv_interface->setMissionControl(mission_Control::MODE_IDLE);
 }
 void ModeAutomatic::slot_pushButton_missionControl_modeStart()
 {
-    uv_interface.setMissionControl(mission_Control::MODE_START);
+    uv_interface->setMissionControl(mission_Control::MODE_START);
 }
 void ModeAutomatic::slot_pushButton_missionControl_modeCancel()
 {
-    uv_interface.setMissionControl(mission_Control::MODE_CANCEL);
+    uv_interface->setMissionControl(mission_Control::MODE_CANCEL);
 }
 void ModeAutomatic::slot_pushButton_missionControl_modeStop()
 {
-    uv_interface.setMissionControl(mission_Control::MODE_STOP);
+    uv_interface->setMissionControl(mission_Control::MODE_STOP);
 }
 void ModeAutomatic::slot_pushButton_missionControl_modeComplete()
 {
-    uv_interface.setMissionControl(mission_Control::MODE_COMPLETE);
-    uv_interface.setID_mission_AUV(0);
+    uv_interface->setMissionControl(mission_Control::MODE_COMPLETE);
+    uv_interface->setID_mission_AUV(0);
 }
 
 void ModeAutomatic::slot_pushButton_missionPlanning_goto()
 {
-    uv_interface.setID_mission_AUV(1);
+    uv_interface->setID_mission_AUV(1);
     ui->stackedWidget_missionPlanning->setCurrentIndex(2);
     displayText_toConsole("Задайте параметры для выхода в точку");
 }
@@ -371,18 +371,18 @@ void ModeAutomatic::slot_pushButton_missionPlanning_go_trajectory_back()
 
 void ModeAutomatic::slot_pushButton_missionPlanning_following()
 {
-    uv_interface.setID_mission_AUV(2);
+    uv_interface->setID_mission_AUV(2);
 }
 
 void ModeAutomatic::slot_pushButton_missionPlanning_go_trajectory()
 {
-    uv_interface.setID_mission_AUV(3);
+    uv_interface->setID_mission_AUV(3);
     ui->stackedWidget_missionPlanning->setCurrentIndex(1);
 }
 
 void ModeAutomatic::updateUi_DataMission()
 {
-    int missionStatus = static_cast<int>(uv_interface.getMissionStatus());
+    int missionStatus = static_cast<int>(uv_interface->getMissionStatus());
     switch (missionStatus) {
     case 0:
         ui->label_missonStatus->setText("ожидание");
@@ -400,6 +400,11 @@ void ModeAutomatic::updateUi_DataMission()
         ui->label_missonStatus->setText("миссия завершена");
         break;
     }
+}
+
+void ModeAutomatic::slot_getInterface(IUserInterfaceData *interface)
+{
+    uv_interface = interface;
 }
 
 ModeAutomatic::~ModeAutomatic()

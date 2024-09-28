@@ -91,6 +91,7 @@ private:
     void setModeAutomatic_mission_cpp();
 
     void setWidget();
+    void setInterface();
     PowerSystem         *powerSystem;
     CheckMsg            *checkMsg;
     CheckImu            *checkImu;
@@ -189,6 +190,8 @@ signals:
     void pointAdded(qreal x, qreal y);
 
     void toggleMissionPlanning_cppPointsEnabled();
+
+    void signal_setInterface(IUserInterfaceData *uv_interface);
 
 protected:
     /*!

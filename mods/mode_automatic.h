@@ -38,7 +38,7 @@ signals:
     void requestAddLine(const QVector<QPointF> &coordinates);
 
 private:
-    IUserInterfaceData uv_interface;
+    IUserInterfaceData *uv_interface;
 
     void setBottom_modeAutomatic();
 
@@ -72,7 +72,7 @@ private slots:
 
 public slots:
     void addPointToTable(qreal x, qreal y);
-
+    void slot_getInterface(IUserInterfaceData *interface);
 };
 
 #endif // MODE_AUTOMATIC_H

@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     setWidget();
+    setInterface();
     setConsole();
     setTimer_updateImpact(20);
     setBottom();
@@ -107,6 +108,22 @@ void MainWindow::setWidget()
 
 }
 
+void MainWindow::setInterface()
+{
+    connect(
+        this, &MainWindow::signal_setInterface,
+        powerSystem, &PowerSystem::slot_getInterface);
+    connect(
+        this, &MainWindow::signal_setInterface,
+        checkMsg, &CheckMsg::slot_getInterface);
+    connect(
+        this, &MainWindow::signal_setInterface,
+        modeAutomatic, &ModeAutomatic::slot_getInterface);
+
+    signal_setInterface(&uv_interface);
+
+}
+
 void MainWindow::setConsole()
 {
     displayText("Приложение работает");
@@ -172,7 +189,6 @@ void MainWindow::useJoyStick()
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
     keyBoard->keyPressEvent(event);
-
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent *event)
@@ -186,6 +202,9 @@ void MainWindow::updateUi_fromControl(){
     DataAH127C imuData = uv_interface.getImuData();
 
     ui->compass->setYawDesirable(control.yaw, imuData.yaw, uv_interface.getCSMode());
+
+    ui->label_controlYaw->setNum(control.yaw);
+    ui->label_controlMarch->setNum(control.march);
 }
 
 //

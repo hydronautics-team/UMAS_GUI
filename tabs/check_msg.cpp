@@ -10,17 +10,17 @@ CheckMsg::CheckMsg(QWidget *parent) :
 
 void CheckMsg::updateUi_checkMsg()
 {
-    power_Mode pMode = uv_interface.getPowerMode();
-    bool modeSelection = uv_interface.getModeSelection();
+    power_Mode pMode = uv_interface->getPowerMode();
+    bool modeSelection = uv_interface->getModeSelection();
 
-    ControlContoursFlags controlContoursFlags = uv_interface.getControlContoursFlags();
-    ControlData control = uv_interface.getControlData();
-    AUVCurrentData auvData = uv_interface.getAUVCurrentData();
-    FlagAH127C_bort flagAH127C_bort = uv_interface.getFlagAH127C_bort();
-    FlagAH127C_pult flagAH127C_pult = uv_interface.getFlagAH127C_pult();
-    int checksum_msg_gui_send = uv_interface.getChecksumMsgGuiSend();
-    int checksum_msg_agent_send = uv_interface.getChecksumMsgAgentSend();
-    int checksum_msg_gui_received = uv_interface.getChecksumMsgGuiReceived();
+    ControlContoursFlags controlContoursFlags = uv_interface->getControlContoursFlags();
+    ControlData control = uv_interface->getControlData();
+    AUVCurrentData auvData = uv_interface->getAUVCurrentData();
+    FlagAH127C_bort flagAH127C_bort = uv_interface->getFlagAH127C_bort();
+    FlagAH127C_pult flagAH127C_pult = uv_interface->getFlagAH127C_pult();
+    int checksum_msg_gui_send = uv_interface->getChecksumMsgGuiSend();
+    int checksum_msg_agent_send = uv_interface->getChecksumMsgAgentSend();
+    int checksum_msg_gui_received = uv_interface->getChecksumMsgGuiReceived();
 
 //    send
 
@@ -31,7 +31,7 @@ void CheckMsg::updateUi_checkMsg()
     else
         ui->label_tab_setupMsg_send_modeAUV_selection_mode->setText("агент");
 
-    switch (uv_interface.getCSMode()) {
+    switch (uv_interface->getCSMode()) {
     case e_CSMode::MODE_MANUAL:
         ui->label_tab_setupMsg_send_cSMode_count->setText("ручной");
         break;
@@ -142,6 +142,11 @@ void CheckMsg::updateUi_checkMsg()
     ui->label_tab_setupMsg_send_checksum_count->setNum(checksum_msg_gui_send);
     ui->label_tab_setupMsg_received_checksum_send_count->setNum(checksum_msg_agent_send);
     ui->labe_tab_setupMsg_received_checksum_received_count_->setNum(checksum_msg_gui_received);
+}
+
+void CheckMsg::slot_getInterface(IUserInterfaceData *interface)
+{
+    uv_interface = interface;
 }
 
 CheckMsg::~CheckMsg()
