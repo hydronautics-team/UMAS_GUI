@@ -186,26 +186,26 @@ struct DataGANS
 struct GPS_angular
 {
     QTime time_UTC;    // Время UTC
-    double yaw;        // Курс (рысканье)
+    double yaw = 0;        // Курс (рысканье)
     double pitch;      // Килевая качка
     double roll;       // Бортовая качка
-    QString dataType;  // Тип данных (N - курс от GPS, G - гиро курс)
+    char dataType;  // Тип данных (N - курс от GPS, G - гиро курс)
 };
 
 struct GPS_coordinate
 {
     QTime time;           // UTC Время обсервации
     double latitude;      // Широта
-    QString latHemisphere;// Полушарие (N/S)
+    char latHemisphere;// Полушарие (N/S)
     double longitude;     // Долгота
-    QString lonHemisphere;// Полушарие (E/W)
+    char lonHemisphere;// Полушарие (E/W)
     int quality;          // Индикатор качества обсервации
     int satellitesUsed;   // Количество спутников
     double hdop;          // Величина горизонтального геометрического фактора (HDOP)
     double altitude;      // Высота антенны над уровнем моря (геоидом)
-    QString altitudeUnit; // Единица измерения высоты (м)
+    char altitudeUnit; // Единица измерения высоты (м)
     double geoidHeight;   // Превышение геоида над эллипсоидом WGS84
-    QString geoidUnit;    // Единица измерения превышения геоида (м)
+    char geoidUnit;    // Единица измерения превышения геоида (м)
     double dgpsAge = 0;       // Возраст дифференциальной поправки
     int dgpsStationId = 0;    // Идентификатор ККС
 };
