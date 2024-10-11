@@ -119,7 +119,7 @@ void IUserInterfaceData::setMissionControl(mission_Control missionControl)
 
 void IUserInterfaceData::setID_mission_AUV(quint8 ID_mission_AUV)
 {
-    agent[getCurrentAgent()].ID_mission_AUV = ID_mission_AUV;
+//    agent[getCurrentAgent()].ID_mission_AUV = ID_mission_AUV;
     switch (static_cast<int>(ID_mission_AUV)) {
     case 0:
         emit displayText_toConsole("Миссия завершена, флаг сброшен");
@@ -134,6 +134,21 @@ void IUserInterfaceData::setID_mission_AUV(quint8 ID_mission_AUV)
         emit displayText_toConsole("Запущена миссия движения по траектории");
         break;
     }
+}
+
+void IUserInterfaceData::setReper(CoordinatePoint reper)
+{
+    agent[getCurrentAgent()].reper = reper;
+}
+
+void IUserInterfaceData::setMissionFromPult(mission_List missionListFromPult)
+{
+    agent[getCurrentAgent()].missionListFromPult = missionListFromPult;
+}
+
+void IUserInterfaceData::setMissionParam(MissionParam mission_param)
+{
+    agent[getCurrentAgent()].mission_param = mission_param;
 }
 
 // get-функции
@@ -225,4 +240,19 @@ GPS_coordinate IUserInterfaceData::getCoordinateGPS()
 Diagnostic IUserInterfaceData::getDiagnostics()
 {
     return agent[getCurrentAgent()].diagnostics;
+}
+
+mission_List IUserInterfaceData::getMissionListToPult()
+{
+    return agent[getCurrentAgent()].missionListToPult;
+}
+
+mission_Status IUserInterfaceData::getissionStatus()
+{
+    return agent[getCurrentAgent()].missionStatus;
+}
+
+quint8 IUserInterfaceData::getFirstPointComplete()
+{
+    return agent[getCurrentAgent()].first_point_complete;
 }

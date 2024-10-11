@@ -44,8 +44,6 @@ private:
 
     void setMission_control();
     void setMission_goTo();
-    void setMission_go_trajectory();
-    void setMission_go_following();
     void setMission_cpp();
 
 private slots:
@@ -58,16 +56,10 @@ private slots:
 
 
     void slot_pushButton_missionControl_modeStart();
-    void slot_pushButton_missionControl_modeCancel();
-    void slot_pushButton_missionControl_modeStop();
     void slot_pushButton_missionControl_modeComplete();
     void slot_pushButton_missionPlanning_goto();
     void slot_pushButton_missionPlanning_goto_update();
     void slot_pushButton_missionPlanning_goto_back();
-    void slot_pushButton_missionPlanning_go_trajectory_update();
-    void slot_pushButton_missionPlanning_go_trajectory_back();
-    void slot_pushButton_missionPlanning_following();
-    void slot_pushButton_missionPlanning_go_trajectory();
     void updateUi_DataMission();
 
 public slots:

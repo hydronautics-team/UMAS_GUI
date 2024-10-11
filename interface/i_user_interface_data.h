@@ -26,6 +26,10 @@ public:
     void    setModeSelection(bool mode);
     void    setMissionControl(mission_Control missionControl);
     void    setID_mission_AUV(quint8 ID_mission_AUV);
+    void    setReper(CoordinatePoint reper);
+    void    setMissionFromPult(mission_List missionListFromPult);
+    void    setMissionParam(MissionParam mission_param);
+
 
 
     int                     getCurrentAgent();
@@ -47,6 +51,10 @@ public:
     GPS_angular             getAngularGPS();
     GPS_coordinate          getCoordinateGPS();
     Diagnostic              getDiagnostics();
+    mission_List            getMissionListToPult();
+    mission_Status          getissionStatus();
+    quint8                  getFirstPointComplete();
+
 
 };
 

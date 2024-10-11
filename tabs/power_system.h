@@ -33,7 +33,6 @@ private:
 private slots:
     void pushButton_on_powerMode_2();
     void pushButton_on_powerMode_3();
-    void pushButton_on_powerMode_4();
     void pushButton_on_powerMode_5();
 
     void off_powerMode_5();

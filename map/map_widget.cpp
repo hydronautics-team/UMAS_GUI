@@ -100,9 +100,6 @@ void MapWidget::addLine(const QVector<QPointF> &coordinates)
     qDebug() << "Line added with" << coordinates.size() << "points.";
 }
 
-
-
-
 void MapWidget::toggleAddPointMode()
 {
     m_canAddPoints = !m_canAddPoints; // Переключаем состояние
@@ -218,4 +215,22 @@ QGeoCoordinate MapWidget::metersToLatLon(const QPointF& meters) const {
 // Метод для установки начальной точки
 void MapWidget::setOrigin(const QGeoCoordinate& newOrigin) {
     origin = newOrigin;
+}
+
+void MapWidget::setMarker(const QGeoCoordinate &coordinate) {
+    QVariantMap marker;
+    marker["latitude"] = coordinate.latitude();
+    marker["longitude"] = coordinate.longitude();
+
+    // Передаем координаты нового маркера в QML
+    QMetaObject::invokeMethod(m_quickView->rootObject(), "setMarker", Q_ARG(QVariant, QVariant::fromValue(marker)));
+
+    setOrigin(coordinate);
+}
+
+void MapWidget::setCurrentPos(double latitude, double longitude) {
+    // Вызываем метод в QML для обновления позиции агента
+    QMetaObject::invokeMethod(m_quickView->rootObject(), "addAgentPosition",
+                              Q_ARG(QVariant, latitude),
+                              Q_ARG(QVariant, longitude));
 }

@@ -18,8 +18,6 @@ void ModeAutomatic::setBottom_modeAutomatic()
 
     setMission_control();
     setMission_goTo();
-    setMission_go_trajectory();
-    setMission_go_following();
     setMission_cpp();
 }
 
@@ -31,12 +29,6 @@ void ModeAutomatic::setMission_control()
     connect(
         ui->pushButton_missionControl_modeStart, &QPushButton::clicked,
         this, &ModeAutomatic::slot_pushButton_missionControl_modeStart);
-    connect(
-        ui->pushButton_missionControl_modeCancel, &QPushButton::clicked,
-        this, &ModeAutomatic::slot_pushButton_missionControl_modeCancel);
-    connect(
-        ui->pushButton_missionControl_modeStop, &QPushButton::clicked,
-        this, &ModeAutomatic::slot_pushButton_missionControl_modeStop);
     connect(
         ui->pushButton_missionControl_modeComplete, &QPushButton::clicked,
         this, &ModeAutomatic::slot_pushButton_missionControl_modeComplete);
@@ -55,25 +47,7 @@ void ModeAutomatic::setMission_goTo()
         this, &ModeAutomatic::slot_pushButton_missionPlanning_goto_back);
 }
 
-void ModeAutomatic::setMission_go_trajectory()
-{
-    connect(
-        ui->pushButton_missionPlanning_go_trajectory_update, &QPushButton::clicked,
-        this, &ModeAutomatic::slot_pushButton_missionPlanning_go_trajectory_update);
-    connect(
-        ui->pushButton_missionPlanning_go_trajectory_back, &QPushButton::clicked,
-        this, &ModeAutomatic::slot_pushButton_missionPlanning_go_trajectory_back);
-    connect(
-        ui->pushButton_missionPlanning_go_trajectory, &QPushButton::clicked,
-        this, &ModeAutomatic::slot_pushButton_missionPlanning_go_trajectory);
-}
 
-void ModeAutomatic::setMission_go_following()
-{
-    connect(
-        ui->pushButton_missionPlanning_following, &QPushButton::clicked,
-        this, &ModeAutomatic::slot_pushButton_missionPlanning_following);
-}
 
 
 //cpp start
@@ -286,7 +260,7 @@ void ModeAutomatic::slot_pushButton_missionPlanning_cpp_back()
 
 void ModeAutomatic::slot_pushButton_missionPlanning_cpp()
 {
-    ui->stackedWidget_missionPlanning->setCurrentIndex(3);
+    ui->stackedWidget_missionPlanning->setCurrentIndex(2);
     displayText_toConsole("Задайте параметры для покрытия области");
 }
 
@@ -306,14 +280,7 @@ void ModeAutomatic::slot_pushButton_missionControl_modeStart()
 {
     uv_interface->setMissionControl(mission_Control::MODE_START);
 }
-void ModeAutomatic::slot_pushButton_missionControl_modeCancel()
-{
-    uv_interface->setMissionControl(mission_Control::MODE_CANCEL);
-}
-void ModeAutomatic::slot_pushButton_missionControl_modeStop()
-{
-    uv_interface->setMissionControl(mission_Control::MODE_STOP);
-}
+
 void ModeAutomatic::slot_pushButton_missionControl_modeComplete()
 {
     uv_interface->setMissionControl(mission_Control::MODE_COMPLETE);
@@ -323,7 +290,7 @@ void ModeAutomatic::slot_pushButton_missionControl_modeComplete()
 void ModeAutomatic::slot_pushButton_missionPlanning_goto()
 {
     uv_interface->setID_mission_AUV(1);
-    ui->stackedWidget_missionPlanning->setCurrentIndex(2);
+    ui->stackedWidget_missionPlanning->setCurrentIndex(1);
     displayText_toConsole("Задайте параметры для выхода в точку");
 }
 
@@ -343,42 +310,6 @@ void ModeAutomatic::slot_pushButton_missionPlanning_goto_back()
     ui->stackedWidget_missionPlanning->setCurrentIndex(0);
 }
 
-void ModeAutomatic::slot_pushButton_missionPlanning_go_trajectory_update()
-{
-    double x1 = ui->doubleSpinBox_missionPlanning_go_trajectory_x_1->value();
-    double y1 = ui->doubleSpinBox_missionPlanning_go_trajectory_y_1->value();
-    double r1 = ui->doubleSpinBox_missionPlanning_go_trajectory_r_1->value();
-
-    double x2 = ui->doubleSpinBox_missionPlanning_go_trajectory_x_2->value();
-    double y2 = ui->doubleSpinBox_missionPlanning_go_trajectory_y_2->value();
-    double r2 = ui->doubleSpinBox_missionPlanning_go_trajectory_r_2->value();
-
-    double x3 = ui->doubleSpinBox_missionPlanning_go_trajectory_x_3->value();
-    double y3 = ui->doubleSpinBox_missionPlanning_go_trajectory_y_3->value();
-    double r3 = ui->doubleSpinBox_missionPlanning_go_trajectory_r_3->value();
-
-    emit signal_pushButton_missionPlanning_go_trajectory_updateMap(x1,y1,r1,0);
-    emit signal_pushButton_missionPlanning_go_trajectory_updateMap(x2,y2,r2,0);
-    emit signal_pushButton_missionPlanning_go_trajectory_updateMap(x3,y3,r3,0);
-    displayText_toConsole("Установлены координаты для движения по траектории и"
-                " радиус удержания позиций");
-}
-
-void ModeAutomatic::slot_pushButton_missionPlanning_go_trajectory_back()
-{
-    ui->stackedWidget_missionPlanning->setCurrentIndex(0);
-}
-
-void ModeAutomatic::slot_pushButton_missionPlanning_following()
-{
-    uv_interface->setID_mission_AUV(2);
-}
-
-void ModeAutomatic::slot_pushButton_missionPlanning_go_trajectory()
-{
-    uv_interface->setID_mission_AUV(3);
-    ui->stackedWidget_missionPlanning->setCurrentIndex(1);
-}
 
 void ModeAutomatic::updateUi_DataMission()
 {

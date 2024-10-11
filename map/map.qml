@@ -70,23 +70,56 @@ Rectangle {
             path: []  // Инициализация пустого пути
         }
 
+        // Массив для хранения репера (специального маркера)
+        MapItemView {
+            id: markerView
+            model: ListModel { id: markerModel }
+            delegate: MapQuickItem {
+                coordinate: QtPositioning.coordinate(model.latitude, model.longitude)
+                sourceItem: Rectangle {
+                    width: 12
+                    height: 12
+                    color: "green"  // Цвет репера
+                    radius: 6
+                }
+            }
+        }
+
+        // Массив для хранения маркера агента
+        MapItemView {
+            id: agentView
+            model: ListModel { id: agentModel }
+            delegate: MapQuickItem {
+                coordinate: QtPositioning.coordinate(model.latitude, model.longitude)
+                sourceItem: Rectangle {
+                    width: 12
+                    height: 12
+                    color: "green"  // Цвет маркера агента
+                    radius: 6
+                }
+            }
+        }
     }
 
     // Переменная для контроля возможности добавления точек
     property bool addPointEnabled: false
 
     signal pointClicked(double latitude, double longitude)
+    signal pointsRetrieved(var points)
 
+    // Функция для включения/выключения режима добавления точек
     function setAddPointMode(enable) {
             addPointEnabled = enable;
             console.log("Add point mode:", addPointEnabled);
         }
 
+    // Функция для добавления точки на карту
     function addMapPoint(point) {
         console.log("Adding point to map:", point.latitude, point.longitude);
         pointsModel.append({ latitude: point.latitude, longitude: point.longitude });
     }
 
+    // Функция для добавления линии на карту
     function addMapLine(path) {
         console.log("Path length:", path.length);
 
@@ -102,14 +135,14 @@ Rectangle {
         console.log("Polyline path:", polyline.path);  // Вывод текущего пути
     }
 
+    // Функция для очистки всех точек и линий, кроме репера
     function clearMapItems() {
         pointsModel.clear();  // Очищаем модель точек
         polyline.path = [];   // Очищаем линию
-        console.log("All points and lines cleared.");
+        console.log("All points and lines cleared, except the marker.");
     }
 
-    signal pointsRetrieved(var points)
-
+    // Функция для получения всех точек
     function getAllPoints() {
         var allPoints = [];
         for (var i = 0; i < pointsModel.count; i++) {
@@ -123,5 +156,25 @@ Rectangle {
         pointsRetrieved(allPoints); // Сигнал для передачи точек обратно
     }
 
+    // Функция для добавления репера
+    function setMarker(point) {
+        markerModel.clear();  // Очищаем старый репер
+        markerModel.append({ latitude: point.latitude, longitude: point.longitude });
+    }
 
+    // Функция для удаления репера (если необходимо)
+    function removeMarker() {
+        markerModel.clear();  // Очищаем репер
+    }
+
+    function addAgentPosition(latitude, longitude) {
+        // Очищаем предыдущую позицию агента, если она существует
+        if (agentModel.count > 0) {
+            agentModel.clear(); // Удаляем предыдущий маркер агента
+        }
+
+        // Добавляем новую позицию агента
+        agentModel.append({ latitude: latitude, longitude: longitude });
+        console.log("Agent position updated:", latitude, longitude);
+    }
 }

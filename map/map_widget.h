@@ -39,8 +39,8 @@ public slots:
     void getAllPoints(); // Метод для получения всех точек
     void onPointsRetrieved(const QVariant &points); // Слот для обработки полученных точек
     void onPointClicked(double latitude, double longitude); // Слот для обработки кликов
-
-
+    void setMarker(const QGeoCoordinate &coordinate); // Слот для установки репера
+    void setCurrentPos(double latitude, double longitude); // слот для установки текущей позиции
 signals:
     void signal_addPointToTable(qreal x, qreal y);
     void pointClicked(double latitude, double longitude);
@@ -51,7 +51,7 @@ private:
     bool m_canAddPoints = false; // Переменная для контроля возможности добавления точек
     QVariant points; // Переменная для хранения полученных координат
 
-    QGeoCoordinate origin = QGeoCoordinate(55.7667, 37.6889); // базовая точка (центр карты)
+    QGeoCoordinate origin = QGeoCoordinate(55.76547524252744, 37.8163097457828); // базовая точка (центр карты)
     const double R = 6378137.0; // Средний радиус Земли в метрах
 
 

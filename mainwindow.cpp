@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     setWidget();
     setInterface();
+    setGUI_reper();
     setConsole();
     setTimer_updateImpact(20);
     setBottom();
@@ -49,9 +50,6 @@ void MainWindow::setWidget()
     connect(
         modeAutomatic, &ModeAutomatic::signal_pushButton_missionPlanning_go_trajectory_updateMap,
         ui->map, &Map::updateUi_missionPlanning_goto_goal);
-    connect(
-        modeAutomatic->ui->pushButton_missionPlanning_go_trajectory_clean, &QPushButton::clicked,
-        ui->map, &Map::updateUi_missionPlanning_goto_goal_clear);
     // setMission_cpp
     connect(
         ui->map, &Map::pointAdded,
@@ -76,7 +74,7 @@ void MainWindow::setWidget()
         modeAutomatic, &ModeAutomatic::set_stackedWidget_mode,
         ui->stackedWidget_mode, &QStackedWidget::setCurrentIndex);
 
-    MapWidget *mapWidget = new MapWidget(this);
+    mapWidget = new MapWidget(this);
     ui->horizontalLayout_mapWidget->addWidget(mapWidget);
 
     connect(
@@ -85,27 +83,53 @@ void MainWindow::setWidget()
     connect(
         modeAutomatic, &ModeAutomatic::requestClearLines,
         mapWidget, &MapWidget::clearMapItems);
-//    connect(
-//        modeAutomatic->ui->pushButton_missionPlanning_cpp_make, &QPushButton::clicked,
-//        mapWidget, &MapWidget::getAllPoints);
     connect(
         mapWidget, &MapWidget::signal_addPointToTable,
         modeAutomatic, &ModeAutomatic::addPointToTable);
     connect(
         modeAutomatic, &ModeAutomatic::requestAddLine,
         mapWidget, &MapWidget::addLine);
-
-//    // Пример добавления точки
-//    QGeoCoordinate point(55.769975, 37.690433);
-//    emit mapWidget->addPoint(point);
-
-//    // Пример добавления линии
-//    QVector<QGeoCoordinate> path;
-//    path << QGeoCoordinate(55.7558, 37.6173) << QGeoCoordinate(55.769975, 37.690433);
-//    emit mapWidget->addLine(path);
+    connect(
+        this, &MainWindow::signal_sendCurrentPos,
+        mapWidget, &MapWidget::setCurrentPos);
 
 
 
+}
+
+void MainWindow::setGUI_reper()
+{
+    connect(
+        ui->pushButton_sendReper, &QPushButton::clicked,
+        this, &MainWindow::slot_pushButton_sendReper);
+    connect(
+        this, &MainWindow::signal_setMarker,
+        mapWidget, &MapWidget::setMarker);
+}
+
+void MainWindow::slot_pushButton_sendReper()
+{
+
+    qDebug() << "hello";
+    // Получение текста из QLineEdit
+    QString latitudeStr = ui->lineEdit_reper_latitude->text();  // Широта
+    QString longitudeStr = ui->lineEdit_reper_longitude->text();  // Долгота
+
+    // Преобразование текста в double
+    double latitude = latitudeStr.toDouble();
+    double longitude = longitudeStr.toDouble();
+
+    // Создание объекта координат
+    QGeoCoordinate reperCoordinate(latitude, longitude);
+
+    // Отправка сигнала с координатами
+    emit signal_setMarker(reperCoordinate);
+
+    // Отправка репера на борт
+    CoordinatePoint msg;
+    msg.x_point = latitude;
+    msg.y_point = longitude;
+    uv_interface.setReper(msg);
 }
 
 void MainWindow::setInterface()
@@ -207,6 +231,13 @@ void MainWindow::updateUi_fromControl(){
     ui->label_controlMarch->setNum(control.march);
 }
 
+void MainWindow::updateUi_Map()
+{
+    GPS_coordinate gps_coordinate = uv_interface.getCoordinateGPS();
+    emit signal_sendCurrentPos(gps_coordinate.latitude, gps_coordinate.longitude);  // Отправка сигнала с текущими координатами
+
+}
+
 //
 
 void MainWindow::setBottom()
@@ -303,6 +334,7 @@ void MainWindow::updateUi_fromAgent1() {
     emit updateIMU(imuData);
     emit updateSetupMsg();
     emit updateDataMission();
+    emit updateMap();
 }
 
 
@@ -410,6 +442,8 @@ void MainWindow::setUpdateUI()
             checkMsg, SLOT(updateUi_checkMsg()));
     connect(this, SIGNAL(updateDataMission()),
             modeAutomatic, SLOT(updateUi_DataMission()));
+    connect(this, &MainWindow::updateMap,
+            this, &MainWindow::updateUi_Map);
 }
 
 void MainWindow::updateUi_Compass(float yaw) {

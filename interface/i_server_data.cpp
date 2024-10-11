@@ -14,7 +14,9 @@ FromPult IServerData::generateFullMessage(int nmbAgent) {
     data.modeAUV_selection = agent[nmbAgent].modeAUV_selection;
     data.pMode = agent[nmbAgent].pMode;
     data.flagAH127C_pult = agent[nmbAgent].flagAH127C_pult;
-    data.ID_mission_AUV = agent[nmbAgent].ID_mission_AUV;
+    data.reper = agent[nmbAgent].reper;
+    data.mission = agent[nmbAgent].missionListFromPult;
+    data.mission_param = agent[nmbAgent].mission_param;
     data.missionControl = agent[nmbAgent].missionControl;
 
     agent[nmbAgent].checksum_msg_gui_send = sizeof(data);
@@ -40,8 +42,9 @@ void IServerData::parseFullMessage(ToPult message, int nmbAgent) {
     agent[nmbAgent].coordinateGPS = message.coordinateGPS;
     agent[nmbAgent].diagnostics = message.diagnostics;
 
-    agent[nmbAgent].ID_mission = message.ID_mission;
+    agent[nmbAgent].missionListToPult = message.missionList;
     agent[nmbAgent].missionStatus = message.missionStatus;
+    agent[nmbAgent].first_point_complete = message.first_point_complete;
 
     agent[nmbAgent].checksum_msg_agent_send = message.checksum;
     agent[nmbAgent].checksum_msg_gui_received = sizeof(message);

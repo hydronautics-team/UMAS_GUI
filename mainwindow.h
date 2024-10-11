@@ -91,6 +91,8 @@ private:
     void setModeAutomatic_mission_cpp();
 
     void setWidget();
+    void setGUI_reper();
+
     void setInterface();
     PowerSystem         *powerSystem;
     CheckMsg            *checkMsg;
@@ -115,6 +117,8 @@ private slots:
      *  данных управляющих воздействий.
      */
     void updateUi_fromControl();
+
+    void updateUi_Map();
 
     /*!
      * \brief e_CSModeManualToggled слот для установки ручного режима
@@ -165,6 +169,8 @@ private slots:
 
     void updateUi_statePushButton();
 
+    void slot_pushButton_sendReper();
+
 
 signals:
     /*!
@@ -187,11 +193,15 @@ signals:
 
     void updateStatePushButton();
 
+    void updateMap();
+
     void pointAdded(qreal x, qreal y);
 
     void toggleMissionPlanning_cppPointsEnabled();
 
     void signal_setInterface(IUserInterfaceData *uv_interface);
+    void signal_setMarker(const QGeoCoordinate &coordinate);
+    void signal_sendCurrentPos(double latitude, double longitude);
 
 protected:
     /*!

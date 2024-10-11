@@ -14,12 +14,6 @@ PowerSystem::PowerSystem(QWidget *parent) :
     case power_Mode::MODE_3:
         ui->pushButton_powerMode_3->setChecked(true);
         break;
-    case power_Mode::MODE_4:
-        ui->pushButton_powerMode_4->setChecked(true);
-        break;
-    case power_Mode::MODE_5:
-        ui->pushButton_powerMode_5->setChecked(true);
-        break;
     }
     setBottom_powerMode();
 }
@@ -49,10 +43,6 @@ void PowerSystem::setBottom_powerMode()
         this, SLOT(pushButton_on_powerMode_3()));
 
     connect(
-        ui->pushButton_powerMode_4, SIGNAL(clicked()),
-        this, SLOT(pushButton_on_powerMode_4()));
-
-    connect(
         ui->pushButton_powerMode_5, SIGNAL(clicked()),
         this, SLOT(pushButton_on_powerMode_5()));
 }
@@ -67,15 +57,11 @@ void PowerSystem::pushButton_on_powerMode_3()
     uv_interface->setPowerMode(power_Mode::MODE_3);
 }
 
-void PowerSystem::pushButton_on_powerMode_4()
-{
-    uv_interface->setPowerMode(power_Mode::MODE_4);
-}
 
 void PowerSystem::pushButton_on_powerMode_5()
 {
     before_powerMode = uv_interface->getPowerMode();
-    uv_interface->setPowerMode(power_Mode::MODE_5);
+//    uv_interface->setPowerMode(power_Mode::MODE_5);
 
     ui->pushButton_powerMode_2->setEnabled(false);
     ui->pushButton_powerMode_3->setEnabled(false);
@@ -101,10 +87,6 @@ void PowerSystem::off_powerMode_5()
 
     case power_Mode::MODE_3:
         ui->pushButton_powerMode_3->setChecked(true);
-        break;
-
-    case power_Mode::MODE_4:
-        ui->pushButton_powerMode_4->setChecked(true);
         break;
     }
 
