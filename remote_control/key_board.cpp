@@ -14,10 +14,10 @@ void KeyBoard::keyPressEvent(QKeyEvent *event)
     ControlData control = getControlData();
     switch (event->key()) {
     case Qt::Key_O:
-        setMarch(1);
+        setMarch(50);
         break;
     case Qt::Key_L:
-        setMarch(-1);
+        setMarch(-50);
         break;
     case Qt::Key_W:
         setPitch(1);
@@ -26,10 +26,10 @@ void KeyBoard::keyPressEvent(QKeyEvent *event)
         setPitch(-1);
         break;
     case Qt::Key_A:
-        setYaw(1);
+        setYaw(50);
         break;
     case Qt::Key_D:
-        setYaw(-1);
+        setYaw(-50);
         break;
     case Qt::Key_C:
         setDepth(1);

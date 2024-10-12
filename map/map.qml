@@ -36,11 +36,25 @@ Rectangle {
                         // Создаем объект точки
                         var point = { latitude: latitude, longitude: longitude };
 
-                        // Вызываем функцию для добавления точки на карту
-                        addMapPoint(point);
+                        if (addPointEnabled == 1)
+                        {
+                            // Вызываем функцию для добавления точки на карту
+                            addMapPoint(point);
 
-                        // Вызываем сигнал для передачи координат в C++
-                        pointClicked(latitude, longitude);
+                            // Вызываем сигнал для передачи координат в C++
+                            pointClicked(latitude, longitude);
+                        } else if (addPointEnabled == 2) {
+                            console.log("Adding point to map:", point.latitude, point.longitude);
+
+                            setMarker(point)
+                            pointClicked(point.latitude, point.longitude);
+                        } else if (addPointEnabled == 3) {
+                            console.log("Adding point to map:", point.latitude, point.longitude);
+
+                            setGotoPoint(point)
+                            pointClicked(point.latitude, point.longitude);
+                        }
+
                     } else {
                         console.log("Adding points is disabled.");
                     }
@@ -94,7 +108,22 @@ Rectangle {
                 sourceItem: Rectangle {
                     width: 12
                     height: 12
-                    color: "green"  // Цвет маркера агента
+                    color: "lightpink"  // Цвет маркера агента
+                    radius: 6
+                }
+            }
+        }
+
+        // Массив для хранения выхода в точку
+        MapItemView {
+            id: missionGoto
+            model: ListModel { id: goto_point }
+            delegate: MapQuickItem {
+                coordinate: QtPositioning.coordinate(model.latitude, model.longitude)
+                sourceItem: Rectangle {
+                    width: 10
+                    height: 10
+                    color: "black"  // Цвет маркера агента
                     radius: 6
                 }
             }
@@ -102,12 +131,14 @@ Rectangle {
     }
 
     // Переменная для контроля возможности добавления точек
-    property bool addPointEnabled: false
+    property int addPointEnabled: 0
 
     signal pointClicked(double latitude, double longitude)
     signal pointsRetrieved(var points)
 
     // Функция для включения/выключения режима добавления точек
+    // 1 - точки для покрытия
+    // 2 - точки для
     function setAddPointMode(enable) {
             addPointEnabled = enable;
             console.log("Add point mode:", addPointEnabled);
@@ -165,6 +196,17 @@ Rectangle {
     // Функция для удаления репера (если необходимо)
     function removeMarker() {
         markerModel.clear();  // Очищаем репер
+    }
+
+    // Функция для добавления репера
+    function setGotoPoint(point) {
+        goto_point.clear();  // Очищаем старый репер
+        goto_point.append({ latitude: point.latitude, longitude: point.longitude });
+    }
+
+    // Функция для удаления репера (если необходимо)
+    function removeGotoPoint() {
+        goto_point.clear();  // Очищаем репер
     }
 
     function addAgentPosition(latitude, longitude) {

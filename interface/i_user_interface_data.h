@@ -54,6 +54,8 @@ public:
     mission_List            getMissionListToPult();
     mission_Status          getissionStatus();
     quint8                  getFirstPointComplete();
+    mission_List            getMissionFromPult();
+
 
 
 };

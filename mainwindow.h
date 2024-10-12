@@ -171,6 +171,8 @@ private slots:
 
     void slot_pushButton_sendReper();
 
+    void slot_addMarker_to_gui(double x, double y);
+
 
 signals:
     /*!

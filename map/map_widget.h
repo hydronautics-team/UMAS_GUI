@@ -34,7 +34,9 @@ public:
 public slots:
     void addPoint(const QGeoCoordinate &coordinate); // Слот для добавления точки
     void addLine(const QVector<QPointF> &coordinates); // Слот для добавления линии
-    void toggleAddPointMode(); // Метод для переключения режима добавления точек
+    void toggleAddPointMode_for_cpp(bool checked); // Метод для переключения режима добавления точек для покрытия
+    void toggleAddPointMode_for_marker(bool checked); // Метод для переключения режима добавления точек для маркера
+    void toggleAddPointMode_for_goto_point(bool checked); // Метод для переключения режима добавления точек выхода в точку
     void clearMapItems(); // Метод для очистки всех точек и линий
     void getAllPoints(); // Метод для получения всех точек
     void onPointsRetrieved(const QVariant &points); // Слот для обработки полученных точек
@@ -43,12 +45,16 @@ public slots:
     void setCurrentPos(double latitude, double longitude); // слот для установки текущей позиции
 signals:
     void signal_addPointToTable(qreal x, qreal y);
+    void signal_addMarker_to_gui(double x, double y);
+    void signal_addPoint_to_gui(double latitude, double longitude);
+
+
     void pointClicked(double latitude, double longitude);
 
 private:
     QQuickView *m_quickView;
     QWidget *m_container;
-    bool m_canAddPoints = false; // Переменная для контроля возможности добавления точек
+    int m_canAddPoints = 0; // Переменная для контроля возможности добавления точек
     QVariant points; // Переменная для хранения полученных координат
 
     QGeoCoordinate origin = QGeoCoordinate(55.76547524252744, 37.8163097457828); // базовая точка (центр карты)

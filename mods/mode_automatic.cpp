@@ -15,6 +15,9 @@ void ModeAutomatic::setBottom_modeAutomatic()
     connect(
         ui->pushButton_after, SIGNAL(clicked()),
         this, SLOT(test_automatic_after()));
+    connect(
+        ui->pushButton_missionPlanning_keepPos, &QPushButton::toggled,
+        this, &ModeAutomatic::slot_pushButton_missionPlanning_keepPos);
 
     setMission_control();
     setMission_goTo();
@@ -39,9 +42,6 @@ void ModeAutomatic::setMission_goTo()
     connect(
         ui->pushButton_missionPlanning_goto, &QPushButton::clicked,
         this, &ModeAutomatic::slot_pushButton_missionPlanning_goto);
-    connect(
-        ui->pushButton_missionPlanning_goto_update, &QPushButton::clicked,
-        this, &ModeAutomatic::slot_pushButton_missionPlanning_goto_update);;
     connect(
         ui->pushButton_missionPlanning_goto_back, &QPushButton::clicked,
         this, &ModeAutomatic::slot_pushButton_missionPlanning_goto_back);
@@ -256,12 +256,14 @@ void ModeAutomatic::slot_pushButton_missionPlanning_cpp_make_clean() {
 void ModeAutomatic::slot_pushButton_missionPlanning_cpp_back()
 {
     ui->stackedWidget_missionPlanning->setCurrentIndex(0);
+    uv_interface->setMissionFromPult(mission_List::NO_MISSION);
 }
 
 void ModeAutomatic::slot_pushButton_missionPlanning_cpp()
 {
     ui->stackedWidget_missionPlanning->setCurrentIndex(2);
     displayText_toConsole("Задайте параметры для покрытия области");
+    uv_interface->setMissionFromPult(mission_List::MOVE_TACK);
 }
 
 //cpp finish
@@ -292,22 +294,13 @@ void ModeAutomatic::slot_pushButton_missionPlanning_goto()
     uv_interface->setID_mission_AUV(1);
     ui->stackedWidget_missionPlanning->setCurrentIndex(1);
     displayText_toConsole("Задайте параметры для выхода в точку");
-}
-
-void ModeAutomatic::slot_pushButton_missionPlanning_goto_update()
-{
-    double x = ui->doubleSpinBox_missionPlanning_goto_x->value();
-    double y = ui->doubleSpinBox_missionPlanning_goto_y->value();
-    double r = ui->doubleSpinBox_missionPlanning_goto_r->value();
-
-    emit signal_pushButton_missionPlanning_goto_updateMap(x,y,r,0);
-    displayText_toConsole("Установлена координата для выхода в точку и"
-                " радиус удержания позиции");
+    uv_interface->setMissionFromPult(mission_List::MOVE_TO_POINT);
 }
 
 void ModeAutomatic::slot_pushButton_missionPlanning_goto_back()
 {
     ui->stackedWidget_missionPlanning->setCurrentIndex(0);
+    uv_interface->setMissionFromPult(mission_List::NO_MISSION);
 }
 
 
@@ -331,11 +324,65 @@ void ModeAutomatic::updateUi_DataMission()
         ui->label_missonStatus->setText("миссия завершена");
         break;
     }
+    switch (uv_interface->getMissionFromPult()) {
+    case mission_List::NO_MISSION:
+        ui->label_missonCurrent->setText("NO_MISSION");
+        break;
+    case mission_List::MOVE_TO_POINT:
+        ui->label_missonCurrent->setText("MOVE_TO_POINT");
+        break;
+    case mission_List::KEEP_POS:
+        ui->label_missonCurrent->setText("KEEP_POS");
+        break;
+    case mission_List::MOVE_CIRCLE:
+        ui->label_missonCurrent->setText("MOVE_CIRCLE");
+        break;
+    case mission_List::MOVE_TACK:
+        ui->label_missonCurrent->setText("MOVE_TACK");
+        break;
+    }
+    switch (uv_interface->getMissionListToPult()) {
+    case mission_List::NO_MISSION:
+        ui->label_missonCurrent_toPult->setText("NO_MISSION");
+        break;
+    case mission_List::MOVE_TO_POINT:
+        ui->label_missonCurrent_toPult->setText("MOVE_TO_POINT");
+        break;
+    case mission_List::KEEP_POS:
+        ui->label_missonCurrent_toPult->setText("KEEP_POS");
+        break;
+    case mission_List::MOVE_CIRCLE:
+        ui->label_missonCurrent_toPult->setText("MOVE_CIRCLE");
+        break;
+    case mission_List::MOVE_TACK:
+        ui->label_missonCurrent_toPult->setText("MOVE_TACK");
+        break;
+    }
+}
+
+void ModeAutomatic::slot_pushButton_missionPlanning_keepPos(bool checked)
+{
+    prev_mission = uv_interface->getMissionFromPult();
+    if (checked)
+        uv_interface->setMissionFromPult(mission_List::KEEP_POS);
+    else
+        uv_interface->setMissionFromPult(mission_List::NO_MISSION);
 }
 
 void ModeAutomatic::slot_getInterface(IUserInterfaceData *interface)
 {
     uv_interface = interface;
+}
+
+void ModeAutomatic::slot_addPoint_to_gui(double latitude, double longitude)
+{
+    ui->lineEdit_missionPlanning_goto_latitude->setText(QString::number(latitude, 'd', 14));  // Широта
+    ui->lineEdit_missionPlanning_goto_longitude->setText(QString::number(longitude, 'd', 14)); // Долгота
+
+    MissionParam msg;
+    msg.point_mission.x_point = latitude;
+    msg.point_mission.y_point = longitude;
+    uv_interface->setMissionParam(msg);
 }
 
 ModeAutomatic::~ModeAutomatic()

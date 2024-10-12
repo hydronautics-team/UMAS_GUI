@@ -34,9 +34,6 @@ void MainWindow::setWidget()
 
     // setMission_map
     connect(
-        modeAutomatic->ui->pushButton_missionPlanning_goto_clean, &QPushButton::clicked,
-        ui->map, &Map::updateUi_missionPlanning_goto_goal_clear);
-    connect(
         modeAutomatic->ui->pushButton_missionPlanning_goto_on_trajectory, &QPushButton::clicked,
         ui->map, &Map::updateUi_missionPlanning_goto_traj_onoff);
     connect(
@@ -79,7 +76,7 @@ void MainWindow::setWidget()
 
     connect(
         modeAutomatic->ui->pushButton_missionPlanning_cpp_on_off, &QPushButton::toggled,
-        mapWidget, &MapWidget::toggleAddPointMode);
+        mapWidget, &MapWidget::toggleAddPointMode_for_cpp);
     connect(
         modeAutomatic, &ModeAutomatic::requestClearLines,
         mapWidget, &MapWidget::clearMapItems);
@@ -92,6 +89,17 @@ void MainWindow::setWidget()
     connect(
         this, &MainWindow::signal_sendCurrentPos,
         mapWidget, &MapWidget::setCurrentPos);
+    connect(
+        ui->pushButton_sendReper_map_onoff, &QPushButton::toggled,
+        mapWidget, &MapWidget::toggleAddPointMode_for_marker);
+
+    connect(
+        mapWidget, &MapWidget::signal_addPoint_to_gui,
+        modeAutomatic, &ModeAutomatic::slot_addPoint_to_gui);
+
+    connect(
+        modeAutomatic->ui->pushButton_missionPlanning_goto_point_onoff, &QPushButton::toggled,
+        mapWidget, &MapWidget::toggleAddPointMode_for_goto_point);
 
 
 
@@ -105,6 +113,10 @@ void MainWindow::setGUI_reper()
     connect(
         this, &MainWindow::signal_setMarker,
         mapWidget, &MapWidget::setMarker);
+    connect(
+        mapWidget, &MapWidget::signal_addMarker_to_gui,
+        this, &MainWindow::slot_addMarker_to_gui);
+
 }
 
 void MainWindow::slot_pushButton_sendReper()
@@ -131,6 +143,18 @@ void MainWindow::slot_pushButton_sendReper()
     msg.y_point = longitude;
     uv_interface.setReper(msg);
 }
+
+void MainWindow::slot_addMarker_to_gui(double latitude, double longitude)
+{
+    ui->lineEdit_reper_latitude->setText(QString::number(latitude, 'd', 14));  // Широта
+    ui->lineEdit_reper_longitude->setText(QString::number(longitude, 'd', 14)); // Долгота
+
+    CoordinatePoint msg;
+    msg.x_point = latitude;
+    msg.y_point = longitude;
+    uv_interface.setReper(msg);
+}
+
 
 void MainWindow::setInterface()
 {
@@ -328,7 +352,6 @@ void MainWindow::setConnection()
 
 void MainWindow::updateUi_fromAgent1() {
     DataAH127C imuData = uv_interface.getImuData();
-    displayText("DEBUG: сообщение получено");
 
     emit updateCompass(imuData.yaw);
     emit updateIMU(imuData);

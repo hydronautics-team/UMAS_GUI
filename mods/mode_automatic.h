@@ -39,6 +39,7 @@ signals:
 
 private:
     IUserInterfaceData *uv_interface;
+    mission_List prev_mission;
 
     void setBottom_modeAutomatic();
 
@@ -58,13 +59,18 @@ private slots:
     void slot_pushButton_missionControl_modeStart();
     void slot_pushButton_missionControl_modeComplete();
     void slot_pushButton_missionPlanning_goto();
-    void slot_pushButton_missionPlanning_goto_update();
     void slot_pushButton_missionPlanning_goto_back();
     void updateUi_DataMission();
+
+    void slot_pushButton_missionPlanning_keepPos(bool checked);
+
+
 
 public slots:
     void addPointToTable(qreal x, qreal y);
     void slot_getInterface(IUserInterfaceData *interface);
+    void slot_addPoint_to_gui(double latitude, double longitude);
+
 };
 
 #endif // MODE_AUTOMATIC_H

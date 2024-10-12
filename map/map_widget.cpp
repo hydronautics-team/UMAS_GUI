@@ -49,28 +49,6 @@ void MapWidget::addPoint(const QGeoCoordinate &coordinate)
     QMetaObject::invokeMethod(m_quickView->rootObject(), "addMapPoint", Q_ARG(QVariant, QVariant::fromValue(point)));
 }
 
-//void MapWidget::addLine(const QVector<QGeoCoordinate> &coordinates)
-//{
-//    if (coordinates.isEmpty()) {
-//        qDebug() << "No coordinates provided to draw a line.";
-//        return; // Не делаем ничего, если координат нет
-//    }
-
-//    QVariantList path;
-//    for (const QGeoCoordinate &coord : coordinates) {
-//        QVariantMap point;
-//        point["latitude"] = coord.latitude();
-//        point["longitude"] = coord.longitude();
-//        path.append(point);
-//        qDebug() << "Adding point: latitude =" << coord.latitude() << ", longitude =" << coord.longitude();
-//    }
-
-//    // Передаем линию в QML
-//    QMetaObject::invokeMethod(m_quickView->rootObject(), "addMapLine", Q_ARG(QVariant, QVariant::fromValue(path)));
-
-//    qDebug() << "Line added with" << coordinates.size() << "points.";
-//}
-
 void MapWidget::addLine(const QVector<QPointF> &coordinates)
 {
     if (coordinates.isEmpty()) {
@@ -100,12 +78,45 @@ void MapWidget::addLine(const QVector<QPointF> &coordinates)
     qDebug() << "Line added with" << coordinates.size() << "points.";
 }
 
-void MapWidget::toggleAddPointMode()
+void MapWidget::toggleAddPointMode_for_cpp(bool checked)
 {
-    m_canAddPoints = !m_canAddPoints; // Переключаем состояние
+    if (checked) {
+        if (m_canAddPoints != 1)
+            m_canAddPoints = 1;
+    } else {
+        m_canAddPoints = 0;
+    }
+
     // Вы можете также передать это состояние в QML, если это нужно
     QMetaObject::invokeMethod(m_quickView->rootObject(), "setAddPointMode", Q_ARG(QVariant, m_canAddPoints));
 }
+
+void MapWidget::toggleAddPointMode_for_marker(bool checked)
+{
+    if (checked) {
+        if (m_canAddPoints != 2)
+            m_canAddPoints = 2;
+    } else {
+        m_canAddPoints = 0;
+    }
+
+    // Вы можете также передать это состояние в QML, если это нужно
+    QMetaObject::invokeMethod(m_quickView->rootObject(), "setAddPointMode", Q_ARG(QVariant, m_canAddPoints));
+}
+
+void MapWidget::toggleAddPointMode_for_goto_point(bool checked)
+{
+    if (checked) {
+        if (m_canAddPoints != 3)
+            m_canAddPoints = 3;
+    } else {
+        m_canAddPoints = 0;
+    }
+
+    // Вы можете также передать это состояние в QML, если это нужно
+    QMetaObject::invokeMethod(m_quickView->rootObject(), "setAddPointMode", Q_ARG(QVariant, m_canAddPoints));
+}
+
 
 void MapWidget::clearMapItems()
 {
@@ -141,22 +152,29 @@ void MapWidget::onPointsRetrieved(const QVariant &points) {
 }
 
 void MapWidget::onPointClicked(double latitude, double longitude) {
-    // Преобразуем широту и долготу в объект QGeoCoordinate
-    QGeoCoordinate coord(latitude, longitude);
+    if (m_canAddPoints == 1)
+    {
+        // Преобразуем широту и долготу в объект QGeoCoordinate
+        QGeoCoordinate coord(latitude, longitude);
 
-    // Используем метод latLonToMeters для преобразования в метры
-    QPointF meters = latLonToMeters(coord);
+        // Используем метод latLonToMeters для преобразования в метры
+        QPointF meters = latLonToMeters(coord);
 
-    // Получаем координаты X и Y
-    double x = meters.x();
-    double y = meters.y();
+        // Получаем координаты X и Y
+        double x = meters.x();
+        double y = meters.y();
 
-    // Логируем координаты или выполняем дальнейшую обработку
-    qDebug() << "Clicked point: Latitude =" << latitude << ", Longitude =" << longitude;
-    qDebug() << "Converted to meters: X =" << x << ", Y =" << y;
+        // Логируем координаты или выполняем дальнейшую обработку
+        qDebug() << "Clicked point: Latitude =" << latitude << ", Longitude =" << longitude;
+        qDebug() << "Converted to meters: X =" << x << ", Y =" << y;
 
-    // Дополнительно можно использовать сигнал для передачи координат в другие части программы
-    emit signal_addPointToTable(x, y);
+        // Дополнительно можно использовать сигнал для передачи координат в другие части программы
+        emit signal_addPointToTable(x, y);
+    } else if (m_canAddPoints == 2) {
+        signal_addMarker_to_gui(latitude, longitude);
+    } else if (m_canAddPoints == 3) {
+        signal_addPoint_to_gui(latitude, longitude);
+    }
 }
 
 

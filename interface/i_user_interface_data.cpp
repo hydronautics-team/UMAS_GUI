@@ -256,3 +256,8 @@ quint8 IUserInterfaceData::getFirstPointComplete()
 {
     return agent[getCurrentAgent()].first_point_complete;
 }
+
+mission_List IUserInterfaceData::getMissionFromPult()
+{
+    return agent[getCurrentAgent()].missionListFromPult;
+}
