@@ -20,8 +20,8 @@ Rectangle {
         id: map
         anchors.fill: parent
         plugin: mapPlugin
-        center: QtPositioning.coordinate(55.7558, 37.6173)
-        zoomLevel: 10
+        center: QtPositioning.coordinate(55.72015929613467, 37.85236374546281)
+        zoomLevel: 18
         activeMapType: supportedMapTypes[supportedMapTypes.length - 1]
 
             MouseArea {
@@ -35,7 +35,6 @@ Rectangle {
 
                         // Создаем объект точки
                         var point = { latitude: latitude, longitude: longitude };
-
                         if (addPointEnabled == 1)
                         {
                             // Вызываем функцию для добавления точки на карту
@@ -52,6 +51,10 @@ Rectangle {
                             console.log("Adding point to map:", point.latitude, point.longitude);
 
                             setGotoPoint(point)
+                            pointClicked(point.latitude, point.longitude);
+                        } else if (addPointEnabled == 4) {
+                            console.log("Adding point to map:", point.latitude, point.longitude);
+                            setPointWithCircle(point.latitude, point.longitude, radius_move_circle)
                             pointClicked(point.latitude, point.longitude);
                         }
 
@@ -108,7 +111,7 @@ Rectangle {
                 sourceItem: Rectangle {
                     width: 12
                     height: 12
-                    color: "lightpink"  // Цвет маркера агента
+                    color: "red"  // Цвет маркера агента
                     radius: 6
                 }
             }
@@ -128,10 +131,44 @@ Rectangle {
                 }
             }
         }
+
+        MapItemView {
+            id: pointWithCircleView
+            model: ListModel { id: pointWithCircleModel }
+            delegate: MapQuickItem {
+                coordinate: QtPositioning.coordinate(model.latitude, model.longitude)
+                sourceItem: Item {
+                    width: model.radius * 2  // Ширина окружности на основе радиуса
+                    height: model.radius * 2  // Высота окружности на основе радиуса
+                    anchors.centerIn: parent
+
+                    // Окружность
+                    Rectangle {
+                        width: model.radius * 2  // Диаметр окружности
+                        height: model.radius * 2
+                        color: "transparent"
+                        border.color: "blue"
+                        border.width: 2
+                        radius: model.radius  // Закругляем углы для создания окружности
+                    }
+
+                    // Точка в центре окружности
+                    Rectangle {
+                        width: 10
+                        height: 10
+                        color: "blue"
+                        radius: 5
+                        anchors.centerIn: parent
+                    }
+                }
+            }
+        }
+
     }
 
     // Переменная для контроля возможности добавления точек
     property int addPointEnabled: 0
+    property double radius_move_circle: 1
 
     signal pointClicked(double latitude, double longitude)
     signal pointsRetrieved(var points)
@@ -218,5 +255,36 @@ Rectangle {
         // Добавляем новую позицию агента
         agentModel.append({ latitude: latitude, longitude: longitude });
         console.log("Agent position updated:", latitude, longitude);
+    }
+
+    function setCircleRadius(radius) {
+        radius_move_circle = radius
+        console.log("set radius:", radius_move_circle);
+    }
+
+    // Функция для конвертации радиуса из метров в пиксели в зависимости от уровня зума
+    function metersToPixels(radiusInMeters, zoomLevel) {
+        var earthCircumference = 40075017;  // Окружность Земли в метрах
+        var mapWidthInPixels = Math.pow(2, zoomLevel) * 256;  // Ширина карты на данном уровне зума в пикселях
+        var metersPerPixel = earthCircumference / mapWidthInPixels;  // Метров на один пиксель
+        return radiusInMeters / metersPerPixel;  // Радиус в пикселях
+    }
+
+    // Метод для установки точки и окружности с радиусом в метрах
+    function setPointWithCircle(latitude, longitude, radiusInMeters) {
+        // Конвертируем радиус из метров в пиксели
+        var radiusInPixels = metersToPixels(radiusInMeters, map.zoomLevel);
+
+        // Очищаем старые точки и окружности, если они есть
+        pointWithCircleModel.clear();
+
+        // Добавляем новую точку с окружностью и конвертированным радиусом
+        pointWithCircleModel.append({
+            latitude: latitude,
+            longitude: longitude,
+            radius: radiusInPixels
+        });
+
+        console.log("Set point with circle at:", latitude, longitude, "with radius in meters:", radiusInMeters, "converted to pixels:", radiusInPixels);
     }
 }

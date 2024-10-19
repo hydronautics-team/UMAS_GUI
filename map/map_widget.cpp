@@ -117,6 +117,19 @@ void MapWidget::toggleAddPointMode_for_goto_point(bool checked)
     QMetaObject::invokeMethod(m_quickView->rootObject(), "setAddPointMode", Q_ARG(QVariant, m_canAddPoints));
 }
 
+void MapWidget::toggleAddPointMode_for_go_circle_point(bool checked)
+{
+    if (checked) {
+        if (m_canAddPoints != 4)
+            m_canAddPoints = 4;
+    } else {
+        m_canAddPoints = 0;
+    }
+
+    // Вы можете также передать это состояние в QML, если это нужно
+    QMetaObject::invokeMethod(m_quickView->rootObject(), "setAddPointMode", Q_ARG(QVariant, m_canAddPoints));
+}
+
 
 void MapWidget::clearMapItems()
 {
@@ -172,7 +185,7 @@ void MapWidget::onPointClicked(double latitude, double longitude) {
         emit signal_addPointToTable(x, y);
     } else if (m_canAddPoints == 2) {
         signal_addMarker_to_gui(latitude, longitude);
-    } else if (m_canAddPoints == 3) {
+    } else if (m_canAddPoints == 3 || m_canAddPoints == 4) {
         signal_addPoint_to_gui(latitude, longitude);
     }
 }
@@ -251,4 +264,15 @@ void MapWidget::setCurrentPos(double latitude, double longitude) {
     QMetaObject::invokeMethod(m_quickView->rootObject(), "addAgentPosition",
                               Q_ARG(QVariant, latitude),
                               Q_ARG(QVariant, longitude));
+}
+
+// слот для установки радиуса для движения по окружности
+void MapWidget::setRadius_circle(const QString &text)
+{
+    // Преобразуем строку в double
+    double radius = text.toDouble();  // Преобразуем строку в double
+
+    // Вызываем метод в QML для установки радиуса окружности
+    QMetaObject::invokeMethod(m_quickView->rootObject(), "setCircleRadius",
+                              Q_ARG(QVariant, radius));
 }

@@ -305,14 +305,14 @@
                 <item row="0" column="1">
                  <widget class="QLineEdit" name="lineEdit_reper_latitude">
                   <property name="text">
-                   <string>55.76253493572597</string>
+                   <string>55.71752739610301</string>
                   </property>
                  </widget>
                 </item>
                 <item row="1" column="1">
                  <widget class="QLineEdit" name="lineEdit_reper_longitude">
                   <property name="text">
-                   <string>37.686298145735265</string>
+                   <string>37.84747427460488</string>
                   </property>
                  </widget>
                 </item>

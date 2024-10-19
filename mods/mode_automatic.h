@@ -39,18 +39,17 @@ signals:
 
 private:
     IUserInterfaceData *uv_interface;
-    mission_List prev_mission;
 
     void setBottom_modeAutomatic();
 
     void setMission_control();
     void setMission_goTo();
+    void setMission_go_circle();
     void setMission_cpp();
 
 private slots:
     void slot_pushButton_missionPlanning_cpp_make();
     void slot_pushButton_missionPlanning_cpp_make_clean();
-    void slot_pushButton_missionPlanning_cpp_back();
     void slot_pushButton_missionPlanning_cpp();
     void test_automatic_after();
     void slot_pushButton_missionControl_modeIdle();
@@ -59,10 +58,12 @@ private slots:
     void slot_pushButton_missionControl_modeStart();
     void slot_pushButton_missionControl_modeComplete();
     void slot_pushButton_missionPlanning_goto();
-    void slot_pushButton_missionPlanning_goto_back();
+    void slot_pushButton_missionPlanning_back();
+    void slot_pushButton_missionPlanning_go_circle();
     void updateUi_DataMission();
 
     void slot_pushButton_missionPlanning_keepPos(bool checked);
+    void slot_pushButton_missionPlanning_go_circle_update();
 
 
 

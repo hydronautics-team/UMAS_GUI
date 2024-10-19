@@ -101,6 +101,14 @@ void MainWindow::setWidget()
         modeAutomatic->ui->pushButton_missionPlanning_goto_point_onoff, &QPushButton::toggled,
         mapWidget, &MapWidget::toggleAddPointMode_for_goto_point);
 
+    connect(
+        modeAutomatic->ui->pushButton_missionPlanning_go_circle_onoff, &QPushButton::toggled,
+        mapWidget, &MapWidget::toggleAddPointMode_for_go_circle_point);
+
+    connect(
+        modeAutomatic->ui->lineEdit_missionPlanning_go_circle_radius, &QLineEdit::textChanged,
+        mapWidget, &MapWidget::setRadius_circle);
+    mapWidget->setRadius_circle(modeAutomatic->ui->lineEdit_missionPlanning_go_circle_radius->text());
 
 
 }
@@ -453,6 +461,9 @@ void MainWindow::setTab()
     ui->tabWidget->setTabText(1, "БСО");
     ui->tabWidget->setTabText(2,  "Контроль сообщений");
     ui->tabWidget->setTabText(3,  "Режимы питания");
+    ui->tabWidget->setTabText(4,  "Карта ГИC");
+    ui->tabWidget->setCurrentIndex(4);
+
 }
 
 void MainWindow::setUpdateUI()

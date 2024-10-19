@@ -25,7 +25,6 @@ public:
     void    setCSMode(e_CSMode mode);
     void    setModeSelection(bool mode);
     void    setMissionControl(mission_Control missionControl);
-    void    setID_mission_AUV(quint8 ID_mission_AUV);
     void    setReper(CoordinatePoint reper);
     void    setMissionFromPult(mission_List missionListFromPult);
     void    setMissionParam(MissionParam mission_param);

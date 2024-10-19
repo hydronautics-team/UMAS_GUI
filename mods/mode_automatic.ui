@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0,1,0,0,0,0,0,0,0,0,1,0">
+    <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0,1,0,0,0,0,0,0,0,0,0,1,0">
      <item>
       <widget class="QLabel" name="label_38">
        <property name="sizePolicy">
@@ -66,6 +66,13 @@
           <widget class="QPushButton" name="pushButton_missionPlanning_goto">
            <property name="text">
             <string>Выход в точку</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_missionPlanning_go_circle">
+           <property name="text">
+            <string>Движение по окружности</string>
            </property>
           </widget>
          </item>
@@ -229,6 +236,95 @@
          </item>
         </layout>
        </widget>
+       <widget class="QWidget" name="page_missionPlanning_go_circle">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QLabel" name="label_56">
+           <property name="text">
+            <string>Введите параметры точки</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_missionPlanning_go_circle_onoff">
+           <property name="text">
+            <string>Тыкнуть по карте</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_2">
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="lineEdit_missionPlanning_go_circle_latitude"/>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="lineEdit_missionPlanning_go_circle_longitude"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Широта</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>Долгота</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>Радиус</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="lineEdit_missionPlanning_go_circle_radius">
+             <property name="text">
+              <string>5</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_missionPlanning_go_circle_update">
+           <property name="text">
+            <string>Обновить данные (на всякий случай)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_missionPlanning_go_circle_back">
+           <property name="text">
+            <string>Вернуться к выбору миссий</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_7">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>22</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </item>
      <item>
@@ -238,6 +334,13 @@
        </property>
        <property name="checkable">
         <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit_missionPlanning_keepPos_radius">
+       <property name="text">
+        <string>4</string>
        </property>
       </widget>
      </item>

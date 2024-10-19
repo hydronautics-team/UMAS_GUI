@@ -37,12 +37,15 @@ public slots:
     void toggleAddPointMode_for_cpp(bool checked); // Метод для переключения режима добавления точек для покрытия
     void toggleAddPointMode_for_marker(bool checked); // Метод для переключения режима добавления точек для маркера
     void toggleAddPointMode_for_goto_point(bool checked); // Метод для переключения режима добавления точек выхода в точку
+    void toggleAddPointMode_for_go_circle_point(bool checked);
     void clearMapItems(); // Метод для очистки всех точек и линий
     void getAllPoints(); // Метод для получения всех точек
     void onPointsRetrieved(const QVariant &points); // Слот для обработки полученных точек
     void onPointClicked(double latitude, double longitude); // Слот для обработки кликов
     void setMarker(const QGeoCoordinate &coordinate); // Слот для установки репера
     void setCurrentPos(double latitude, double longitude); // слот для установки текущей позиции
+    void setRadius_circle(const QString &text); // слот для установки радиуса для движения по окружности
+
 signals:
     void signal_addPointToTable(qreal x, qreal y);
     void signal_addMarker_to_gui(double x, double y);

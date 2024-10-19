@@ -117,25 +117,6 @@ void IUserInterfaceData::setMissionControl(mission_Control missionControl)
     }
 }
 
-void IUserInterfaceData::setID_mission_AUV(quint8 ID_mission_AUV)
-{
-//    agent[getCurrentAgent()].ID_mission_AUV = ID_mission_AUV;
-    switch (static_cast<int>(ID_mission_AUV)) {
-    case 0:
-        emit displayText_toConsole("Миссия завершена, флаг сброшен");
-        break;
-    case 1:
-        emit displayText_toConsole("Запущена миссия выхода в точку");
-        break;
-    case 2:
-        emit displayText_toConsole("Запущена миссия следования");
-        break;
-    case 3:
-        emit displayText_toConsole("Запущена миссия движения по траектории");
-        break;
-    }
-}
-
 void IUserInterfaceData::setReper(CoordinatePoint reper)
 {
     agent[getCurrentAgent()].reper = reper;

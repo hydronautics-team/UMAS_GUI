@@ -26,10 +26,10 @@ void KeyBoard::keyPressEvent(QKeyEvent *event)
         setPitch(-1);
         break;
     case Qt::Key_A:
-        setYaw(50);
+        setYaw(-50);
         break;
     case Qt::Key_D:
-        setYaw(-50);
+        setYaw(50);
         break;
     case Qt::Key_C:
         setDepth(1);

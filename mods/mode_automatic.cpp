@@ -21,6 +21,7 @@ void ModeAutomatic::setBottom_modeAutomatic()
 
     setMission_control();
     setMission_goTo();
+    setMission_go_circle();
     setMission_cpp();
 }
 
@@ -37,6 +38,19 @@ void ModeAutomatic::setMission_control()
         this, &ModeAutomatic::slot_pushButton_missionControl_modeComplete);
 }
 
+void ModeAutomatic::setMission_go_circle()
+{
+    connect(
+        ui->pushButton_missionPlanning_go_circle, &QPushButton::clicked,
+        this, &ModeAutomatic::slot_pushButton_missionPlanning_go_circle);
+    connect(
+        ui->pushButton_missionPlanning_go_circle_back, &QPushButton::clicked,
+        this, &ModeAutomatic::slot_pushButton_missionPlanning_back);
+    connect(
+        ui->pushButton_missionPlanning_go_circle_update, &QPushButton::clicked,
+        this, &ModeAutomatic::slot_pushButton_missionPlanning_go_circle_update);
+}
+
 void ModeAutomatic::setMission_goTo()
 {
     connect(
@@ -44,11 +58,8 @@ void ModeAutomatic::setMission_goTo()
         this, &ModeAutomatic::slot_pushButton_missionPlanning_goto);
     connect(
         ui->pushButton_missionPlanning_goto_back, &QPushButton::clicked,
-        this, &ModeAutomatic::slot_pushButton_missionPlanning_goto_back);
+        this, &ModeAutomatic::slot_pushButton_missionPlanning_back);
 }
-
-
-
 
 //cpp start
 
@@ -66,10 +77,7 @@ void ModeAutomatic::setMission_cpp()
         this, &ModeAutomatic::slot_pushButton_missionPlanning_cpp_make_clean);
     connect(
         ui->pushButton_missionPlanning_cpp_back, &QPushButton::clicked,
-        this, &ModeAutomatic::slot_pushButton_missionPlanning_cpp_back);
-    connect(
-        ui->pushButton_missionPlanning_cpp, &QPushButton::clicked,
-        this, &ModeAutomatic::slot_pushButton_missionPlanning_goto_back);
+        this, &ModeAutomatic::slot_pushButton_missionPlanning_back);
     connect(
         ui->pushButton_missionPlanning_cpp, &QPushButton::clicked,
                 this, &ModeAutomatic::slot_pushButton_missionPlanning_cpp);
@@ -252,13 +260,6 @@ void ModeAutomatic::slot_pushButton_missionPlanning_cpp_make_clean() {
     ui->tableWidget_missionPlanning_cpp_zonaResearch->setRowCount(0);
     emit requestClearLines();
 }
-
-void ModeAutomatic::slot_pushButton_missionPlanning_cpp_back()
-{
-    ui->stackedWidget_missionPlanning->setCurrentIndex(0);
-    uv_interface->setMissionFromPult(mission_List::NO_MISSION);
-}
-
 void ModeAutomatic::slot_pushButton_missionPlanning_cpp()
 {
     ui->stackedWidget_missionPlanning->setCurrentIndex(2);
@@ -286,18 +287,23 @@ void ModeAutomatic::slot_pushButton_missionControl_modeStart()
 void ModeAutomatic::slot_pushButton_missionControl_modeComplete()
 {
     uv_interface->setMissionControl(mission_Control::MODE_COMPLETE);
-    uv_interface->setID_mission_AUV(0);
 }
 
 void ModeAutomatic::slot_pushButton_missionPlanning_goto()
 {
-    uv_interface->setID_mission_AUV(1);
     ui->stackedWidget_missionPlanning->setCurrentIndex(1);
     displayText_toConsole("Задайте параметры для выхода в точку");
     uv_interface->setMissionFromPult(mission_List::MOVE_TO_POINT);
 }
 
-void ModeAutomatic::slot_pushButton_missionPlanning_goto_back()
+void ModeAutomatic::slot_pushButton_missionPlanning_go_circle()
+{
+    ui->stackedWidget_missionPlanning->setCurrentIndex(3);
+    displayText_toConsole("Задайте параметры для движения по окружности");
+    uv_interface->setMissionFromPult(mission_List::MOVE_CIRCLE);
+}
+
+void ModeAutomatic::slot_pushButton_missionPlanning_back()
 {
     ui->stackedWidget_missionPlanning->setCurrentIndex(0);
     uv_interface->setMissionFromPult(mission_List::NO_MISSION);
@@ -362,9 +368,14 @@ void ModeAutomatic::updateUi_DataMission()
 
 void ModeAutomatic::slot_pushButton_missionPlanning_keepPos(bool checked)
 {
-    prev_mission = uv_interface->getMissionFromPult();
-    if (checked)
+    if (checked){
         uv_interface->setMissionFromPult(mission_List::KEEP_POS);
+        MissionParam msg;
+        QString text_radius = ui->lineEdit_missionPlanning_keepPos_radius->text();
+        float value_radius = text_radius.toFloat();
+        msg.radius = value_radius;
+        uv_interface->setMissionParam(msg);
+    }
     else
         uv_interface->setMissionFromPult(mission_List::NO_MISSION);
 }
@@ -376,13 +387,48 @@ void ModeAutomatic::slot_getInterface(IUserInterfaceData *interface)
 
 void ModeAutomatic::slot_addPoint_to_gui(double latitude, double longitude)
 {
-    ui->lineEdit_missionPlanning_goto_latitude->setText(QString::number(latitude, 'd', 14));  // Широта
-    ui->lineEdit_missionPlanning_goto_longitude->setText(QString::number(longitude, 'd', 14)); // Долгота
-
     MissionParam msg;
+    qDebug() << static_cast<int>(uv_interface->getMissionFromPult());
+    switch (uv_interface->getMissionFromPult()) {
+    case mission_List::MOVE_TO_POINT:
+        qDebug() << "hello";
+        ui->lineEdit_missionPlanning_goto_latitude->setText(QString::number(latitude, 'd', 14));  // Широта
+        ui->lineEdit_missionPlanning_goto_longitude->setText(QString::number(longitude, 'd', 14)); // Долгота
+        break;
+    case mission_List::MOVE_CIRCLE:
+        ui->lineEdit_missionPlanning_go_circle_latitude->setText(QString::number(latitude, 'd', 14));  // Широта
+        ui->lineEdit_missionPlanning_go_circle_longitude->setText(QString::number(longitude, 'd', 14)); // Долгота
+        QString text_radius = ui->lineEdit_missionPlanning_go_circle_radius->text();
+        float value_radius = text_radius.toFloat();
+        msg.radius = value_radius;
+        break;
+    }
+
     msg.point_mission.x_point = latitude;
     msg.point_mission.y_point = longitude;
     uv_interface->setMissionParam(msg);
+}
+
+void ModeAutomatic::slot_pushButton_missionPlanning_go_circle_update()
+{
+    MissionParam msg;
+    QString latitude = ui->lineEdit_missionPlanning_go_circle_latitude->text();  // Широта
+    QString longitude = ui->lineEdit_missionPlanning_go_circle_longitude->text(); // Долгота
+    QString text_radius = ui->lineEdit_missionPlanning_go_circle_radius->text();
+    float value_radius = text_radius.toFloat();
+    double latitude_d = latitude.toDouble();
+    double longitude_d = longitude.toDouble();
+    msg.radius = value_radius;
+    msg.point_mission.x_point = latitude_d;
+    msg.point_mission.y_point = longitude_d;
+    uv_interface->setMissionParam(msg);
+    // Создаем QString для логирования
+    QString logMessage = QString("Mission planning updated: Latitude: %1, Longitude: %2, Radius: %3")
+            .arg(QString::number(latitude_d, 'f', 14))
+            .arg(QString::number(longitude_d, 'f', 14))
+            .arg(QString::number(value_radius, 'f', 2));
+
+    displayText_toConsole(logMessage);
 }
 
 ModeAutomatic::~ModeAutomatic()
