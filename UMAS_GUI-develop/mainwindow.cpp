@@ -830,7 +830,7 @@ void MainWindow::setTab()
     ui->tabWidget->setTabText(1, "БСО");
     ui->tabWidget->setTabText(2,  "Контроль сообщений");
     ui->tabWidget->setTabText(3,  "Режимы питания");
-    ui->tabWidget->setTabText(4, "Видео");
+    ui->tabWidget->setTabText(4, "Видео"); // таб с видео
 }
 
 //
