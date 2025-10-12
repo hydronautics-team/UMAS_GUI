@@ -17,7 +17,6 @@ MainWindow::MainWindow(QWidget *parent)
     setUpdateUI();
 }
 
-//
 
 void MainWindow::setWidget()
 {
@@ -31,6 +30,8 @@ void MainWindow::setWidget()
     ui->verticalLayout_modeAutomatic->addWidget(modeAutomatic);
     diagnostic_board = new Diagnostic_board(this);
     ui->horizontalLayout_diagnosticBoard->addWidget(diagnostic_board);
+    videowidget = new Videowidget(this);
+    ui->horizontalLayout_video->addWidget(videowidget);
 
     // setMission_map
     connect(
@@ -341,7 +342,7 @@ void MainWindow::setConnection()
     QString ip_pult = ui->lineEdit_ip_pult->text();
     QString ip_agent = ui->lineEdit_ip_agent->text();
     communicationAgent1 = new Pult::PC_Protocol(QHostAddress(ip_pult), 13053,
-                                                QHostAddress(ip_agent), 13050, 10, 0);
+                                                QHostAddress(ip_agent), 13052, 10, 0);
     communicationAgent1->startExchange();
 
     if (communicationAgent1->bindState()) {
@@ -462,7 +463,8 @@ void MainWindow::setTab()
     ui->tabWidget->setTabText(2,  "Контроль сообщений");
     ui->tabWidget->setTabText(3,  "Режимы питания");
     ui->tabWidget->setTabText(4,  "Карта ГИC");
-    ui->tabWidget->setCurrentIndex(4);
+    //ui->tabWidget->setCurrentIndex(4);
+    ui->tabWidget->setTabText(5, "Видео"); //виджет с видео
 
 }
 

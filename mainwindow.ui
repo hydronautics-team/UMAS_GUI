@@ -79,7 +79,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>192.168.1.7</string>
+             <string>192.168.1.111</string>
             </property>
             <property name="maxLength">
              <number>100</number>
@@ -118,7 +118,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>192.168.1.5</string>
+             <string>192.168.1.11</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
@@ -201,7 +201,7 @@
           <item>
            <widget class="QTabWidget" name="tabWidget">
             <property name="currentIndex">
-             <number>0</number>
+             <number>5</number>
             </property>
             <widget class="QWidget" name="tab_map">
              <attribute name="title">
@@ -252,6 +252,22 @@
                <layout class="QHBoxLayout" name="horizontalLayout_mapWidget"/>
               </item>
              </layout>
+            </widget>
+            <widget class="QWidget" name="video">
+             <attribute name="title">
+              <string>Page</string>
+             </attribute>
+             <widget class="QWidget" name="horizontalLayoutWidget">
+              <property name="geometry">
+               <rect>
+                <x>-1</x>
+                <y>29</y>
+                <width>1081</width>
+                <height>481</height>
+               </rect>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout_video"/>
+             </widget>
             </widget>
            </widget>
           </item>
@@ -582,7 +598,7 @@
      <x>0</x>
      <y>0</y>
      <width>3840</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
   </widget>
