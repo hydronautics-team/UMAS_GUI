@@ -217,7 +217,23 @@ void MainWindow::setTimer_updateImpact(int periodUpdateMsec)
 
 void MainWindow::useKeyBoard()
 {
-    delete joyStick;
+
+        if (joyStick != nullptr) {
+            qDebug() << "Deleting joyStick";
+            delete joyStick;
+            joyStick = nullptr;
+        }
+
+        if (keyBoard != nullptr) {
+            qDebug() << "Deleting existing keyBoard";
+            delete keyBoard;
+            keyBoard = nullptr;
+        }
+
+        qDebug() << "Creating new keyBoard";
+        keyBoard = new KeyBoard(this);
+        displayText("Используемые клавиши...");
+
 
     keyBoard = new KeyBoard(this);
     displayText("Используемые клавиши(должна быть английская раскладка):\n"
@@ -238,7 +254,23 @@ void MainWindow::useKeyBoard()
 
 void MainWindow::useJoyStick()
 {
-    delete keyBoard;
+
+        if (joyStick != nullptr) {
+            qDebug() << "Deleting joyStick";
+            delete joyStick;
+            joyStick = nullptr;
+        }
+
+        if (keyBoard != nullptr) {
+            qDebug() << "Deleting existing keyBoard";
+            delete keyBoard;
+            keyBoard = nullptr;
+        }
+
+        qDebug() << "Creating new keyBoard";
+        keyBoard = new KeyBoard(this);
+        displayText("Используемые клавиши...");
+
 
     joyStick = new JoyStick(this);
 }
