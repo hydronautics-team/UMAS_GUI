@@ -8,6 +8,11 @@
 #include <QTime>
 #include <QButtonGroup>
 
+#include <gst/gst.h>
+#include <gst/video/videooverlay.h>
+#include <gst/app/gstappsink.h>
+
+
 #include "remote_control.h"
 #include "uv_state.h"
 #include "i_user_interface_data.h"
@@ -23,6 +28,7 @@
 #include "mode_automatic.h"
 #include "map_widget.h"
 #include "diagnostic_board.h"
+#include "videowidget.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -100,6 +106,7 @@ private:
     ModeAutomatic       *modeAutomatic;
     MapWidget           *mapWidget;
     Diagnostic_board    *diagnostic_board;
+    Videowidget         *videowidget;
 
 
 
@@ -173,6 +180,9 @@ private slots:
 
     void slot_addMarker_to_gui(double x, double y);
 
+    //void on_pushButton_Play_Pause_clicked();
+
+
 
 signals:
     /*!
@@ -235,6 +245,7 @@ protected:
      * \brief pult объект класса для обновления задающих воздействий
      */
     RemoteControl pult;
+
 
 };
 #endif // MAINWINDOW_H

@@ -19,7 +19,7 @@ void IUserInterfaceData::setFlagAH127C_pult(FlagAH127C_pult flagAH127C_pult)
 
 void IUserInterfaceData::setPowerMode(power_Mode mode) {
     agent[getCurrentAgent()].pMode = mode;
-    displayText_toConsole("Включен " + QString::number(static_cast<int>(mode) + 2) + " режим питания");
+    //displayText_toConsole("Включен " + QString::number(static_cast<int>(mode) + 2) + " режим питания");
 }
 
 void IUserInterfaceData::setControlContoursFlags(e_StabilizationContours contour, bool value) {

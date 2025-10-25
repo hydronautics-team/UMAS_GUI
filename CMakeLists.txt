@@ -10,17 +10,36 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Charts)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Network)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Gui)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS WebEngineWidgets)
-find_package(Qt5 REQUIRED COMPONENTS Widgets Quick QuickControls2 Positioning Location)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
+    Widgets
+    Charts
+    Core
+    Network
+    Sql
+    Gui
+    WebEngineWidgets
+    Positioning
+)
+find_package(Qt5 REQUIRED COMPONENTS Quick QuickControls2 Location)
+find_package(X11 REQUIRED)
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Location)
+# === GStreamer ===
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GST REQUIRED
+    gstreamer-1.0
+    gstreamer-video-1.0
+    gstreamer-app-1.0
+)
+
+# === Python конфигурация ===
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 
 
+
+# Добавляем пути к заголовочным файлам GStreamer
+include_directories(${GST_INCLUDE_DIRS})
+include_directories(${Python3_INCLUDE_DIRS})
+# Пути к вашим собственным заголовочным файлам
 include_directories("${PROJECT_SOURCE_DIR}/compass")
 include_directories("${PROJECT_SOURCE_DIR}/remote_control")
 include_directories("${PROJECT_SOURCE_DIR}/uv")
@@ -32,15 +51,9 @@ include_directories("${PROJECT_SOURCE_DIR}/missions")
 include_directories("${PROJECT_SOURCE_DIR}/tabs")
 include_directories("${PROJECT_SOURCE_DIR}/mods")
 include_directories("${PROJECT_SOURCE_DIR}/Diagnostic_bord_UI/Diagnostic_bord")
+include_directories("${PROJECT_SOURCE_DIR}/videowidget")
 include_directories("${PROJECT_SOURCE_DIR}")
 
-include_directories(${Python3_INCLUDE_DIRS})
-
-
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
-find_package(Qt5 REQUIRED COMPONENTS Widgets Quick QuickWidgets Positioning Location)
-
-include_directories(${Python3_INCLUDE_DIRS})
 
 set(PROJECT_SOURCES
         main.cpp
@@ -89,26 +102,21 @@ set(PROJECT_SOURCES
         Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.cpp
         Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.h
         Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.ui
+        videowidget/videowidget.cpp
+        videowidget/videowidget.h
+        videowidget/videowidget.ui
         )
-
-
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(UMAS_GUI
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
     )
-# Define target properties for Android with Qt 6 as:
-#    set_property(TARGET UMAS_GUI APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
     if(ANDROID)
         add_library(UMAS_GUI SHARED
             ${PROJECT_SOURCES}
         )
-# Define properties for Android with Qt 5 after find_package() calls as:
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
         add_executable(UMAS_GUI
             ${PROJECT_SOURCES}
@@ -116,6 +124,7 @@ else()
     endif()
 endif()
 
+# Подключаем все библиотеки в одном месте
 target_link_libraries(UMAS_GUI PRIVATE
     sfml-graphics sfml-window sfml-system
     Qt${QT_VERSION_MAJOR}::Widgets
@@ -126,11 +135,9 @@ target_link_libraries(UMAS_GUI PRIVATE
     Qt${QT_VERSION_MAJOR}::WebEngineWidgets
     Qt${QT_VERSION_MAJOR}::Positioning
     Python3::Python
+    ${GST_LIBRARIES} # <-- КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: подключаем GStreamer и все его зависимости
+    ${X11_LIBRARIES}
     )
-
-
-target_link_libraries(UMAS_GUI PRIVATE Qt5::Core Qt5::Widgets Qt5::Location)
-
 
 set_target_properties(UMAS_GUI PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

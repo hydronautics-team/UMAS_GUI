@@ -107,6 +107,11 @@ struct ControlData {
     float march;
     float depth;
     float lag;
+    quint8 gripping = 0;
+    quint8 opening = 0;
+    quint8 rotmanlf = 0;
+    quint8 rotmanrt = 0;
+    quint8 powoff = 0;
 };
 
 /*!
