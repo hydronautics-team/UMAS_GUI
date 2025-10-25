@@ -6,29 +6,19 @@
 #include <QTimer>
 #include <QDebug>
 
-
 #include "SFML/Window.hpp"
+//#include "joy_stick.h"
+//#include "key_board.h"
 
-class RemoteControl : public QObject
+class RemoteControl : public IControlData
 {
     Q_OBJECT
 public:
-    explicit RemoteControl(int joy_id = 0, int update_time = 0, QObject *parent = 0);
+    explicit RemoteControl();
     ~RemoteControl();
 
-    int id;
-    int periodUpdateMsec;
-
-    void setMarch();
-    void setDepth();
-    void setRoll(float roll);
-    void setPitch(float pitch);
-    void setYaw(float yaw);
-
-public slots:
-    void updateImpact();
-
-signals:
+    int     id;
+    QTimer *updateTimer;
 
 protected:
     sf::Joystick::Axis impactAxisMarch;
@@ -36,11 +26,7 @@ protected:
     sf::Joystick::Axis impactAxisRoll;
     sf::Joystick::Axis impactAxisPitch;
     sf::Joystick::Axis impactAxisYaw;
-
-private:
-
-    IControlData interface;
-    QTimer *updateTimer;
+    sf::Joystick::Axis impactAxisLag;
 
 };
 

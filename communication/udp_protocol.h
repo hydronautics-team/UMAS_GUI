@@ -14,7 +14,7 @@ public:
     ReceiveStruct rec_data; //структура для приема данных
     SendStruct send_data; //структура для отпарвки данных
     explicit UdpProtocol(QHostAddress _receiverIP, int _receiverPort, QHostAddress _senderIP, \
-                         int _senderPort, int freq, QObject *parent = 0) : QObject(parent) {
+                         int _senderPort, int freq, int selectAgent, QObject *parent = 0) : QObject(parent) {
         m_ip_sender = _senderIP; //ip ПУ
         m_ip_receiver = _receiverIP; //ip ROV_Model
         m_port_sender = _senderPort; //порт ПУ
@@ -93,7 +93,7 @@ private:
     }
     void aboutSend() {
         send_data.checksum = checksum_i(&send_data, sizeof(send_data) - 4);
-    } //функция, которая вычисляет контроьную сумму и записывает
+    } //функция, которая вычисляет контрольную сумму и записывает
     //ее в переменную checksum структуры отправки
 
 public slots:

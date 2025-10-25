@@ -10,6 +10,9 @@ namespace Ui {
 class SetupIMU;
 }
 
+/*!
+ * \brief SetupIMU class класс UI формы подготовки к настройке БСО.
+ */
 class SetupIMU : public QDialog
 {
     Q_OBJECT
@@ -19,10 +22,16 @@ public:
     ~SetupIMU();
 
 public slots:
+    /*!
+     * \brief setupIMU_nextStep1 слот открытия окна старта настройки БСО.
+     */
     void setupIMU_nextStep1();
 
 
 private:
+    /*!
+     * \brief ui окно этой формы.
+     */
     Ui::SetupIMU *ui;
 };
 

@@ -12,7 +12,6 @@ SetupIMU_start::SetupIMU_start(QWidget *parent) :
     connect(
         ui->pushButton_setupIMU_startTimer, SIGNAL(clicked()),
         this, SLOT(pushButton_startTimer1()));
-
     connect(
         this, SIGNAL(on_t2()),
         this, SLOT(pushButton_startTimer2()));
@@ -118,9 +117,7 @@ void SetupIMU_start::isCheckedFlagBort_end()
         ui->pushButton_setupIMU_end->setEnabled(true);
         ui->SetupIMU_start_statusBar->setStyleSheet("color: rgb(0, 153, 76)");
         ui->SetupIMU_start_statusBar->setText("Данные сохранились, можно завершать настройку ");
-    }
-    else
-    {
+    } else {
         ui->SetupIMU_start_statusBar->setStyleSheet("color: rgb(255, 0, 0)");
         ui->SetupIMU_start_statusBar->setText("Данные сохраняются");
     }
