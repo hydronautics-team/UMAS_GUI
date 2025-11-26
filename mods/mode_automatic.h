@@ -6,10 +6,10 @@
 #include <QButtonGroup>
 #include <QTimer>
 #include <QProcess>
-#include <QGeoCoordinate>
+// #include <QGeoCoordinate>
 
 #include "i_user_interface_data.h"
-#include "map.h"
+// #include "map.h"
 
 
 namespace Ui {
@@ -29,9 +29,9 @@ signals:
     void signal_pushButton_missionPlanning_goto_updateMap(double x, double y, double r, int flag_clear);
     void signal_pushButton_missionPlanning_go_trajectory_updateMap(double x, double y, double r, int flag_clear);
 
-    void requestUpdateChart(QLineSeries *lineSeries);
+    // void requestUpdateChart(QLineSeries *lineSeries);
     void requestClearLines();
-    void plotLineSeries(QLineSeries* series);
+    // void plotLineSeries(QLineSeries* series);
     void displayText_toConsole(QString str);
 
     void set_stackedWidget_mode(int index);

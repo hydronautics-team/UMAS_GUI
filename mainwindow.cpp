@@ -15,9 +15,13 @@ MainWindow::MainWindow(QWidget *parent)
     setBottom();
     setTab();
     setUpdateUI();
+
+    // Инициализация ROS Thread
+    rosBridge = new RosBridge(this);
+    rosBridge->start();
+
 }
 
-//
 
 void MainWindow::setWidget()
 {
@@ -25,45 +29,45 @@ void MainWindow::setWidget()
     ui->horizontalLayout_for_powerSystem->addWidget(powerSystem);
     checkMsg = new CheckMsg(this);
     ui->horizontalLayout_for_checkMsg->addWidget(checkMsg);
-    checkImu = new CheckImu(this);
-    ui->horizontalLayout_for_checkImu->addWidget(checkImu);
+    // checkImu = new CheckImu(this);
+    // ui->horizontalLayout_for_checkImu->addWidget(checkImu);
     modeAutomatic = new ModeAutomatic(this);
     ui->verticalLayout_modeAutomatic->addWidget(modeAutomatic);
     diagnostic_board = new Diagnostic_board(this);
     ui->horizontalLayout_diagnosticBoard->addWidget(diagnostic_board);
 
     // setMission_map
-    connect(
-        modeAutomatic->ui->pushButton_missionPlanning_goto_on_trajectory, &QPushButton::clicked,
-        ui->map, &Map::updateUi_missionPlanning_goto_traj_onoff);
-    connect(
-        modeAutomatic->ui->pushButton_missionPlanning_goto_on_trajectory_clear, &QPushButton::clicked,
-        ui->map, &Map::updateUi_missionPlanning_goto_traj_clear);
-    // setMission_goTo
-    connect(
-        modeAutomatic, &ModeAutomatic::signal_pushButton_missionPlanning_goto_updateMap,
-        ui->map, &Map::updateUi_missionPlanning_goto_goal);
-    // setMission_go_trajectory
-    connect(
-        modeAutomatic, &ModeAutomatic::signal_pushButton_missionPlanning_go_trajectory_updateMap,
-        ui->map, &Map::updateUi_missionPlanning_goto_goal);
-    // setMission_cpp
-    connect(
-        ui->map, &Map::pointAdded,
-        modeAutomatic, &ModeAutomatic::addPointToTable);
-    connect(
-        modeAutomatic, &ModeAutomatic::requestUpdateChart,
-        ui->map, &Map::updateChart);
-    connect(
-        modeAutomatic, &ModeAutomatic::requestClearLines,
-        ui->map, &Map::clearLines);
-    connect(
-        modeAutomatic, &ModeAutomatic::plotLineSeries,
-        ui->map, &Map::onPlotLineSeries);
-        // Подключение кнопки для переключения состояния
-    connect(
-        modeAutomatic->ui->pushButton_missionPlanning_cpp_on_off, &QPushButton::toggled,
-        ui->map, &Map::setMissionPlanning_cpp_Enabled);
+    // connect(
+    //     modeAutomatic->ui->pushButton_missionPlanning_goto_on_trajectory, &QPushButton::clicked,
+    //     ui->map, &Map::updateUi_missionPlanning_goto_traj_onoff);
+    // connect(
+    //     modeAutomatic->ui->pushButton_missionPlanning_goto_on_trajectory_clear, &QPushButton::clicked,
+    //     ui->map, &Map::updateUi_missionPlanning_goto_traj_clear);
+    // // setMission_goTo
+    // connect(
+    //     modeAutomatic, &ModeAutomatic::signal_pushButton_missionPlanning_goto_updateMap,
+    //     ui->map, &Map::updateUi_missionPlanning_goto_goal);
+    // // setMission_go_trajectory
+    // connect(
+    //     modeAutomatic, &ModeAutomatic::signal_pushButton_missionPlanning_go_trajectory_updateMap,
+    //     ui->map, &Map::updateUi_missionPlanning_goto_goal);
+    // // setMission_cpp
+    // connect(
+    //     ui->map, &Map::pointAdded,
+    //     modeAutomatic, &ModeAutomatic::addPointToTable);
+    // connect(
+    //     modeAutomatic, &ModeAutomatic::requestUpdateChart,
+    //     ui->map, &Map::updateChart);
+    // connect(
+    //     modeAutomatic, &ModeAutomatic::requestClearLines,
+    //     ui->map, &Map::clearLines);
+    // connect(
+    //     modeAutomatic, &ModeAutomatic::plotLineSeries,
+    //     ui->map, &Map::onPlotLineSeries);
+    //     // Подключение кнопки для переключения состояния
+    // connect(
+    //     modeAutomatic->ui->pushButton_missionPlanning_cpp_on_off, &QPushButton::toggled,
+    //     ui->map, &Map::setMissionPlanning_cpp_Enabled);
     connect(
         modeAutomatic,&ModeAutomatic::displayText_toConsole,
         this, &MainWindow::displayText);
@@ -71,44 +75,44 @@ void MainWindow::setWidget()
         modeAutomatic, &ModeAutomatic::set_stackedWidget_mode,
         ui->stackedWidget_mode, &QStackedWidget::setCurrentIndex);
 
-    mapWidget = new MapWidget(this);
-    ui->horizontalLayout_mapWidget->addWidget(mapWidget);
+    // mapWidget = new MapWidget(this);
+    // ui->horizontalLayout_mapWidget->addWidget(mapWidget);
 
-    connect(
-        modeAutomatic->ui->pushButton_missionPlanning_cpp_on_off, &QPushButton::toggled,
-        mapWidget, &MapWidget::toggleAddPointMode_for_cpp);
-    connect(
-        modeAutomatic, &ModeAutomatic::requestClearLines,
-        mapWidget, &MapWidget::clearMapItems);
-    connect(
-        mapWidget, &MapWidget::signal_addPointToTable,
-        modeAutomatic, &ModeAutomatic::addPointToTable);
-    connect(
-        modeAutomatic, &ModeAutomatic::requestAddLine,
-        mapWidget, &MapWidget::addLine);
-    connect(
-        this, &MainWindow::signal_sendCurrentPos,
-        mapWidget, &MapWidget::setCurrentPos);
-    connect(
-        ui->pushButton_sendReper_map_onoff, &QPushButton::toggled,
-        mapWidget, &MapWidget::toggleAddPointMode_for_marker);
+    // connect(
+    //     modeAutomatic->ui->pushButton_missionPlanning_cpp_on_off, &QPushButton::toggled,
+    //     mapWidget, &MapWidget::toggleAddPointMode_for_cpp);
+    // connect(
+    //     modeAutomatic, &ModeAutomatic::requestClearLines,
+    //     mapWidget, &MapWidget::clearMapItems);
+    // connect(
+    //     mapWidget, &MapWidget::signal_addPointToTable,
+    //     modeAutomatic, &ModeAutomatic::addPointToTable);
+    // connect(
+    //     modeAutomatic, &ModeAutomatic::requestAddLine,
+    //     mapWidget, &MapWidget::addLine);
+    // connect(
+    //     this, &MainWindow::signal_sendCurrentPos,
+    //     mapWidget, &MapWidget::setCurrentPos);
+    // connect(
+    //     ui->pushButton_sendReper_map_onoff, &QPushButton::toggled,
+    //     mapWidget, &MapWidget::toggleAddPointMode_for_marker);
 
-    connect(
-        mapWidget, &MapWidget::signal_addPoint_to_gui,
-        modeAutomatic, &ModeAutomatic::slot_addPoint_to_gui);
+    // connect(
+    //     mapWidget, &MapWidget::signal_addPoint_to_gui,
+    //     modeAutomatic, &ModeAutomatic::slot_addPoint_to_gui);
 
-    connect(
-        modeAutomatic->ui->pushButton_missionPlanning_goto_point_onoff, &QPushButton::toggled,
-        mapWidget, &MapWidget::toggleAddPointMode_for_goto_point);
+    // connect(
+    //     modeAutomatic->ui->pushButton_missionPlanning_goto_point_onoff, &QPushButton::toggled,
+    //     mapWidget, &MapWidget::toggleAddPointMode_for_goto_point);
 
-    connect(
-        modeAutomatic->ui->pushButton_missionPlanning_go_circle_onoff, &QPushButton::toggled,
-        mapWidget, &MapWidget::toggleAddPointMode_for_go_circle_point);
+    // connect(
+    //     modeAutomatic->ui->pushButton_missionPlanning_go_circle_onoff, &QPushButton::toggled,
+    //     mapWidget, &MapWidget::toggleAddPointMode_for_go_circle_point);
 
-    connect(
-        modeAutomatic->ui->lineEdit_missionPlanning_go_circle_radius, &QLineEdit::textChanged,
-        mapWidget, &MapWidget::setRadius_circle);
-    mapWidget->setRadius_circle(modeAutomatic->ui->lineEdit_missionPlanning_go_circle_radius->text());
+    // connect(
+    //     modeAutomatic->ui->lineEdit_missionPlanning_go_circle_radius, &QLineEdit::textChanged,
+    //     mapWidget, &MapWidget::setRadius_circle);
+    // mapWidget->setRadius_circle(modeAutomatic->ui->lineEdit_missionPlanning_go_circle_radius->text());
 
 
 }
@@ -118,12 +122,12 @@ void MainWindow::setGUI_reper()
     connect(
         ui->pushButton_sendReper, &QPushButton::clicked,
         this, &MainWindow::slot_pushButton_sendReper);
-    connect(
-        this, &MainWindow::signal_setMarker,
-        mapWidget, &MapWidget::setMarker);
-    connect(
-        mapWidget, &MapWidget::signal_addMarker_to_gui,
-        this, &MainWindow::slot_addMarker_to_gui);
+    // connect(
+    //     this, &MainWindow::signal_setMarker,
+    //     mapWidget, &MapWidget::setMarker);
+    // connect(
+    //     mapWidget, &MapWidget::signal_addMarker_to_gui,
+    //     this, &MainWindow::slot_addMarker_to_gui);
 
 }
 
@@ -140,10 +144,10 @@ void MainWindow::slot_pushButton_sendReper()
     double longitude = longitudeStr.toDouble();
 
     // Создание объекта координат
-    QGeoCoordinate reperCoordinate(latitude, longitude);
+    // QGeoCoordinate reperCoordinate(latitude, longitude);
 
     // Отправка сигнала с координатами
-    emit signal_setMarker(reperCoordinate);
+    // emit signal_setMarker(reperCoordinate);
 
     // Отправка репера на борт
     CoordinatePoint msg;
@@ -261,6 +265,11 @@ void MainWindow::updateUi_fromControl(){
 
     ui->label_controlYaw->setNum(control.yaw);
     ui->label_controlMarch->setNum(control.march);
+    ui->label_controlDif->setNum(control.pitch);
+    ui->label_controlLag->setNum(control.lag);
+    ui->label_controlDepth->setNum(control.depth);
+    ui->label_controlKren->setNum(control.roll);
+    rosBridge->publishCommand(control.march, control.lag, control.depth, control.yaw, control.pitch, control.roll);
 }
 
 void MainWindow::updateUi_Map()
@@ -470,8 +479,8 @@ void MainWindow::setUpdateUI()
 {
     connect(this, SIGNAL(updateCompass(float)),
             this, SLOT(updateUi_Compass(float)));
-    connect(this, SIGNAL(updateIMU(DataAH127C)),
-            checkImu, SLOT(updateUi_imu(DataAH127C)));
+    // connect(this, SIGNAL(updateIMU(DataAH127C)),
+    //         checkImu, SLOT(updateUi_imu(DataAH127C)));
     connect(this, SIGNAL(updateSetupMsg()),
             checkMsg, SLOT(updateUi_checkMsg()));
     connect(this, SIGNAL(updateDataMission()),

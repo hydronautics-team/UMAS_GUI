@@ -18,7 +18,7 @@
 #include <QtCharts/QChart>
 #include <QtWidgets/QGraphicsView>
 
-#include <QValueAxis>
+// #include <QValueAxis>
 
 #include <QtCharts/QSplineSeries>
 

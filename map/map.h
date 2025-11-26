@@ -11,7 +11,7 @@
 #include <QtCharts/QAbstractSeries>
 #include <QtCharts/QChart>
 #include <QtWidgets/QGraphicsView>
-#include <QLineSeries>
+// #include <QLineSeries>
 #include <QColor>
 #include <QtCharts/QValueAxis>
 

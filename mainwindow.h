@@ -13,7 +13,7 @@
 #include "i_user_interface_data.h"
 #include "pc_protocol.h"
 #include "i_server_data.h"
-#include "map.h"
+// #include "map.h"
 #include "i_basic_data.h"
 #include "joy_stick.h"
 #include "key_board.h"
@@ -21,8 +21,9 @@
 #include "check_msg.h"
 #include "check_imu.h"
 #include "mode_automatic.h"
-#include "map_widget.h"
+// #include "map_widget.h"
 #include "diagnostic_board.h"
+#include "ros2_bridge.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -96,16 +97,14 @@ private:
     void setInterface();
     PowerSystem         *powerSystem;
     CheckMsg            *checkMsg;
-    CheckImu            *checkImu;
+    // CheckImu            *checkImu;
     ModeAutomatic       *modeAutomatic;
-    MapWidget           *mapWidget;
+    // MapWidget           *mapWidget;
     Diagnostic_board    *diagnostic_board;
-
-
-
-
+    RosBridge           *rosBridge;
 
 private slots:
+
     /*!
      * \brief displayText слот для вывода сообщений в консоль.
      * \param str является выводимой строкой.
@@ -202,7 +201,7 @@ signals:
     void toggleMissionPlanning_cppPointsEnabled();
 
     void signal_setInterface(IUserInterfaceData *uv_interface);
-    void signal_setMarker(const QGeoCoordinate &coordinate);
+    // void signal_setMarker(const QGeoCoordinate &coordinate);
     void signal_sendCurrentPos(double latitude, double longitude);
 
 protected:

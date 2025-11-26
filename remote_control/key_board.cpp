@@ -14,40 +14,40 @@ void KeyBoard::keyPressEvent(QKeyEvent *event)
     ControlData control = getControlData();
     switch (event->key()) {
     case Qt::Key_O:
-        setMarch(50);
+        setMarch(10);
         break;
     case Qt::Key_L:
-        setMarch(-50);
+        setMarch(-10);
         break;
     case Qt::Key_W:
-        setPitch(1);
+        setPitch(10);
         break;
     case Qt::Key_S:
-        setPitch(-1);
+        setPitch(-10);
         break;
     case Qt::Key_A:
-        setYaw(-50);
+        setYaw(-10);
         break;
     case Qt::Key_D:
-        setYaw(50);
+        setYaw(10);
         break;
     case Qt::Key_C:
-        setDepth(1);
+        setDepth(10);
         break;
     case Qt::Key_V:
-        setDepth(-1);
+        setDepth(-10);
         break;
     case Qt::Key_Q:
-        setRoll(1);
+        setRoll(10);
         break;
     case Qt::Key_E:
-        setRoll(-1);
+        setRoll(-10);
         break;
     case Qt::Key_K:
-        setLag(1);
+        setLag(10);
         break;
     case Qt::Key_Semicolon:
-        setLag(-1);
+        setLag(-10);
         break;
     }
 }

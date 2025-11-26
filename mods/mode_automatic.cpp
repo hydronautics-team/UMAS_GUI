@@ -1,5 +1,6 @@
 #include "mode_automatic.h"
 #include "ui_mode_automatic.h"
+#include <QDir>
 
 ModeAutomatic::ModeAutomatic(QWidget *parent) :
     QWidget(parent),
@@ -215,7 +216,7 @@ void ModeAutomatic::slot_pushButton_missionPlanning_cpp_make() {
 
     process.setProgram(program);
     process.setArguments(arguments);
-    process.setWorkingDirectory("/home/shakuevda/Desktop/pult/UMAS_GUI"); // Укажите путь к директории скрипта
+    process.setWorkingDirectory(QDir::currentPath() + "/../../../UMAS_GUI"); // Укажите путь к директории скрипта
 
     process.start();
 

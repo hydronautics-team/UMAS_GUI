@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include "setupimu_start.h"
-#include "ui_setupimu_start.h"
+// #include "ui_setupimu_start.h"
 #include "i_user_interface_data.h"
 
 namespace Ui {

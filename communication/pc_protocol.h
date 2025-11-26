@@ -21,7 +21,7 @@ explicit PC_Protocol(QHostAddress _receiverIP, int _receiverPort, QHostAddress _
     set_ip_sender (udpProtocol->ip_sender());
     set_port_receiver(udpProtocol->port_receiver());
     set_port_sender (udpProtocol->port_sender());
-    nmbAgent = selectAgent;
+    nmbAgent     = selectAgent;
 }
     int nmbAgent;
 signals:

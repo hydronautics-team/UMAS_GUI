@@ -207,11 +207,7 @@
              <attribute name="title">
               <string>Tab 1</string>
              </attribute>
-             <layout class="QVBoxLayout" name="verticalLayout_2" stretch="15">
-              <item>
-               <widget class="Map" name="map" native="true"/>
-              </item>
-             </layout>
+             <layout class="QVBoxLayout" name="verticalLayout_2" stretch=""/>
             </widget>
             <widget class="QWidget" name="tab_imuData">
              <attribute name="title">
@@ -470,6 +466,70 @@
               </item>
              </layout>
             </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_8">
+              <item>
+               <widget class="QLabel" name="label_10">
+                <property name="text">
+                 <string>Лаг</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_controlLag">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_11">
+                <property name="text">
+                 <string>Дифферент</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_controlDif">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_9">
+              <item>
+               <widget class="QLabel" name="label_12">
+                <property name="text">
+                 <string>Глубина</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_controlDepth">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_13">
+                <property name="text">
+                 <string>Крен</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_controlKren">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
            </layout>
           </item>
          </layout>
@@ -582,7 +642,7 @@
      <x>0</x>
      <y>0</y>
      <width>3840</width>
-     <height>22</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>
@@ -593,13 +653,6 @@
    <class>Compass</class>
    <extends>QWidget</extends>
    <header>compass.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Map</class>
-   <extends>QWidget</extends>
-   <header>map.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
