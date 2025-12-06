@@ -7,8 +7,8 @@
 #include <QDebug>
 
 #include "SFML/Window.hpp"
-//#include "joy_stick.h"
-//#include "key_board.h"
+// #include "joy_stick.h"
+// #include "key_board.h"
 
 class RemoteControl : public IControlData
 {
@@ -17,17 +17,26 @@ public:
     explicit RemoteControl();
     ~RemoteControl();
 
-    int     id;
+    int id;
     QTimer *updateTimer;
+    QTimer *updateTimer2;
 
 protected:
+    // оси
     sf::Joystick::Axis impactAxisMarch;
     sf::Joystick::Axis impactAxisDepth;
     sf::Joystick::Axis impactAxisRoll;
     sf::Joystick::Axis impactAxisPitch;
     sf::Joystick::Axis impactAxisYaw;
     sf::Joystick::Axis impactAxisLag;
-
+    // кнопки
+    int impactButtonGripping;
+    int impactButtonOpening;
+    int impactButtonRotmanlf;
+    int impactButtonRotmanrt;
+    int falseDepthplus;
+    int falseDepthminus;
+    int powoff;
 };
 
 #endif // REMOTECONTROL_H
