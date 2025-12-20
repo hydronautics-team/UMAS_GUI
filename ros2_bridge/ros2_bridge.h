@@ -1,38 +1,13 @@
 
-// // rosworker.hpp
-// #include <rclcpp/rclcpp.hpp>
-// #include <geometry_msgs/msg/twist.hpp>
-// #include <QThread>
-
-// class RosBridge : public QThread {
-//     Q_OBJECT
-// public:
-//     void run() override {
-//         rclcpp::init(0, nullptr);
-//         node = rclcpp::Node::make_shared("qt_controller_node");
-//         pub = node->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
-//         rclcpp::spin(node);
-//         rclcpp::shutdown();
-//     }
-
-//     void publishCommand(double linear, double angular) {
-//         if (!pub) return;
-//         geometry_msgs::msg::Twist msg;
-//         msg.linear.x = linear;
-//         msg.angular.z = angular;
-//         pub->publish(msg);
-//     }
-
-// private:
-//     rclcpp::Node::SharedPtr node;
-//     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub;
-// };с
 #pragma once
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/pose.hpp>
+#include <std_msgs/msg/u_int8.hpp>
 #include <QThread>
 #include <QObject>
+#include <QDebug>
+#include <std_msgs/msg/bool.hpp>
 
 // using namespace std::chrono_literals;
 
@@ -56,6 +31,15 @@ public:
             [this](const geometry_msgs::msg::Pose::SharedPtr msg){
                 emit poseUpdated(msg->position.x, msg->position.y, msg->position.z);
             });
+
+        control_mode_pub_ =
+            node_->create_publisher<std_msgs::msg::UInt8>(
+                "/control/loop_flags", 10);
+
+        zero_yaw_pub_ =
+            node_->create_publisher<std_msgs::msg::Bool>(
+                "/imu/zero_yaw", 10);
+
 
         ready_ = true; // publisher готов
 
@@ -83,6 +67,25 @@ public slots:
         pub_->publish(msg);
     }
 
+    void zeroYaw() {
+        if (!ready_ || !zero_yaw_pub_) return;
+
+        std_msgs::msg::Bool msg;
+        msg.data = true;
+        zero_yaw_pub_->publish(msg);
+
+        qDebug() << "Published yaw zero signal";
+}
+
+
+    void setModeSurge(bool checked)  { qDebug() << "Setting surge mode to:" << checked; setFlag(0, checked); }
+    void setModeSway(bool checked)   { qDebug() << "Setting sway mode to:" << checked; setFlag(1, checked); }
+    void setModeHeave(bool checked)  { qDebug() << "Setting heave mode to:" << checked; setFlag(2, checked); }
+    void setModeYaw(bool checked)    { qDebug() << "Setting yaw mode to:" << checked; setFlag(3, checked); }
+    void setModePitch(bool checked)  { qDebug() << "Setting pitch mode to:" << checked; setFlag(4, checked); }
+    void setModeRoll(bool checked)   { qDebug() << "Setting roll mode to:" << checked; setFlag(5, checked); }
+
+
 signals:
     void poseUpdated(double x, double y, double z);
 
@@ -91,4 +94,22 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr pub_;
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr sub_;
     bool ready_ = false;
+    uint8_t control_mode_flags_ = 0;
+    rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr control_mode_pub_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr zero_yaw_pub_;
+
+    void setFlag(uint8_t bit, bool value) {
+        if (!ready_ || !control_mode_pub_) return;
+
+        if (value)
+            control_mode_flags_ |=  (1 << bit);
+        else
+            control_mode_flags_ &= ~(1 << bit);
+
+        std_msgs::msg::UInt8 msg;
+        msg.data = control_mode_flags_;
+        control_mode_pub_->publish(msg);
+        qDebug() << "Published control mode flags:" << static_cast<int>(control_mode_flags_);
+    }
+
 };

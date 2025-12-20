@@ -6,6 +6,9 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    // Инициализация ROS Thread
+    rosBridge = new RosBridge(this);
+    rosBridge->start();
 
     setWidget();
     setInterface();
@@ -16,9 +19,6 @@ MainWindow::MainWindow(QWidget *parent)
     setTab();
     setUpdateUI();
 
-    // Инициализация ROS Thread
-    rosBridge = new RosBridge(this);
-    rosBridge->start();
 
 }
 
@@ -262,14 +262,14 @@ void MainWindow::updateUi_fromControl(){
     DataAH127C imuData = uv_interface.getImuData();
 
     ui->compass->setYawDesirable(control.yaw, imuData.yaw, uv_interface.getCSMode());
-
-    ui->label_controlYaw->setNum(control.yaw);
-    ui->label_controlMarch->setNum(control.march);
-    ui->label_controlDif->setNum(control.pitch);
-    ui->label_controlLag->setNum(control.lag);
-    ui->label_controlDepth->setNum(control.depth);
-    ui->label_controlKren->setNum(control.roll);
-    rosBridge->publishCommand(control.march, control.lag, control.depth, control.yaw, control.pitch, control.roll);
+    
+    ui->label_controlYaw->setNum(control.yaw * ui->spinBox_gain_yaw->value());
+    ui->label_controlMarch->setNum(control.march * ui->spinBox_gain_surge->value());
+    ui->label_controlDif->setNum(control.pitch * ui->spinBox_gain_pitch->value());
+    ui->label_controlLag->setNum(control.lag * ui->spinBox_gain_sway->value());
+    ui->label_controlDepth->setNum(control.depth * ui->spinBox_gain_depth->value());
+    ui->label_controlKren->setNum(control.roll * ui->spinBox_gain_roll->value());
+    rosBridge->publishCommand(control.march * ui->spinBox_gain_surge->value(), control.lag * ui->spinBox_gain_sway->value(), control.depth * ui->spinBox_gain_depth->value(), control.roll * ui->spinBox_gain_roll->value(), control.pitch * ui->spinBox_gain_pitch->value(), control.yaw * ui->spinBox_gain_yaw->value());
 }
 
 void MainWindow::updateUi_Map()
@@ -287,6 +287,12 @@ void MainWindow::setBottom()
     setBottom_connection();
     setBottom_modeSelection();
     setBottom_selectAgent();
+
+    connect(ui->pushButton_zeroYaw,
+        &QPushButton::clicked,
+        rosBridge,
+        &RosBridge::zeroYaw);
+
 }
 
 void MainWindow::setBottom_mode()
@@ -301,6 +307,41 @@ void MainWindow::setBottom_mode()
     mode->setExclusive(true);
 
     ui->pushButton_modeManual->setChecked(true);
+
+    ui->pushButton_modeAutomated_surge->setCheckable(true);
+    ui->pushButton_modeAutomated_sway->setCheckable(true);
+    ui->pushButton_modeAutomated_depth->setCheckable(true);
+    ui->pushButton_modeAutomated_yaw->setCheckable(true);
+    ui->pushButton_modeAutomated_pitch->setCheckable(true);
+    ui->pushButton_modeAutomated_roll->setCheckable(true);
+    QButtonGroup *modeAutomated = new QButtonGroup(this);
+    modeAutomated->addButton(ui->pushButton_modeAutomated_surge);
+    modeAutomated->addButton(ui->pushButton_modeAutomated_sway);
+    modeAutomated->addButton(ui->pushButton_modeAutomated_depth);
+    modeAutomated->addButton(ui->pushButton_modeAutomated_yaw);
+    modeAutomated->addButton(ui->pushButton_modeAutomated_pitch);
+    modeAutomated->addButton(ui->pushButton_modeAutomated_roll);
+    modeAutomated->setExclusive(false);
+
+    connect(ui->pushButton_modeAutomated_surge,  &QPushButton::toggled,
+        rosBridge, &RosBridge::setModeSurge);
+
+    connect(ui->pushButton_modeAutomated_sway,   &QPushButton::toggled,
+            rosBridge, &RosBridge::setModeSway);
+
+    connect(ui->pushButton_modeAutomated_depth,  &QPushButton::toggled,
+            rosBridge, &RosBridge::setModeHeave);
+
+    connect(ui->pushButton_modeAutomated_yaw,    &QPushButton::toggled,
+            rosBridge, &RosBridge::setModeYaw);
+
+    connect(ui->pushButton_modeAutomated_pitch,  &QPushButton::toggled,
+            rosBridge, &RosBridge::setModePitch);
+
+    connect(ui->pushButton_modeAutomated_roll,   &QPushButton::toggled,
+            rosBridge, &RosBridge::setModeRoll);
+
+
     e_CSModeManualToggled();
 
     connect(
