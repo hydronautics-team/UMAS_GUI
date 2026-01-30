@@ -25,6 +25,7 @@
 #include "diagnostic_board.h"
 #include "ros2_bridge.h"
 
+#include <QSettings>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -52,6 +53,51 @@ public:
     void setConsole();
 
 private:
+
+
+    enum SpeedMode { SLOW = 0, MEDIUM = 1, FAST = 2 }; // перечисление, для трех режимов скоростей
+    SpeedMode currentMode = MEDIUM; // храним текущий режим, по умолчанию среднйи
+
+    // хранение значений: [режим][спинбокс]
+    QMap<int, QMap<QString, double>> speedModeGains;
+
+    /*
+        map - словарь из словарей
+        int - первый ключ, отвечает за номер режима 0, 1, 2
+        QString - второй ключ , имя спинбокса
+
+        SpeedMode = {
+            0: {  // SLOW режим
+                "surge": 10.0,
+                "sway": 10.0,
+                "depth": 10.0,
+            },
+            1: {  // MEDIUM режим
+                "surge": 50.0,
+                "sway": 50.0,
+            },
+            2: {  // FAST режим
+                "surge": 100.0,
+                "sway": 100.0,
+            }
+        }
+
+    */
+
+    // Массив спинбоксов
+    QVector<QSpinBox*> gainSpinBoxes;
+    QStringList gainNames = {"surge", "sway", "depth", "yaw", "pitch", "roll"};
+
+    void saveCurrentModeGains(); // Сохраняем текущие значения спинбоксов в текущий режим
+    void loadCurrentModeGains();
+    void setSpinBoxValuesForCurrentMode(); // начальные значения для текущего режима
+
+    void saveSettings(); // сохранение настроек
+    void loadSettings(); // загрузка настроек для ВСЕХ режимов
+
+
+
+
     /*!
      * \brief setTimer_updateImpact устанавливает таймер
      *  обработки пульта управления.
@@ -104,7 +150,10 @@ private:
     RosBridge           *rosBridge;
 
 private slots:
-
+    void onGainValueChanged();
+    void setSpeedModeFast(); // слот для быстрого режима
+    void setSpeedModeMedium(); // слот для среднего режима
+    void setSpeedModeSlow(); // слот для медленного режима
     /*!
      * \brief displayText слот для вывода сообщений в консоль.
      * \param str является выводимой строкой.
@@ -171,6 +220,8 @@ private slots:
     void slot_pushButton_sendReper();
 
     void slot_addMarker_to_gui(double x, double y);
+
+
 
 
 signals:

@@ -20,6 +20,30 @@ MainWindow::MainWindow(QWidget *parent)
     setUpdateUI();
 
 
+
+    // Инициализация спинбоксов
+    gainSpinBoxes = {
+        ui->spinBox_gain_surge,
+        ui->spinBox_gain_sway,
+        ui->spinBox_gain_depth,
+        ui->spinBox_gain_yaw,
+        ui->spinBox_gain_pitch,
+        ui->spinBox_gain_roll
+    };
+
+    // Загрузка сохраненных значений для ВСЕХ режимов
+    loadSettings();
+
+    // Устанавливаем начальные значения для текущего режима
+    setSpinBoxValuesForCurrentMode();
+
+    // Подключаем сигналы
+    for (auto spinBox : gainSpinBoxes) {
+        connect(spinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+                this, &MainWindow::onGainValueChanged);
+    }
+    // К каждому спинбоксу привязывается сигнал onGainValueChanged()
+
 }
 
 
@@ -253,7 +277,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::keyReleaseEvent(QKeyEvent *event)
 {
-  keyBoard->keyReleaseEvent(event);
+    keyBoard->keyReleaseEvent(event);
 }
 
 void MainWindow::updateUi_fromControl(){
@@ -262,7 +286,7 @@ void MainWindow::updateUi_fromControl(){
     DataAH127C imuData = uv_interface.getImuData();
 
     ui->compass->setYawDesirable(control.yaw, imuData.yaw, uv_interface.getCSMode());
-    
+
     ui->label_controlYaw->setNum(control.yaw * ui->spinBox_gain_yaw->value());
     ui->label_controlMarch->setNum(control.march * ui->spinBox_gain_surge->value());
     ui->label_controlDif->setNum(control.pitch * ui->spinBox_gain_pitch->value());
@@ -289,9 +313,29 @@ void MainWindow::setBottom()
     setBottom_selectAgent();
 
     connect(ui->pushButton_zeroYaw,
-        &QPushButton::clicked,
-        rosBridge,
-        &RosBridge::zeroYaw);
+            &QPushButton::clicked,
+            rosBridge,
+            &RosBridge::zeroYaw);
+
+    // Инициализация трех кнопок для режимов
+    if (ui->pushButton_speedFast_2) {
+        connect(ui->pushButton_speedFast_2, &QPushButton::clicked,
+                this, &MainWindow::setSpeedModeFast);
+    }
+
+    if (ui->pushButton_speedMedium_2) {
+        connect(ui->pushButton_speedMedium_2, &QPushButton::clicked,
+                this, &MainWindow::setSpeedModeMedium);
+    }
+
+    if (ui->pushButton_speedSlow_2) {
+        connect(ui->pushButton_speedSlow_2, &QPushButton::clicked,
+                this, &MainWindow::setSpeedModeSlow);
+    }
+
+
+    ui->pushButton_speedMedium_2->setStyleSheet("background-color: purple");
+
 
 }
 
@@ -324,7 +368,7 @@ void MainWindow::setBottom_mode()
     modeAutomated->setExclusive(false);
 
     connect(ui->pushButton_modeAutomated_surge,  &QPushButton::toggled,
-        rosBridge, &RosBridge::setModeSurge);
+            rosBridge, &RosBridge::setModeSurge);
 
     connect(ui->pushButton_modeAutomated_sway,   &QPushButton::toggled,
             rosBridge, &RosBridge::setModeSway);
@@ -529,6 +573,118 @@ void MainWindow::setUpdateUI()
     connect(this, &MainWindow::updateMap,
             this, &MainWindow::updateUi_Map);
 }
+
+// =================================================
+
+
+void MainWindow::loadSettings() {
+    QSettings settings("/UMAS_GUI/umas_settings.ini", QSettings::IniFormat);
+
+    // Загружаем значения для каждого режима
+    for (int mode = 0; mode < 3; mode++) {
+        settings.beginGroup(QString("SpeedMode_%1").arg(mode));
+
+        QMap<QString, double> gains;
+        for (int i = 0; i < gainNames.size(); i++) {
+            // Значения по умолчанию для каждого режима
+            double defaultValue = 0;
+            if (mode == SLOW) defaultValue = 10;
+            else if (mode == MEDIUM) defaultValue = 50;
+            else if (mode == FAST) defaultValue = 100;
+
+            gains[gainNames[i]] = settings.value(gainNames[i],defaultValue).toDouble();
+        }
+
+        speedModeGains[mode] = gains;
+        settings.endGroup();
+    }
+
+
+    currentMode = static_cast<SpeedMode>(
+        settings.value("CurrentSpeedMode", MEDIUM).toInt()
+        );
+}
+
+void MainWindow::saveSettings() {
+     QSettings settings("/UMAS_GUI/umas_settings.ini", QSettings::IniFormat);
+
+    // Сохраняем значения для всех режимов
+    for (int mode = 0; mode < 3; mode++) {
+        settings.beginGroup(QString("SpeedMode_%1").arg(mode));
+
+        for (int i = 0; i < gainNames.size(); i++) {
+            settings.setValue(gainNames[i],speedModeGains[mode][gainNames[i]]);
+        }
+
+        settings.endGroup();
+    }
+
+    // Сохраняем текущий режим
+    settings.setValue("CurrentSpeedMode", currentMode);
+}
+
+void MainWindow::saveCurrentModeGains() {
+    // Сохраняем текущие значения спинбоксов в текущий режим
+    for (int i = 0; i < gainSpinBoxes.size(); i++) {
+        speedModeGains[currentMode][gainNames[i]] = gainSpinBoxes[i]->value();
+    }
+
+    // Сохраняем в настройки
+    saveSettings();
+}
+
+void MainWindow::setSpinBoxValuesForCurrentMode() {
+    // блокировка сигналов
+    for (auto spinBox : gainSpinBoxes) {
+        spinBox->blockSignals(true);
+    }
+
+    // Устанавливаем значения из текущего режима
+    for (int i = 0; i < gainSpinBoxes.size(); i++) {
+        gainSpinBoxes[i]->setValue(speedModeGains[currentMode][gainNames[i]]);
+    }
+
+    // Разблокируем сигналы
+    for (auto spinBox : gainSpinBoxes) {
+        spinBox->blockSignals(false);
+    }
+}
+
+void MainWindow::onGainValueChanged() {
+    // Сохраняем изменения в текущем режиме
+    saveCurrentModeGains();
+}
+
+void MainWindow::setSpeedModeFast() {
+    saveCurrentModeGains(); // Сохраняем текущие значения
+    currentMode = FAST;
+    setSpinBoxValuesForCurrentMode();
+    ui->pushButton_speedFast_2->setStyleSheet("background-color: purple;");
+    ui->pushButton_speedMedium_2->setStyleSheet("");
+    ui->pushButton_speedSlow_2->setStyleSheet("");
+}
+
+void MainWindow::setSpeedModeMedium() {
+    saveCurrentModeGains();
+    currentMode = MEDIUM;
+    setSpinBoxValuesForCurrentMode();
+    ui->pushButton_speedFast_2->setStyleSheet("");
+    ui->pushButton_speedMedium_2->setStyleSheet("background-color: purple;");
+    ui->pushButton_speedSlow_2->setStyleSheet("");
+}
+
+void MainWindow::setSpeedModeSlow() {
+    saveCurrentModeGains();
+    currentMode = SLOW;
+    setSpinBoxValuesForCurrentMode();
+    ui->pushButton_speedFast_2->setStyleSheet("");
+    ui->pushButton_speedMedium_2->setStyleSheet("");
+    ui->pushButton_speedSlow_2->setStyleSheet("background-color: purple;");
+}
+
+
+
+// ========== КОНЕЦ ИСПРАВЛЕНИЯ ==========
 
 void MainWindow::updateUi_Compass(float yaw) {
     ui->compass->setYaw(yaw);
