@@ -334,7 +334,7 @@ void MainWindow::setBottom()
     }
 
 
-    ui->pushButton_speedMedium_2->setStyleSheet("background-color: purple");
+    ui->pushButton_speedMedium_2->setStyleSheet("background-color: purple; font-size: 25px");
 
 
 }
@@ -574,8 +574,6 @@ void MainWindow::setUpdateUI()
             this, &MainWindow::updateUi_Map);
 }
 
-// =================================================
-
 
 void MainWindow::loadSettings() {
     QSettings settings("/UMAS_GUI/umas_settings.ini", QSettings::IniFormat);
@@ -659,32 +657,30 @@ void MainWindow::setSpeedModeFast() {
     saveCurrentModeGains(); // Сохраняем текущие значения
     currentMode = FAST;
     setSpinBoxValuesForCurrentMode();
-    ui->pushButton_speedFast_2->setStyleSheet("background-color: purple;");
-    ui->pushButton_speedMedium_2->setStyleSheet("");
-    ui->pushButton_speedSlow_2->setStyleSheet("");
+    ui->pushButton_speedFast_2->setStyleSheet("background-color: purple;font-size: 25px");
+    ui->pushButton_speedMedium_2->setStyleSheet("background-color: white;font-size: 25px");
+    ui->pushButton_speedSlow_2->setStyleSheet("background-color: white;font-size: 25px");
 }
 
 void MainWindow::setSpeedModeMedium() {
     saveCurrentModeGains();
     currentMode = MEDIUM;
     setSpinBoxValuesForCurrentMode();
-    ui->pushButton_speedFast_2->setStyleSheet("");
-    ui->pushButton_speedMedium_2->setStyleSheet("background-color: purple;");
-    ui->pushButton_speedSlow_2->setStyleSheet("");
+    ui->pushButton_speedFast_2->setStyleSheet("background-color: white; font-size: 25px");
+    ui->pushButton_speedMedium_2->setStyleSheet("background-color: purple; font-size: 25px");
+    ui->pushButton_speedSlow_2->setStyleSheet("background-color: white; font-size: 25px");
 }
 
 void MainWindow::setSpeedModeSlow() {
     saveCurrentModeGains();
     currentMode = SLOW;
     setSpinBoxValuesForCurrentMode();
-    ui->pushButton_speedFast_2->setStyleSheet("");
-    ui->pushButton_speedMedium_2->setStyleSheet("");
-    ui->pushButton_speedSlow_2->setStyleSheet("background-color: purple;");
+    ui->pushButton_speedFast_2->setStyleSheet("background-color: white; font-size: 25px");
+    ui->pushButton_speedMedium_2->setStyleSheet("background-color: white; font-size: 25px");
+    ui->pushButton_speedSlow_2->setStyleSheet("background-color: purple; font-size: 25px");
 }
 
 
-
-// ========== КОНЕЦ ИСПРАВЛЕНИЯ ==========
 
 void MainWindow::updateUi_Compass(float yaw) {
     ui->compass->setYaw(yaw);
