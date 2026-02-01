@@ -42,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
         connect(spinBox, QOverload<int>::of(&QSpinBox::valueChanged),
                 this, &MainWindow::onGainValueChanged);
     }
+    // К каждому спинбоксу привязывается сигнал onGainValueChanged()
 }
 
 void MainWindow::setWidget()
@@ -50,31 +51,127 @@ void MainWindow::setWidget()
     ui->horizontalLayout_for_powerSystem->addWidget(powerSystem);
     checkMsg = new CheckMsg(this);
     ui->horizontalLayout_for_checkMsg->addWidget(checkMsg);
+      // checkImu = new CheckImu(this);
+    // ui->horizontalLayout_for_checkImu->addWidget(checkImu);
     modeAutomatic = new ModeAutomatic(this);
     ui->verticalLayout_modeAutomatic->addWidget(modeAutomatic);
     diagnostic_board = new Diagnostic_board(this);
     ui->horizontalLayout_diagnosticBoard->addWidget(diagnostic_board);
 
-    connect(modeAutomatic,&ModeAutomatic::displayText_toConsole,
-            this, &MainWindow::displayText);
-    connect(modeAutomatic, &ModeAutomatic::set_stackedWidget_mode,
-            ui->stackedWidget_mode, &QStackedWidget::setCurrentIndex);
+    // setMission_map
+    // connect(
+    //     modeAutomatic->ui->pushButton_missionPlanning_goto_on_trajectory, &QPushButton::clicked,
+    //     ui->map, &Map::updateUi_missionPlanning_goto_traj_onoff);
+    // connect(
+    //     modeAutomatic->ui->pushButton_missionPlanning_goto_on_trajectory_clear, &QPushButton::clicked,
+    //     ui->map, &Map::updateUi_missionPlanning_goto_traj_clear);
+    // // setMission_goTo
+    // connect(
+    //     modeAutomatic, &ModeAutomatic::signal_pushButton_missionPlanning_goto_updateMap,
+    //     ui->map, &Map::updateUi_missionPlanning_goto_goal);
+    // // setMission_go_trajectory
+    // connect(
+    //     modeAutomatic, &ModeAutomatic::signal_pushButton_missionPlanning_go_trajectory_updateMap,
+    //     ui->map, &Map::updateUi_missionPlanning_goto_goal);
+    // // setMission_cpp
+    // connect(
+    //     ui->map, &Map::pointAdded,
+    //     modeAutomatic, &ModeAutomatic::addPointToTable);
+    // connect(
+    //     modeAutomatic, &ModeAutomatic::requestUpdateChart,
+    //     ui->map, &Map::updateChart);
+    // connect(
+    //     modeAutomatic, &ModeAutomatic::requestClearLines,
+    //     ui->map, &Map::clearLines);
+    // connect(
+    //     modeAutomatic, &ModeAutomatic::plotLineSeries,
+    //     ui->map, &Map::onPlotLineSeries);
+    //     // Подключение кнопки для переключения состояния
+    // connect(
+    //     modeAutomatic->ui->pushButton_missionPlanning_cpp_on_off, &QPushButton::toggled,
+    //     ui->map, &Map::setMissionPlanning_cpp_Enabled);
+    connect(
+        modeAutomatic,&ModeAutomatic::displayText_toConsole,
+        this, &MainWindow::displayText);
+    connect(
+        modeAutomatic, &ModeAutomatic::set_stackedWidget_mode,
+        ui->stackedWidget_mode, &QStackedWidget::setCurrentIndex);
+
+    // mapWidget = new MapWidget(this);
+    // ui->horizontalLayout_mapWidget->addWidget(mapWidget);
+
+    // connect(
+    //     modeAutomatic->ui->pushButton_missionPlanning_cpp_on_off, &QPushButton::toggled,
+    //     mapWidget, &MapWidget::toggleAddPointMode_for_cpp);
+    // connect(
+    //     modeAutomatic, &ModeAutomatic::requestClearLines,
+    //     mapWidget, &MapWidget::clearMapItems);
+    // connect(
+    //     mapWidget, &MapWidget::signal_addPointToTable,
+    //     modeAutomatic, &ModeAutomatic::addPointToTable);
+    // connect(
+    //     modeAutomatic, &ModeAutomatic::requestAddLine,
+    //     mapWidget, &MapWidget::addLine);
+    // connect(
+    //     this, &MainWindow::signal_sendCurrentPos,
+    //     mapWidget, &MapWidget::setCurrentPos);
+    // connect(
+    //     ui->pushButton_sendReper_map_onoff, &QPushButton::toggled,
+    //     mapWidget, &MapWidget::toggleAddPointMode_for_marker);
+
+    // connect(
+    //     mapWidget, &MapWidget::signal_addPoint_to_gui,
+    //     modeAutomatic, &ModeAutomatic::slot_addPoint_to_gui);
+
+    // connect(
+    //     modeAutomatic->ui->pushButton_missionPlanning_goto_point_onoff, &QPushButton::toggled,
+    //     mapWidget, &MapWidget::toggleAddPointMode_for_goto_point);
+
+    // connect(
+    //     modeAutomatic->ui->pushButton_missionPlanning_go_circle_onoff, &QPushButton::toggled,
+    //     mapWidget, &MapWidget::toggleAddPointMode_for_go_circle_point);
+
+    // connect(
+    //     modeAutomatic->ui->lineEdit_missionPlanning_go_circle_radius, &QLineEdit::textChanged,
+    //     mapWidget, &MapWidget::setRadius_circle);
+    // mapWidget->setRadius_circle(modeAutomatic->ui->lineEdit_missionPlanning_go_circle_radius->text());
 }
 
 void MainWindow::setGUI_reper()
 {
     connect(ui->pushButton_sendReper, &QPushButton::clicked,
             this, &MainWindow::slot_pushButton_sendReper);
+
+    // connect(
+    //     this, &MainWindow::signal_setMarker,
+    //     mapWidget, &MapWidget::setMarker);
+    // connect(
+    //     mapWidget, &MapWidget::signal_addMarker_to_gui,
+    //     this, &MainWindow::slot_addMarker_to_gui);
 }
 
 void MainWindow::slot_pushButton_sendReper()
 {
+
     qDebug() << "hello";
+    // Получение текста из QLineEdit
+    QString latitudeStr = ui->lineEdit_reper_latitude->text();  // Широта
+    QString longitudeStr = ui->lineEdit_reper_longitude->text();  // Долгота
+
+    // Преобразование текста в double
     QString latitudeStr = ui->lineEdit_reper_latitude->text();
     QString longitudeStr = ui->lineEdit_reper_longitude->text();
     
     double latitude = latitudeStr.toDouble();
     double longitude = longitudeStr.toDouble();
+
+    // Создание объекта координат
+    // QGeoCoordinate reperCoordinate(latitude, longitude);
+
+    // Отправка сигнала с координатами
+    // emit signal_setMarker(reperCoordinate);
+
+    // Отправка репера на борт
     
     CoordinatePoint msg;
     msg.x_point = latitude;
@@ -84,8 +181,9 @@ void MainWindow::slot_pushButton_sendReper()
 
 void MainWindow::slot_addMarker_to_gui(double latitude, double longitude)
 {
-    ui->lineEdit_reper_latitude->setText(QString::number(latitude, 'd', 14));
-    ui->lineEdit_reper_longitude->setText(QString::number(longitude, 'd', 14));
+    ui->lineEdit_reper_latitude->setText(QString::number(latitude, 'd', 14));  // Широта
+    ui->lineEdit_reper_longitude->setText(QString::number(longitude, 'd', 14)); // Долгота
+
     
     CoordinatePoint msg;
     msg.x_point = latitude;
@@ -156,7 +254,7 @@ void MainWindow::useKeyBoard()
         keyBoard = new KeyBoard(this);
     }
     
-    // Удаляем джойстик безопасно
+    // Удаляем джойстик
     if (joyStick) {
         disconnect(joyStick, &JoyStick::buttonXPressed, this, &MainWindow::setSpeedModeLeft);
         disconnect(joyStick, &JoyStick::buttonBPressed, this, &MainWindow::setSpeedModeRight);
@@ -208,7 +306,7 @@ void MainWindow::useJoyStick()
 void MainWindow::setSpeedModeLeft() {  
     qDebug() << "setSpeedModeLeft called, currentMode =" << currentMode;
     
-    // ОБРАТНАЯ логика циклического переключения: SLOW -> MEDIUM -> FAST -> SLOW
+    // SLOW -> MEDIUM -> FAST -> SLOW
     switch (currentMode) {
         case SLOW:
             setSpeedModeMedium();
@@ -225,7 +323,7 @@ void MainWindow::setSpeedModeLeft() {
 void MainWindow::setSpeedModeRight() {
     qDebug() << "setSpeedModeRight called, currentMode =" << currentMode;
     
-    // ОБРАТНАЯ логика циклического переключения: SLOW <- MEDIUM <- FAST <- SLOW
+    // SLOW <- MEDIUM <- FAST <- SLOW
     switch (currentMode) {
         case SLOW:
             setSpeedModeFast();
@@ -280,7 +378,7 @@ void MainWindow::updateUi_fromControl()
 void MainWindow::updateUi_Map()
 {
     GPS_coordinate gps_coordinate = uv_interface.getCoordinateGPS();
-    emit signal_sendCurrentPos(gps_coordinate.latitude, gps_coordinate.longitude);
+    emit signal_sendCurrentPos(gps_coordinate.latitude, gps_coordinate.longitude); // Отправка сигнала с текущими координатами
 }
 
 void MainWindow::setBottom()
