@@ -15,6 +15,14 @@ JoyStick::JoyStick(QObject *parent)
     impactAxisPitch = sf::Joystick::PovY;
     impactAxisYaw = sf::Joystick::R;
     impactAxisLag = sf::Joystick::X;
+    
+    // Инициализация состояния кнопок
+    prevButtonAState = false;
+    prevButtonBState = false;
+    prevButtonXState = false;
+    prevButtonYState = false;
+    prevStartButtonState = false;
+    prevBackButtonState = false;
 }
 
 JoyStick::~JoyStick()
@@ -26,12 +34,54 @@ void JoyStick::updateImpact() {
     DataAH127C imuData = getImuData();
 
     if (sf::Joystick::isConnected(id)) {
-        setMarch(-sf::Joystick::getAxisPosition(id, impactAxisMarch)/2);
-        setLag(sf::Joystick::getAxisPosition(id, impactAxisLag)/2);
-//        setDepth(3*sf::Joystick::getAxisPosition(id, impactAxisDepth)/4);
-        setRoll(sf::Joystick::getAxisPosition(id, impactAxisRoll)/4);
-        setPitch(sf::Joystick::getAxisPosition(id, impactAxisPitch)/10);
-        setYaw((sf::Joystick::getAxisPosition(id, impactAxisYaw)/4));
+
+        
+        // Проверка состояния кнопок
+        bool currentButtonAState = sf::Joystick::isButtonPressed(id, BUTTON_A);
+        bool currentButtonBState = sf::Joystick::isButtonPressed(id, BUTTON_B);
+        bool currentButtonXState = sf::Joystick::isButtonPressed(id, BUTTON_X);
+        bool currentButtonYState = sf::Joystick::isButtonPressed(id, BUTTON_Y);
+        bool currentStartButtonState = sf::Joystick::isButtonPressed(id, START_BUTTON);
+        bool currentBackButtonState = sf::Joystick::isButtonPressed(id, BACK_BUTTON);
+        
+        
+        if (currentButtonAState && !prevButtonAState) {
+            emit buttonAPressed();  // Испускаем сигнал при нажатии кнопки A
+            qDebug() << "Кнопка A нажата на геймпаде";
+        }
+        
+ 
+        if (currentButtonBState && !prevButtonBState) {
+            emit buttonBPressed();
+            qDebug() << "Кнопка B нажата на геймпаде";
+        }
+        
+        if (currentButtonXState && !prevButtonXState) {
+            emit buttonXPressed();
+            qDebug() << "Кнопка X нажата на геймпаде";
+        }
+        
+        if (currentButtonYState && !prevButtonYState) {
+            emit buttonYPressed();
+            qDebug() << "Кнопка Y нажата на геймпаде";
+        }
+        
+        if (currentStartButtonState && !prevStartButtonState) {
+            emit startButtonPressed();
+            qDebug() << "Кнопка Start нажата на геймпаде";
+        }
+        
+        if (currentBackButtonState && !prevBackButtonState) {
+            emit backButtonPressed();
+            qDebug() << "Кнопка Back нажата на геймпаде";
+        }
+        
+        // Сохраняем текущее состояние для следующего цикла
+        prevButtonAState = currentButtonAState;
+        prevButtonBState = currentButtonBState;
+        prevButtonXState = currentButtonXState;
+        prevButtonYState = currentButtonYState;
+        prevStartButtonState = currentStartButtonState;
+        prevBackButtonState = currentBackButtonState;
     }
 }
-

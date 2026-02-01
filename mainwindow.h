@@ -26,6 +26,10 @@
 #include "ros2_bridge.h"
 
 #include <QSettings>
+// #include <QGamepad>
+// #include <QGamepadManager>
+
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -154,6 +158,9 @@ private slots:
     void setSpeedModeFast(); // слот для быстрого режима
     void setSpeedModeMedium(); // слот для среднего режима
     void setSpeedModeSlow(); // слот для медленного режима
+
+    void setSpeedModeLeft();
+    void setSpeedModeRight();
     /*!
      * \brief displayText слот для вывода сообщений в консоль.
      * \param str является выводимой строкой.

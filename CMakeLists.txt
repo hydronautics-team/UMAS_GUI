@@ -24,6 +24,9 @@ find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(ament_cmake REQUIRED)
 
+# НОВОЕ: Добавляем поиск библиотеки SDL2
+find_package(SDL2 REQUIRED)
+
 # include_directories(/opt/ros/humble/include)
 
 include_directories("${PROJECT_SOURCE_DIR}/compass")
@@ -126,6 +129,7 @@ endif()
 
 ament_target_dependencies(UMAS_GUI rclcpp geometry_msgs)
 
+# НОВОЕ: Добавляем SDL2 в список линкуемых библиотек
 target_link_libraries(UMAS_GUI
     sfml-graphics sfml-window sfml-system
     Qt${QT_VERSION_MAJOR}::Widgets
@@ -138,6 +142,7 @@ target_link_libraries(UMAS_GUI
     # Qt${QT_VERSION_MAJOR}::WebEngineWidgets
     # Qt${QT_VERSION_MAJOR}::Positioning
     Python3::Python
+    ${SDL2_LIBRARY}  # НОВОЕ: Подключаем SDL2 библиотеку
     )
 
 
