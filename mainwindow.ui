@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>3840</width>
-    <height>2400</height>
+    <width>1451</width>
+    <height>2076</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>UMAS GUI</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,1">
+   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,0">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,30">
       <item>
@@ -350,7 +350,7 @@
        <number>0</number>
       </property>
       <widget class="QWidget" name="page_main">
-       <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,10,0,1,0,6,6">
+       <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,10,0,0,1,0,6,6">
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
@@ -379,7 +379,41 @@
          </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,1,1,0,3">
+         <layout class="QHBoxLayout" name="horizontalLayout_12">
+          <item>
+           <widget class="QPushButton" name="pushButton_speedFast_2">
+            <property name="styleSheet">
+             <string notr="true">font-size: 25px </string>
+            </property>
+            <property name="text">
+             <string>Быстрый режим</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_speedMedium_2">
+            <property name="styleSheet">
+             <string notr="true">font-size: 25px </string>
+            </property>
+            <property name="text">
+             <string>Средний режим</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_speedSlow_2">
+            <property name="styleSheet">
+             <string notr="true">font-size: 25px </string>
+            </property>
+            <property name="text">
+             <string>Слабый режим</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,1,1,0,0">
           <item>
            <widget class="QRadioButton" name="radioButton_useJoyStick">
             <property name="enabled">
@@ -432,14 +466,7 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_11">
             <item>
-             <widget class="QLabel" name="label_5">
-              <property name="text">
-               <string>Управляющие воздействия</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
+             <layout class="QHBoxLayout" name="horizontalLayout_15"/>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout">
@@ -808,7 +835,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>3840</width>
+     <width>1451</width>
      <height>23</height>
     </rect>
    </property>
