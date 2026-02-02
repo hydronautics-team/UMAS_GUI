@@ -153,17 +153,15 @@ void MainWindow::setGUI_reper()
 void MainWindow::slot_pushButton_sendReper()
 {
 
-    qDebug() << "hello";
-    // Получение текста из QLineEdit
-    QString latitudeStr = ui->lineEdit_reper_latitude->text();  // Широта
-    QString longitudeStr = ui->lineEdit_reper_longitude->text();  // Долгота
+qDebug() << "hello";
+// Получение текста из QLineEdit
+QString latitudeStr = ui->lineEdit_reper_latitude->text();  // Широта
+QString longitudeStr = ui->lineEdit_reper_longitude->text();  // Долгота
 
-    // Преобразование текста в double
-    QString latitudeStr = ui->lineEdit_reper_latitude->text();
-    QString longitudeStr = ui->lineEdit_reper_longitude->text();
-    
-    double latitude = latitudeStr.toDouble();
-    double longitude = longitudeStr.toDouble();
+// Преобразование текста в double
+double latitude = latitudeStr.toDouble();
+double longitude = longitudeStr.toDouble();
+
 
     // Создание объекта координат
     // QGeoCoordinate reperCoordinate(latitude, longitude);
@@ -225,8 +223,8 @@ void MainWindow::setTimer_updateImpact(int periodUpdateMsec)
     keyBoard = nullptr; 
     
     // Подключаем сигналы кнопок джойстика
-    connect(joyStick, &JoyStick::buttonXPressed, this, &MainWindow::setSpeedModeLeft);
-    connect(joyStick, &JoyStick::buttonBPressed, this, &MainWindow::setSpeedModeRight);
+    connect(joyStick, &JoyStick::dPadLeftPressed, this, &MainWindow::setSpeedModeLeft);
+    connect(joyStick, &JoyStick::dPadRightPressed, this, &MainWindow::setSpeedModeRight);
     connect(joyStick, &JoyStick::backButtonPressed, this, &MainWindow::useKeyBoard);
     
     connect(ui->radioButton_useJoyStick, &QRadioButton::clicked,
@@ -293,9 +291,12 @@ void MainWindow::useJoyStick()
     joyStick = new JoyStick(this);
     
     // Подключаем сигналы кнопок джойстика
-    connect(joyStick, &JoyStick::buttonXPressed, this, &MainWindow::setSpeedModeLeft);
-    connect(joyStick, &JoyStick::buttonBPressed, this, &MainWindow::setSpeedModeRight);
+
     connect(joyStick, &JoyStick::backButtonPressed, this, &MainWindow::useKeyBoard);
+
+
+    connect(joyStick, &JoyStick::dPadLeftPressed, this, &MainWindow::setSpeedModeLeft);
+    connect(joyStick, &JoyStick::dPadRightPressed, this, &MainWindow::setSpeedModeRight);
     
     ui->radioButton_useJoyStick->setChecked(true);
     ui->radioButton_useKeyBoard->setChecked(false);
@@ -353,27 +354,124 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 
 void MainWindow::updateUi_fromControl()
 {
-    ControlData control = uv_interface.getControlData();
-    DataAH127C imuData = uv_interface.getImuData();
-    
-    ui->compass->setYawDesirable(control.yaw, imuData.yaw, uv_interface.getCSMode());
-    
-    ui->label_controlYaw->setNum(control.yaw * ui->spinBox_gain_yaw->value());
-    ui->label_controlMarch->setNum(control.march * ui->spinBox_gain_surge->value());
-    ui->label_controlDif->setNum(control.pitch * ui->spinBox_gain_pitch->value());
-    ui->label_controlLag->setNum(control.lag * ui->spinBox_gain_sway->value());
-    ui->label_controlDepth->setNum(control.depth * ui->spinBox_gain_depth->value());
-    ui->label_controlKren->setNum(control.roll * ui->spinBox_gain_roll->value());
-    
-    rosBridge->publishCommand(
-        control.march * ui->spinBox_gain_surge->value(),
-        control.lag * ui->spinBox_gain_sway->value(),
-        control.depth * ui->spinBox_gain_depth->value(),
-        control.roll * ui->spinBox_gain_roll->value(),
-        control.pitch * ui->spinBox_gain_pitch->value(),
-        control.yaw * ui->spinBox_gain_yaw->value()
-    );
+   ControlData control = uv_interface.getControlData();
+   DataAH127C imuData = uv_interface.getImuData();
+   
+   // Инициализируем все оси управления нулями
+   control.march = 0.0f;
+   control.yaw = 0.0f;
+   control.depth = 0.0f;
+   control.roll = 0.0f;
+   control.pitch = 0.0f;
+   control.lag = 0.0f;
+   
+   if (joyStick && joyStick->isConnected()) {
+       // --- ЛЕВЫЙ ДЖОЙСТИК: марш и курс ---
+       QPair<float, float> leftStickValues = joyStick->getLeftStickValues();
+       float leftStickX = leftStickValues.first;   // Вбок (курс)
+       float leftStickY = leftStickValues.second;  // Вперед/назад (марш)
+       
+       // --- ПРАВЫЙ ДЖОЙСТИК ---
+       QPair<float, float> rightStickValues = joyStick->getRightStickValues();
+       float rightStickX = rightStickValues.first;   // Roll (крен)
+       float rightStickY = rightStickValues.second;  // Pitch (дифферент)
+       
+       // --- ДЖОЙСТИК ДИФФЕРЕНТ ---
+       QPair<float, float> triggerValues = joyStick->getTriggerValues();
+       float leftTrigger = triggerValues.first;    // L2 (0-100)
+       float rightTrigger = triggerValues.second;  // R2 (0-100)
+       
+       // --- КАЛИБРОВКА ПРАВОГО ДЖОЙСТИКА (при первом подключении) ---
+       static bool isRightStickCalibrated = false;
+       static float rightStickZeroX = 0.0f;
+       static float rightStickZeroY = 0.0f;
+       
+       if (!isRightStickCalibrated) {
+           rightStickZeroX = rightStickX;
+           rightStickZeroY = rightStickY;
+           isRightStickCalibrated = true;
+           qDebug() << "Калибровка правого джойстика: X0 =" << rightStickZeroX << "Y0 =" << rightStickZeroY;
+       }
+       
+       // Вычитаем нулевые значения
+       rightStickX -= rightStickZeroX;
+       rightStickY -= rightStickZeroY;
+       
+ 
+       const float leftDeadZone = 10.0f;
+       const float rightDeadZone = 0;      
+       const float triggerDeadZone = 20.0f;   
+       
+
+       if (fabs(leftStickY) > leftDeadZone) {
+           control.march = leftStickY / 100.0f;
+       }
+       
+       if (fabs(leftStickX) > leftDeadZone) {
+           control.yaw = leftStickX / 100.0f;
+       }
+       
+       // --- УПРАВЛЕНИЕ ДИФФЕРЕНТОМ ПРАВЫМ ДЖОЙСТИКОМ---
+       float pitchControl = 0.0f;
+       
+ 
+       if (leftTrigger > triggerDeadZone) {
+           pitchControl = leftTrigger / 100.0f;
+       }
+       
+  
+       if (rightTrigger > triggerDeadZone) {
+           pitchControl = -rightTrigger / 100.0f; 
+       }
+       
+
+       if (leftTrigger > triggerDeadZone && rightTrigger > triggerDeadZone) {
+           pitchControl = (leftTrigger - rightTrigger) / 100.0f;
+       }
+       
+       control.pitch = pitchControl;
+
+
+
+       
+       // --- тригерами L2 R2 ЭТИ КОММЕНТАРИИ ВЕРНЫ ГЛУБИНА ---
+
+       if (fabs(rightStickY) > rightDeadZone) {
+          
+           control.depth = -rightStickY / 100.0f;
+           qDebug() << "!!!!";
+       }
+       
+       if (fabs(rightStickX) > rightDeadZone) {
+           control.depth = rightStickX / 100.0f;
+           qDebug() << "------!!!!";
+       }
+       
+     
+   }
+   
+   // Обновляем компас с текущими значениями управления
+   ui->compass->setYawDesirable(control.yaw, imuData.yaw, uv_interface.getCSMode());
+   
+   // Обновляем значения на интерфейсе
+   ui->label_controlYaw->setNum(control.yaw * ui->spinBox_gain_yaw->value());
+   ui->label_controlMarch->setNum(control.march * ui->spinBox_gain_surge->value());
+   ui->label_controlDif->setNum(control.pitch * ui->spinBox_gain_pitch->value());
+   ui->label_controlLag->setNum(control.lag * ui->spinBox_gain_sway->value());
+   ui->label_controlDepth->setNum(control.depth * ui->spinBox_gain_depth->value());
+   ui->label_controlKren->setNum(control.roll * ui->spinBox_gain_roll->value());
+   
+   // Отправляем команды через ROS Bridge
+   rosBridge->publishCommand(
+       control.march * ui->spinBox_gain_surge->value(),
+       control.lag * ui->spinBox_gain_sway->value(),
+       control.depth * ui->spinBox_gain_depth->value(),
+       control.roll * ui->spinBox_gain_roll->value(),
+       control.pitch * ui->spinBox_gain_pitch->value(),
+       control.yaw * ui->spinBox_gain_yaw->value()
+   );
 }
+
 
 void MainWindow::updateUi_Map()
 {
