@@ -10,17 +10,11 @@
 
 #include "remote_control.h"
 #include "uv_state.h"
-#include "i_user_interface_data.h"
-#include "pc_protocol.h"
-#include "i_server_data.h"
-// #include "map.h"
 #include "i_basic_data.h"
 #include "joy_stick.h"
 #include "key_board.h"
-#include "power_system.h"
-#include "check_msg.h"
-#include "check_imu.h"
-#include "mode_automatic.h"
+// #include "power_system.h"
+// #include "mode_automatic.h"
 // #include "map_widget.h"
 #include "diagnostic_board.h"
 #include "ros2_bridge.h"
@@ -70,14 +64,6 @@ private:
      */
     void setBottom_mode();
 
-    void setBottom_connection();
-    /*!
-     * \brief setBottom_modeSelection устанавливает кнопки и слоты,
-     *  связанные с режимом вывода данных.
-     */
-    void setBottom_modeSelection();
-
-    void setBottom_selectAgent();
 
     /*!
      * \brief setTab устанавливает названия вкладкам.
@@ -92,13 +78,12 @@ private:
     void setModeAutomatic_mission_cpp();
 
     void setWidget();
-    void setGUI_reper();
 
     void setInterface();
-    PowerSystem         *powerSystem;
-    CheckMsg            *checkMsg;
+    // PowerSystem         *powerSystem;
+    // CheckMsg            *checkMsg;
     // CheckImu            *checkImu;
-    ModeAutomatic       *modeAutomatic;
+    // ModeAutomatic       *modeAutomatic;
     // MapWidget           *mapWidget;
     Diagnostic_board    *diagnostic_board;
     RosBridge           *rosBridge;
@@ -117,44 +102,6 @@ private slots:
      */
     void updateUi_fromControl();
 
-    void updateUi_Map();
-
-    /*!
-     * \brief e_CSModeManualToggled слот для установки ручного режима
-     *  управления.
-     */
-    void e_CSModeManualToggled();
-    /*!
-     * \brief e_CSModeAutomatedToggled слот для установки автоматизированного
-     *  режима управления.
-     */
-    void e_CSModeAutomatedToggled();
-    /*!
-     * \brief e_CSModeAutomaticToggled слот для установки автоматического
-     *  режима управления.
-     */
-    void e_CSModeAutomaticToggled();
-
-    /*!
-     * \brief setConnection слот установления соединения.
-     */
-    void setConnection();
-    /*!
-     * \brief updateUi_fromAgent1 слот вызова сигналов обновления UI формы.
-     */
-    void updateUi_fromAgent1();
-
-    /*!
-     * \brief breakConnection слот разрыва соединения.
-     */
-    void breakConnection();
-
-    /*!
-     * \brief setModeSelection слот установления вывода данных.
-     * \param index выбор вывода данных.
-     */
-    void setModeSelection(int index);
-
     /*!
      * \brief updateUi_Compass слот обновления компаса на UI форме.
      * \param yaw новое значение курса.
@@ -163,14 +110,6 @@ private slots:
 
     void useKeyBoard();
     void useJoyStick();
-
-    void pushButton_selectAgent1(bool stateBottom);
-
-    void updateUi_statePushButton();
-
-    void slot_pushButton_sendReper();
-
-    void slot_addMarker_to_gui(double x, double y);
 
 
 signals:
@@ -200,7 +139,6 @@ signals:
 
     void toggleMissionPlanning_cppPointsEnabled();
 
-    void signal_setInterface(IUserInterfaceData *uv_interface);
     // void signal_setMarker(const QGeoCoordinate &coordinate);
     void signal_sendCurrentPos(double latitude, double longitude);
 
@@ -219,21 +157,5 @@ protected:
     KeyBoard *keyBoard = nullptr;
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
-
-    /*!
-     * \brief uv_interface интерфейс взаимодействия с глобальной переменной,
-     * с принимаемыми и отправляемыми сообщениями.
-     */
-    IUserInterfaceData uv_interface;
-    /*!
-     * \brief communicationAgent1 указатель на объект класса для UDP соединения.
-     */
-    Pult::PC_Protocol   *communicationAgent1;
-
-    /*!
-     * \brief pult объект класса для обновления задающих воздействий
-     */
-    RemoteControl pult;
-
 };
 #endif // MAINWINDOW_H
