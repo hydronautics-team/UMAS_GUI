@@ -7,12 +7,14 @@
 #include <QProcess>
 #include <QTime>
 #include <QButtonGroup>
+#include <QKeyEvent>
+#include <memory>
 
-#include "remote_control.h"
 #include "uv_state.h"
-#include "i_basic_data.h"
 #include "joy_stick.h"
 #include "key_board.h"
+#include "input/i_input_source.h"
+#include "control/control_service.h"
 // #include "power_system.h"
 // #include "mode_automatic.h"
 // #include "map_widget.h"
@@ -153,8 +155,14 @@ protected:
      */
     QTimer *updateTimer = nullptr;
 
-    JoyStick *joyStick = nullptr;
-    KeyBoard *keyBoard = nullptr;
+    std::unique_ptr<JoyStick> joyStick;
+    std::unique_ptr<KeyBoard> keyBoard;
+    umas::input::IInputSource *activeInput = nullptr;
+    umas::control::ControlService controlService;
+
+    umas::input::ControlCommand applyGains(const umas::input::ControlCommand& raw) const;
+    void updateControlLabels(const umas::input::ControlCommand& scaled);
+
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 };

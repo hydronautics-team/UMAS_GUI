@@ -60,12 +60,16 @@ void MainWindow::displayText(QString str)
 
 void MainWindow::setTimer_updateImpact(int periodUpdateMsec)
 {
-    joyStick = new JoyStick(this);
+    joyStick = std::make_unique<JoyStick>();
+    keyBoard = std::make_unique<KeyBoard>();
+    activeInput = joyStick.get();
+
     connect(ui->radioButton_useJoyStick, &QRadioButton::clicked,
             this, &MainWindow::useJoyStick);
     connect(ui->radioButton_useKeyBoard, &QRadioButton::clicked,
             this, &MainWindow::useKeyBoard);
-    QTimer *updateTimer = new QTimer(this);
+
+    updateTimer = new QTimer(this);
     connect(
         updateTimer, SIGNAL(timeout()),
         this, SLOT(updateUi_fromControl())
@@ -76,9 +80,7 @@ void MainWindow::setTimer_updateImpact(int periodUpdateMsec)
 
 void MainWindow::useKeyBoard()
 {
-    delete joyStick;
-
-    keyBoard = new KeyBoard(this);
+    activeInput = keyBoard.get();
     displayText("Используемые клавиши(должна быть английская раскладка):\n"
                 "Клавиша O - вперед по маршу\n"
                 "Клавиша L - назад по маршу\n"
@@ -97,36 +99,65 @@ void MainWindow::useKeyBoard()
 
 void MainWindow::useJoyStick()
 {
-    delete keyBoard;
-
-    joyStick = new JoyStick(this);
+    activeInput = joyStick.get();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
-    keyBoard->keyPressEvent(event);
+    if (activeInput == keyBoard.get() && keyBoard) {
+        keyBoard->keyPressEvent(event);
+    }
+    QMainWindow::keyPressEvent(event);
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent *event)
 {
-  keyBoard->keyReleaseEvent(event);
+    if (activeInput == keyBoard.get() && keyBoard) {
+        keyBoard->keyReleaseEvent(event);
+    }
+    QMainWindow::keyReleaseEvent(event);
 }
 
 void MainWindow::updateUi_fromControl(){
-    qDebug() << "заглушка";
+    if (activeInput != nullptr) {
+        const auto command = activeInput->poll();
+        if (command.has_value()) {
+            controlService.apply(command.value());
+        }
+    }
 
-    // ControlData control = uv_interface.getControlData();
-    // DataAH127C imuData = uv_interface.getImuData();
+    const auto scaled = applyGains(controlService.snapshot());
+    updateControlLabels(scaled);
 
-    // ui->compass->setYawDesirable(control.yaw, imuData.yaw, uv_interface.getCSMode());
-    
-    // ui->label_controlYaw->setNum(control.yaw * ui->spinBox_gain_yaw->value());
-    // ui->label_controlMarch->setNum(control.march * ui->spinBox_gain_surge->value());
-    // ui->label_controlDif->setNum(control.pitch * ui->spinBox_gain_pitch->value());
-    // ui->label_controlLag->setNum(control.lag * ui->spinBox_gain_sway->value());
-    // ui->label_controlDepth->setNum(control.depth * ui->spinBox_gain_depth->value());
-    // ui->label_controlKren->setNum(control.roll * ui->spinBox_gain_roll->value());
-    // rosBridge->publishCommand(control.march * ui->spinBox_gain_surge->value(), control.lag * ui->spinBox_gain_sway->value(), control.depth * ui->spinBox_gain_depth->value(), control.roll * ui->spinBox_gain_roll->value(), control.pitch * ui->spinBox_gain_pitch->value(), control.yaw * ui->spinBox_gain_yaw->value());
+    rosBridge->publishCommand(
+        scaled.march,
+        scaled.lag,
+        scaled.depth,
+        scaled.roll,
+        scaled.pitch,
+        scaled.yaw);
+}
+
+umas::input::ControlCommand MainWindow::applyGains(const umas::input::ControlCommand& raw) const
+{
+    umas::input::ControlCommand scaled = raw;
+    scaled.yaw *= ui->spinBox_gain_yaw->value();
+    scaled.march *= ui->spinBox_gain_surge->value();
+    scaled.pitch *= ui->spinBox_gain_pitch->value();
+    scaled.lag *= ui->spinBox_gain_sway->value();
+    scaled.depth *= ui->spinBox_gain_depth->value();
+    scaled.roll *= ui->spinBox_gain_roll->value();
+    return scaled;
+}
+
+void MainWindow::updateControlLabels(const umas::input::ControlCommand& scaled)
+{
+    ui->label_controlYaw->setNum(scaled.yaw);
+    ui->label_controlMarch->setNum(scaled.march);
+    ui->label_controlDif->setNum(scaled.pitch);
+    ui->label_controlLag->setNum(scaled.lag);
+    ui->label_controlDepth->setNum(scaled.depth);
+    ui->label_controlKren->setNum(scaled.roll);
 }
 
 void MainWindow::setBottom()

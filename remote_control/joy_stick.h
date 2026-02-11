@@ -1,23 +1,26 @@
 #ifndef JOYSTICK_H
 #define JOYSTICK_H
 
-#include <QObject>
-#include <QDebug>
-
-#include "remote_control.h"
 #include "SFML/Window.hpp"
+#include "input/i_input_source.h"
 
-
-
-class JoyStick : public RemoteControl
+class JoyStick : public umas::input::IInputSource
 {
-    Q_OBJECT
 public:
-    JoyStick(QObject *parent = nullptr);
-    ~JoyStick();
+    JoyStick();
+    ~JoyStick() override;
 
-private slots:
-    void updateImpact();
+    std::optional<umas::input::ControlCommand> poll() override;
+    bool isAvailable() const override;
+
+private:
+    int id;
+    sf::Joystick::Axis impactAxisMarch;
+    sf::Joystick::Axis impactAxisDepth;
+    sf::Joystick::Axis impactAxisRoll;
+    sf::Joystick::Axis impactAxisPitch;
+    sf::Joystick::Axis impactAxisYaw;
+    sf::Joystick::Axis impactAxisLag;
 };
 
 #endif // JOYSTICK_H

@@ -1,24 +1,26 @@
 #ifndef KEYBOARD_H
 #define KEYBOARD_H
 
-#include <QObject>
 #include <QKeyEvent>
+#include <optional>
 
-#include "remote_control.h"
+#include "input/i_input_source.h"
 
-class KeyBoard : public RemoteControl
+class KeyBoard : public umas::input::IInputSource
 {
 public:
-    explicit KeyBoard(QObject *parent = nullptr);
-    ~KeyBoard();
+    KeyBoard();
+    ~KeyBoard() override;
 
+    std::optional<umas::input::ControlCommand> poll() override;
+    bool isAvailable() const override;
 
-public:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 
-private slots:
-    void updateImpact();
+private:
+    umas::input::ControlCommand command_;
+    bool dirty_ = true;
 };
 
 #endif // KEYBOARD_H

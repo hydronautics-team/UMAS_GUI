@@ -29,7 +29,8 @@ find_package(ament_cmake REQUIRED)
 include_directories("${PROJECT_SOURCE_DIR}/compass")
 include_directories("${PROJECT_SOURCE_DIR}/remote_control")
 include_directories("${PROJECT_SOURCE_DIR}/uv")
-include_directories("${PROJECT_SOURCE_DIR}/interface")
+include_directories("${PROJECT_SOURCE_DIR}/input")
+include_directories("${PROJECT_SOURCE_DIR}/control")
 # include_directories("${PROJECT_SOURCE_DIR}/map")
 include_directories("${PROJECT_SOURCE_DIR}/tabs")
 include_directories("${PROJECT_SOURCE_DIR}/mods")
@@ -51,17 +52,13 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
-        remote_control/remote_control.h
-        remote_control/remote_control.cpp
         compass/compass.cpp
         compass/compass.h
         compass/compass.ui
         uv/uv_state.cpp
         uv/uv_state.h
-        interface/i_control_data.cpp
-        interface/i_control_data.h
-        interface/i_basic_data.cpp
-        interface/i_basic_data.h
+        input/i_input_source.h
+        control/control_service.h
         img.qrc
         remote_control/key_board.h remote_control/key_board.cpp
         remote_control/joy_stick.h remote_control/joy_stick.cpp
