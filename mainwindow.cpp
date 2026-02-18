@@ -6,12 +6,25 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    // Центральная модель состояния ПА (телеметрия/состояние для UI)
+    uvState = new UVState(this);
+
     // Инициализация ROS Thread
     rosBridge = new RosBridge(this);
     rosBridge->start();
 
     connect(this, &MainWindow::publishTwistRequested,
             rosBridge, &RosBridge::publishTwistInternal,
+            Qt::QueuedConnection);
+
+    // ROS -> UVState (QueuedConnection: RosBridge живёт в другом потоке)
+    connect(rosBridge, &RosBridge::poseReceived,
+            uvState, static_cast<void (UVState::*)(const UVState::Pose&)>(&UVState::setPose),
+            Qt::QueuedConnection);
+
+    connect(rosBridge, &RosBridge::controlFlagsPublished,
+            uvState, &UVState::setControlFlags,
             Qt::QueuedConnection);
 
     setWidget();

@@ -10,7 +10,6 @@
 #include <QKeyEvent>
 #include <memory>
 
-#include "uv_state.h"
 #include "joy_stick.h"
 #include "key_board.h"
 #include "input/i_input_source.h"
@@ -20,6 +19,7 @@
 // #include "map_widget.h"
 #include "diagnostic_board.h"
 #include "ros2_bridge.h"
+#include "uv_state.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -89,6 +89,7 @@ private:
     // MapWidget           *mapWidget;
     Diagnostic_board    *diagnostic_board;
     RosBridge           *rosBridge;
+    UVState             *uvState;
 
 private slots:
 
@@ -128,6 +129,7 @@ signals:
      * \brief updateIMU сигнал запуска обновления данных с БСО на UI форме.
      * \param imuData структура данных с обновленными значениями с БСО.
      */
+    // legacy signal (пока не используется)
     void updateIMU(DataAH127C imuData);
     /*!
      * \brief updateSetupMsg сигнал запуска обновления отправленных и полученных

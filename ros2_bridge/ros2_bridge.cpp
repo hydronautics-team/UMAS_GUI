@@ -33,6 +33,12 @@ void RosBridge::run()
         "pose_topic", 10,
         [this](const geometry_msgs::msg::Pose::SharedPtr msg) {
             emit poseUpdated(msg->position.x, msg->position.y, msg->position.z);
+
+            UVState::Pose pose;
+            pose.x = msg->position.x;
+            pose.y = msg->position.y;
+            pose.z = msg->position.z;
+            emit poseReceived(pose);
         });
 
     control_flags_pub_ =
@@ -90,6 +96,8 @@ void RosBridge::setControlFlagInternal(uint8_t bit, bool value)
     std_msgs::msg::UInt8 msg;
     msg.data = control_flags_;
     control_flags_pub_->publish(msg);
+
+    emit controlFlagsPublished(control_flags_);
 
     qDebug() << "Published control mode flags:" << static_cast<int>(control_flags_);
 }

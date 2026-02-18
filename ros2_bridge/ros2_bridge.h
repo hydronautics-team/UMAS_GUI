@@ -8,6 +8,8 @@
 #include <QObject>
 #include <atomic>
 
+#include "uv_state.h"
+
 class RosBridge : public QThread {
     Q_OBJECT
 
@@ -20,7 +22,12 @@ public:
     void run() override;
 
 signals:
+    // "Сырой" сигнал (может быть полезен для отладки)
     void poseUpdated(double x, double y, double z);
+
+    // Сигналы для обновления UVState-модели.
+    void poseReceived(const UVState::Pose& pose);
+    void controlFlagsPublished(std::uint8_t flags);
 
 public slots:
     void publishTwistInternal(double x, double y, double z,

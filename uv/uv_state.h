@@ -2,23 +2,18 @@
 #define UVSTATE_H
 
 #include <QObject>
-#include <QDebug>
 #include <QTime>
+#include <cstdint>
 
 
-/*!
- * \brief e_CSMode enum класс режимов работы системы управления.
- */
+/*!\brief Режимы работы системы управления. */
 enum class e_CSMode : quint8 {
     MODE_MANUAL = 0,            //! Ручной
     MODE_AUTOMATED,             //! Автоматизированный
     MODE_AUTOMATIC,             //! Автоматический
 };
 
-/*!
- * \brief e_StabilizationContours enum класс для работы с замыканием и
- *  размыканием контуров управления.
- */
+/*!\brief Контуры стабилизации. */
 enum class e_StabilizationContours : unsigned char {
     CONTOUR_DEPTH = 0,
     CONTOUR_MARCH,
@@ -28,9 +23,7 @@ enum class e_StabilizationContours : unsigned char {
     CONTOUR_PITCH
 };
 
-/*!
- * \brief power_Mode enum класс режимов работы системы питания.
- */
+/*!\brief Режимы работы системы питания. */
 enum class power_Mode : quint8
 { //режим работы
     MODE_2 = 0,     //! На ВМА не идет ШИМ
@@ -96,9 +89,7 @@ struct FlagAH127C_pult
     quint8 saveCalibration = false;     //! Флаг сохранения калибровки.
 };
 
-/*!
- * \brief ControlData class управляющие воздействия с пульта управления.
- */
+/*!\brief Управляющие воздействия. */
 struct ControlData {
     ControlData();
     float yaw;
@@ -120,10 +111,7 @@ struct ControlVMA
     float VMA4     = 0;
 };
 
-/*!
- * \brief ControlContoursFlags class структура со значениями замкутости контуров
- *  (если 1, то замкнуты, 0 - разомкнуты).
- */
+/*!\brief Флаги замкнутости контуров (1 - замкнуты, 0 - разомкнуты). */
 struct ControlContoursFlags {
     ControlContoursFlags();
     quint8 yaw;
@@ -134,10 +122,7 @@ struct ControlContoursFlags {
     quint8 lag;
 };
 
-/*!
- * \brief AUVCurrentData class структура, передаваемая на пульт.
- *  Имеет текущие параметры агента.
- */
+/*!\brief Текущие данные ПА (telemetry snapshot). */
 struct AUVCurrentData
 {
     quint8 modeReal;                    //! Текущий режим.
@@ -153,12 +138,11 @@ struct Header {
     int msgSize;
 };
 
-/*!
- * \brief DataAH127C class структура данных с датчика БСО.
- *  Курс измеряется в градусах +/- 180 и т.д.
- */
+// --- Legacy ---
+// Раньше IMU была привязана к конкретной модели датчика (AH127C) через DataAH127C.
+// Для новой архитектуры это НЕ используется. Оставлено временно для совместимости
+// со старыми вкладками/модулями, которые ещё не мигрировали.
 struct DataAH127C {
-
     float yaw;
     float pitch;
     float roll;
@@ -287,37 +271,74 @@ class UVState : public QObject
 {
     Q_OBJECT
 public:
-    UVState();
-    Header header;
-    DataAH127C imuData;
-    DataGANS dataGANS;
-    GPS_angular angularGPS;
-    GPS_coordinate coordinateGPS;
-    Diagnostic diagnostics;
+    UVState(QObject* parent = nullptr);
 
-    AUVCurrentData auvData;
+    // Обобщённые типы данных без привязки к конкретным моделям датчиков.
+    struct ImuData {
+        float yaw   = 0.f;
+        float pitch = 0.f;
+        float roll  = 0.f;
 
-    FlagAH127C_bort flagAH127C_bort;
-    FlagAH127C_pult flagAH127C_pult;
+        float accel_x = 0.f;
+        float accel_y = 0.f;
+        float accel_z = 0.f;
 
-    bool modeAUV_selection;
-    e_CSMode cSMode;
-    ControlContoursFlags controlContoursFlags;
-    ControlData control;
-    power_Mode pMode;
+        float gyro_x = 0.f;
+        float gyro_y = 0.f;
+        float gyro_z = 0.f;
 
-    mission_List missionListToPult;
-    mission_List missionListFromPult;
-    mission_Status missionStatus;
-    quint8 first_point_complete;
-    CoordinatePoint reper;
-    MissionParam mission_param;
-    mission_Control missionControl;
+        float mag_x = 0.f;
+        float mag_y = 0.f;
+        float mag_z = 0.f;
 
+        float quat[4] = {0.f, 0.f, 0.f, 1.f};
+        std::uint64_t timestamp_ms = 0;
+    };
 
-    int checksum_msg_gui_send;
-    int checksum_msg_agent_send;
-    int checksum_msg_gui_received;
+    struct Pose {
+        double x = 0.0;
+        double y = 0.0;
+        double z = 0.0;
+    };
+
+    struct Diagnostics {
+        // Поля названы под текущий UI Diagnostic_board.
+        float u_lipo_1 = 0.f;
+        float u_lipo_2 = 0.f;
+        float u_diagnostic_board = 0.f;
+        float u_power_board = 0.f;
+        float current_12 = 0.f;
+        float current_5 = 0.f;
+        int pwm_1 = 0;
+        int pwm_2 = 0;
+        int pwm_3 = 0;
+        int pwm_4 = 0;
+        std::uint64_t timestamp_ms = 0;
+    };
+
+    ImuData imu() const { return imu_; }
+    Pose pose() const { return pose_; }
+    Diagnostics diagnostics() const { return diagnostics_; }
+    std::uint8_t controlFlags() const { return control_flags_; }
+
+public slots:
+    void setImu(const UVState::ImuData& imu);
+    void setPose(double x, double y, double z);
+    void setPose(const UVState::Pose& pose);
+    void setDiagnostics(const UVState::Diagnostics& diagnostics);
+    void setControlFlags(std::uint8_t flags);
+
+signals:
+    void imuUpdated(const UVState::ImuData& imu);
+    void poseUpdated(const UVState::Pose& pose);
+    void diagnosticsUpdated(const UVState::Diagnostics& diagnostics);
+    void controlFlagsUpdated(std::uint8_t flags);
+
+private:
+    ImuData imu_{};
+    Pose pose_{};
+    Diagnostics diagnostics_{};
+    std::uint8_t control_flags_ = 0;
 };
 
 #endif // UVSTATE_H
