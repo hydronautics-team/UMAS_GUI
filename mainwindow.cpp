@@ -10,6 +10,10 @@ MainWindow::MainWindow(QWidget *parent)
     rosBridge = new RosBridge(this);
     rosBridge->start();
 
+    connect(this, &MainWindow::publishTwistRequested,
+            rosBridge, &RosBridge::publishTwistInternal,
+            Qt::QueuedConnection);
+
     setWidget();
     setConsole();
     setTimer_updateImpact(20);
@@ -129,7 +133,7 @@ void MainWindow::updateUi_fromControl(){
     const auto scaled = applyGains(controlService.snapshot());
     updateControlLabels(scaled);
 
-    rosBridge->publishCommand(
+    emit publishTwistRequested(
         scaled.march,
         scaled.lag,
         scaled.depth,
@@ -164,10 +168,9 @@ void MainWindow::setBottom()
 {
     setBottom_mode();
 
-    connect(ui->pushButton_zeroYaw,
-        &QPushButton::clicked,
-        rosBridge,
-        &RosBridge::zeroYaw);
+    connect(ui->pushButton_zeroYaw, &QPushButton::clicked,
+            rosBridge, &RosBridge::zeroYawInternal,
+            Qt::QueuedConnection);
 
 }
 
@@ -199,23 +202,27 @@ void MainWindow::setBottom_mode()
     modeAutomated->addButton(ui->pushButton_modeAutomated_roll);
     modeAutomated->setExclusive(false);
 
-    connect(ui->pushButton_modeAutomated_surge,  &QPushButton::toggled,
-        rosBridge, &RosBridge::setModeSurge);
+    connect(ui->pushButton_modeAutomated_surge, &QPushButton::toggled,
+            this, [this](bool checked){ emit controlFlagRequested(0, checked); });
 
-    connect(ui->pushButton_modeAutomated_sway,   &QPushButton::toggled,
-            rosBridge, &RosBridge::setModeSway);
+    connect(ui->pushButton_modeAutomated_sway, &QPushButton::toggled,
+            this, [this](bool checked){ emit controlFlagRequested(1, checked); });
 
-    connect(ui->pushButton_modeAutomated_depth,  &QPushButton::toggled,
-            rosBridge, &RosBridge::setModeHeave);
+    connect(ui->pushButton_modeAutomated_depth, &QPushButton::toggled,
+            this, [this](bool checked){ emit controlFlagRequested(2, checked); });
 
-    connect(ui->pushButton_modeAutomated_yaw,    &QPushButton::toggled,
-            rosBridge, &RosBridge::setModeYaw);
+    connect(ui->pushButton_modeAutomated_yaw, &QPushButton::toggled,
+            this, [this](bool checked){ emit controlFlagRequested(3, checked); });
 
-    connect(ui->pushButton_modeAutomated_pitch,  &QPushButton::toggled,
-            rosBridge, &RosBridge::setModePitch);
+    connect(ui->pushButton_modeAutomated_pitch, &QPushButton::toggled,
+            this, [this](bool checked){ emit controlFlagRequested(4, checked); });
 
-    connect(ui->pushButton_modeAutomated_roll,   &QPushButton::toggled,
-            rosBridge, &RosBridge::setModeRoll);
+    connect(ui->pushButton_modeAutomated_roll, &QPushButton::toggled,
+            this, [this](bool checked){ emit controlFlagRequested(5, checked); });
+
+    connect(this, &MainWindow::controlFlagRequested,
+            rosBridge, &RosBridge::setControlFlagInternal,
+            Qt::QueuedConnection);
 
 
     // e_CSModeManualToggled();

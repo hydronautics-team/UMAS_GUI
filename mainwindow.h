@@ -120,6 +120,10 @@ signals:
      * \param yaw новое значение курса.
      */
     void updateCompass(float yaw);
+
+    void publishTwistRequested(double x, double y, double z,
+                               double angular_x, double angular_y, double angular_z);
+    void controlFlagRequested(uint8_t bit, bool value);
     /*!
      * \brief updateIMU сигнал запуска обновления данных с БСО на UI форме.
      * \param imuData структура данных с обновленными значениями с БСО.

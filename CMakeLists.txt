@@ -71,6 +71,7 @@ set(PROJECT_SOURCES
         Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.h
         Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.ui
         ros2_bridge/ros2_bridge.h
+        ros2_bridge/ros2_bridge.cpp
         )
 
 
