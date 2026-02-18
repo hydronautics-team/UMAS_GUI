@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     setWidget();
     setConsole();
-    setTimer_updateImpact(20);
+    setTimer_updateImpact(10);
     setBottom();
     setTab();
     setUpdateUI();
