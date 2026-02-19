@@ -8,7 +8,7 @@
 #include <QProcess>
 // #include <QGeoCoordinate>
 
-#include "i_user_interface_data.h"
+// #include "i_user_interface_data.h"
 // #include "map.h"
 
 
@@ -38,7 +38,7 @@ signals:
     void requestAddLine(const QVector<QPointF> &coordinates);
 
 private:
-    IUserInterfaceData *uv_interface;
+    // IUserInterfaceData *uv_interface;
 
     void setBottom_modeAutomatic();
 
@@ -69,7 +69,7 @@ private slots:
 
 public slots:
     void addPointToTable(qreal x, qreal y);
-    void slot_getInterface(IUserInterfaceData *interface);
+    // void slot_getInterface(IUserInterfaceData *interface);
     void slot_addPoint_to_gui(double latitude, double longitude);
 
 };

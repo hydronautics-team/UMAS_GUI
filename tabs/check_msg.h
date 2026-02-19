@@ -5,7 +5,7 @@
 #include <QButtonGroup>
 #include <QTimer>
 
-#include "i_user_interface_data.h"
+// #include "i_user_interface_data.h"
 
 namespace Ui {
 class CheckMsg;
@@ -21,10 +21,10 @@ public:
 
 public slots:
     void updateUi_checkMsg();
-    void slot_getInterface(IUserInterfaceData *interface);
+    // void slot_getInterface(IUserInterfaceData *interface);
 private:
     Ui::CheckMsg *ui;
-    IUserInterfaceData *uv_interface;
+    // IUserInterfaceData *uv_interface;
 
 
 };

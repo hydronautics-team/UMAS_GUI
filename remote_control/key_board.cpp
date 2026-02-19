@@ -1,95 +1,117 @@
 #include "key_board.h"
 
-KeyBoard::KeyBoard(QObject *parent)
-{
+#include <chrono>
 
+KeyBoard::KeyBoard()
+{
+    command_.valid = true;
 }
 
 KeyBoard::~KeyBoard()
 {
 }
 
+std::optional<umas::input::ControlCommand> KeyBoard::poll()
+{
+    if (!dirty_) {
+        return std::nullopt;
+    }
+
+command_.timestamp_ms = static_cast<std::uint64_t>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now().time_since_epoch())
+            .count());
+    dirty_ = false;
+    return command_;
+}
+
+bool KeyBoard::isAvailable() const
+{
+    return true;
+}
+
 void KeyBoard::keyPressEvent(QKeyEvent *event)
 {
-    ControlData control = getControlData();
     switch (event->key()) {
     case Qt::Key_O:
-        setMarch(10);
+        command_.march = 10;
         break;
     case Qt::Key_L:
-        setMarch(-10);
+        command_.march = -10;
         break;
     case Qt::Key_W:
-        setPitch(10);
+        command_.pitch = 10;
         break;
     case Qt::Key_S:
-        setPitch(-10);
+        command_.pitch = -10;
         break;
     case Qt::Key_A:
-        setYaw(-10);
+        command_.yaw = -10;
         break;
     case Qt::Key_D:
-        setYaw(10);
+        command_.yaw = 10;
         break;
     case Qt::Key_C:
-        setDepth(10);
+        command_.depth = 10;
         break;
     case Qt::Key_V:
-        setDepth(-10);
+        command_.depth = -10;
         break;
     case Qt::Key_Q:
-        setRoll(10);
+        command_.roll = 10;
         break;
     case Qt::Key_E:
-        setRoll(-10);
+        command_.roll = -10;
         break;
     case Qt::Key_K:
-        setLag(10);
+        command_.lag = 10;
         break;
     case Qt::Key_Semicolon:
-        setLag(-10);
+        command_.lag = -10;
         break;
     }
+    dirty_ = true;
 }
 
 void KeyBoard::keyReleaseEvent(QKeyEvent *event)
 {
         switch (event->key()) {
         case Qt::Key_O:
-            setMarch(0);
+            command_.march = 0;
             break;
         case Qt::Key_L:
-            setMarch(0);
+            command_.march = 0;
             break;
         case Qt::Key_W:
-            setPitch(0);
+            command_.pitch = 0;
             break;
         case Qt::Key_S:
-            setPitch(0);
+            command_.pitch = 0;
             break;
         case Qt::Key_A:
-            setYaw(0);
+            command_.yaw = 0;
             break;
         case Qt::Key_D:
-            setYaw(0);
+            command_.yaw = 0;
             break;
         case Qt::Key_C:
-            setDepth(0);
+            command_.depth = 0;
             break;
         case Qt::Key_V:
-            setDepth(0);
+            command_.depth = 0;
             break;
         case Qt::Key_Q:
-            setRoll(0);
+            command_.roll = 0;
             break;
         case Qt::Key_E:
-            setRoll(0);
+            command_.roll = 0;
             break;
         case Qt::Key_K:
-            setLag(0);
+            command_.lag = 0;
             break;
         case Qt::Key_Semicolon:
-            setLag(0);
+            command_.lag = 0;
             break;
         }
+        dirty_ = true;
 }

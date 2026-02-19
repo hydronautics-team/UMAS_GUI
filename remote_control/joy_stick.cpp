@@ -1,13 +1,10 @@
 #include "joy_stick.h"
 
-JoyStick::JoyStick(QObject *parent)
+#include <chrono>
+
+JoyStick::JoyStick()
 {
     id = 0;
-    int periodUpdateMsec = 20;
-
-    updateTimer = new QTimer(this);
-    connect(updateTimer, &QTimer::timeout, this, &JoyStick::updateImpact);
-    updateTimer->start(periodUpdateMsec);
 
     impactAxisMarch = sf::Joystick::Y;
     impactAxisDepth = sf::Joystick::Z;
@@ -21,17 +18,31 @@ JoyStick::~JoyStick()
 {
 }
 
-void JoyStick::updateImpact() {
+std::optional<umas::input::ControlCommand> JoyStick::poll()
+{
     sf::Joystick::update();
-    DataAH127C imuData = getImuData();
-
-    if (sf::Joystick::isConnected(id)) {
-        setMarch(-sf::Joystick::getAxisPosition(id, impactAxisMarch)/2);
-        setLag(sf::Joystick::getAxisPosition(id, impactAxisLag)/2);
-//        setDepth(3*sf::Joystick::getAxisPosition(id, impactAxisDepth)/4);
-        setRoll(sf::Joystick::getAxisPosition(id, impactAxisRoll)/4);
-        setPitch(sf::Joystick::getAxisPosition(id, impactAxisPitch)/10);
-        setYaw((sf::Joystick::getAxisPosition(id, impactAxisYaw)/4));
+    if (!sf::Joystick::isConnected(id)) {
+        return std::nullopt;
     }
+
+    umas::input::ControlCommand command;
+    command.march = -sf::Joystick::getAxisPosition(id, impactAxisMarch) / 2.0;
+    command.lag = sf::Joystick::getAxisPosition(id, impactAxisLag) / 2.0;
+    command.depth = 0.0;
+    command.roll = sf::Joystick::getAxisPosition(id, impactAxisRoll) / 4.0;
+    command.pitch = sf::Joystick::getAxisPosition(id, impactAxisPitch) / 10.0;
+    command.yaw = sf::Joystick::getAxisPosition(id, impactAxisYaw) / 4.0;
+    command.valid = true;
+    command.timestamp_ms = static_cast<std::uint64_t>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now().time_since_epoch())
+            .count());
+
+    return command;
+}
+
+bool JoyStick::isAvailable() const
+{
+    return sf::Joystick::isConnected(id);
 }
 

@@ -5,7 +5,7 @@
 #include <QButtonGroup>
 #include <QTimer>
 
-#include "i_user_interface_data.h"
+// #include "i_user_interface_data.h"
 #include "setup_imu.h"
 #include "setupimu_check.h"
 

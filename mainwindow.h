@@ -7,23 +7,19 @@
 #include <QProcess>
 #include <QTime>
 #include <QButtonGroup>
+#include <QKeyEvent>
+#include <memory>
 
-#include "remote_control.h"
-#include "uv_state.h"
-#include "i_user_interface_data.h"
-#include "pc_protocol.h"
-#include "i_server_data.h"
-// #include "map.h"
-#include "i_basic_data.h"
 #include "joy_stick.h"
 #include "key_board.h"
-#include "power_system.h"
-#include "check_msg.h"
-#include "check_imu.h"
-#include "mode_automatic.h"
+#include "input/i_input_source.h"
+#include "control/control_service.h"
+// #include "power_system.h"
+// #include "mode_automatic.h"
 // #include "map_widget.h"
 #include "diagnostic_board.h"
 #include "ros2_bridge.h"
+#include "uv_state.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -70,14 +66,6 @@ private:
      */
     void setBottom_mode();
 
-    void setBottom_connection();
-    /*!
-     * \brief setBottom_modeSelection устанавливает кнопки и слоты,
-     *  связанные с режимом вывода данных.
-     */
-    void setBottom_modeSelection();
-
-    void setBottom_selectAgent();
 
     /*!
      * \brief setTab устанавливает названия вкладкам.
@@ -92,16 +80,16 @@ private:
     void setModeAutomatic_mission_cpp();
 
     void setWidget();
-    void setGUI_reper();
 
     void setInterface();
-    PowerSystem         *powerSystem;
-    CheckMsg            *checkMsg;
+    // PowerSystem         *powerSystem;
+    // CheckMsg            *checkMsg;
     // CheckImu            *checkImu;
-    ModeAutomatic       *modeAutomatic;
+    // ModeAutomatic       *modeAutomatic;
     // MapWidget           *mapWidget;
     Diagnostic_board    *diagnostic_board;
     RosBridge           *rosBridge;
+    UVState             *uvState;
 
 private slots:
 
@@ -117,44 +105,6 @@ private slots:
      */
     void updateUi_fromControl();
 
-    void updateUi_Map();
-
-    /*!
-     * \brief e_CSModeManualToggled слот для установки ручного режима
-     *  управления.
-     */
-    void e_CSModeManualToggled();
-    /*!
-     * \brief e_CSModeAutomatedToggled слот для установки автоматизированного
-     *  режима управления.
-     */
-    void e_CSModeAutomatedToggled();
-    /*!
-     * \brief e_CSModeAutomaticToggled слот для установки автоматического
-     *  режима управления.
-     */
-    void e_CSModeAutomaticToggled();
-
-    /*!
-     * \brief setConnection слот установления соединения.
-     */
-    void setConnection();
-    /*!
-     * \brief updateUi_fromAgent1 слот вызова сигналов обновления UI формы.
-     */
-    void updateUi_fromAgent1();
-
-    /*!
-     * \brief breakConnection слот разрыва соединения.
-     */
-    void breakConnection();
-
-    /*!
-     * \brief setModeSelection слот установления вывода данных.
-     * \param index выбор вывода данных.
-     */
-    void setModeSelection(int index);
-
     /*!
      * \brief updateUi_Compass слот обновления компаса на UI форме.
      * \param yaw новое значение курса.
@@ -164,14 +114,6 @@ private slots:
     void useKeyBoard();
     void useJoyStick();
 
-    void pushButton_selectAgent1(bool stateBottom);
-
-    void updateUi_statePushButton();
-
-    void slot_pushButton_sendReper();
-
-    void slot_addMarker_to_gui(double x, double y);
-
 
 signals:
     /*!
@@ -179,10 +121,15 @@ signals:
      * \param yaw новое значение курса.
      */
     void updateCompass(float yaw);
+
+    void publishTwistRequested(double x, double y, double z,
+                               double angular_x, double angular_y, double angular_z);
+    void controlFlagRequested(uint8_t bit, bool value);
     /*!
      * \brief updateIMU сигнал запуска обновления данных с БСО на UI форме.
      * \param imuData структура данных с обновленными значениями с БСО.
      */
+    // legacy signal (пока не используется)
     void updateIMU(DataAH127C imuData);
     /*!
      * \brief updateSetupMsg сигнал запуска обновления отправленных и полученных
@@ -200,7 +147,6 @@ signals:
 
     void toggleMissionPlanning_cppPointsEnabled();
 
-    void signal_setInterface(IUserInterfaceData *uv_interface);
     // void signal_setMarker(const QGeoCoordinate &coordinate);
     void signal_sendCurrentPos(double latitude, double longitude);
 
@@ -215,25 +161,15 @@ protected:
      */
     QTimer *updateTimer = nullptr;
 
-    JoyStick *joyStick = nullptr;
-    KeyBoard *keyBoard = nullptr;
+    std::unique_ptr<JoyStick> joyStick;
+    std::unique_ptr<KeyBoard> keyBoard;
+    umas::input::IInputSource *activeInput = nullptr;
+    umas::control::ControlService controlService;
+
+    umas::input::ControlCommand applyGains(const umas::input::ControlCommand& raw) const;
+    void updateControlLabels(const umas::input::ControlCommand& scaled);
+
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
-
-    /*!
-     * \brief uv_interface интерфейс взаимодействия с глобальной переменной,
-     * с принимаемыми и отправляемыми сообщениями.
-     */
-    IUserInterfaceData uv_interface;
-    /*!
-     * \brief communicationAgent1 указатель на объект класса для UDP соединения.
-     */
-    Pult::PC_Protocol   *communicationAgent1;
-
-    /*!
-     * \brief pult объект класса для обновления задающих воздействий
-     */
-    RemoteControl pult;
-
 };
 #endif // MAINWINDOW_H

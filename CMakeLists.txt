@@ -29,11 +29,9 @@ find_package(ament_cmake REQUIRED)
 include_directories("${PROJECT_SOURCE_DIR}/compass")
 include_directories("${PROJECT_SOURCE_DIR}/remote_control")
 include_directories("${PROJECT_SOURCE_DIR}/uv")
-include_directories("${PROJECT_SOURCE_DIR}/interface")
+include_directories("${PROJECT_SOURCE_DIR}/input")
+include_directories("${PROJECT_SOURCE_DIR}/control")
 # include_directories("${PROJECT_SOURCE_DIR}/map")
-include_directories("${PROJECT_SOURCE_DIR}/communication")
-include_directories("${PROJECT_SOURCE_DIR}/ui_utils")
-include_directories("${PROJECT_SOURCE_DIR}/missions")
 include_directories("${PROJECT_SOURCE_DIR}/tabs")
 include_directories("${PROJECT_SOURCE_DIR}/mods")
 include_directories("${PROJECT_SOURCE_DIR}/Diagnostic_bord_UI/Diagnostic_bord")
@@ -54,49 +52,26 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
-        remote_control/remote_control.h
-        remote_control/remote_control.cpp
         compass/compass.cpp
         compass/compass.h
         compass/compass.ui
         uv/uv_state.cpp
         uv/uv_state.h
-        interface/i_control_data.cpp
-        interface/i_control_data.h
-        interface/i_basic_data.cpp
-        interface/i_basic_data.h
-        interface/i_user_interface_data.cpp
-        interface/i_user_interface_data.h
-        interface/i_server_data.h
-        interface/i_server_data.cpp
-        communication/pc_protocol.h
-        communication/udp_protocol.h
-        # ui_utils/setup_imu.h
-        # ui_utils/setup_imu.cpp
-        # ui_utils/setup_imu.ui
-        # ui_utils/setupimu_start.h
-        # ui_utils/setupimu_start.cpp
-        # ui_utils/setupimu_start.ui
-        # map/map.h
-        # map/map.cpp
-        # map/map.ui
+        input/i_input_source.h
+        control/control_service.h
         img.qrc
-        # ui_utils/setupimu_check.h
-        # ui_utils/setupimu_check.cpp
-        # ui_utils/setupimu_check.ui
-        ui_utils/database.h
-        ui_utils/database.cpp
         remote_control/key_board.h remote_control/key_board.cpp
         remote_control/joy_stick.h remote_control/joy_stick.cpp
-        tabs/power_system.h tabs/power_system.cpp tabs/power_system.ui
-        tabs/check_msg.h tabs/check_msg.cpp tabs/check_msg.ui
+        # tabs/power_system.h tabs/power_system.cpp tabs/power_system.ui
+        # tabs/check_msg.h tabs/check_msg.cpp tabs/check_msg.ui
         # tabs/check_imu.h tabs/check_imu.cpp tabs/check_imu.ui
-        mods/mode_automatic.h mods/mode_automatic.cpp mods/mode_automatic.ui
+        # mods/mode_automatic.h mods/mode_automatic.cpp mods/mode_automatic.ui
         # map/map_widget.h map/map_widget.cpp map/map_widget.ui map/map.html
         Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.cpp
         Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.h
         Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.ui
         ros2_bridge/ros2_bridge.h
+        ros2_bridge/ros2_bridge.cpp
         )
 
 

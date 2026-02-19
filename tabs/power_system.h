@@ -5,7 +5,6 @@
 #include <QButtonGroup>
 #include <QTimer>
 
-#include "i_user_interface_data.h"
 
 namespace Ui {
 class PowerSystem;
@@ -21,7 +20,6 @@ public:
 
 private:
     Ui::PowerSystem *ui;
-    IUserInterfaceData *uv_interface;
 
     // таймеры
     QTimer *timer_off_powerMode_5;
@@ -37,8 +35,6 @@ private slots:
 
     void off_powerMode_5();
 
-public slots:
-    void slot_getInterface(IUserInterfaceData *uv_interface);
 
 };
 
