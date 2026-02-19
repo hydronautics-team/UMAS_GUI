@@ -30,6 +30,7 @@
 #include "uv_state.h"
 
 #include <QSettings>
+#include <QSpinBox>
 #include "Gamepad/gamepad.h"
 
 QT_BEGIN_NAMESPACE

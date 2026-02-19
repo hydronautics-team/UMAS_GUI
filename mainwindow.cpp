@@ -60,14 +60,10 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     QButtonGroup *inputGroup = new QButtonGroup(this);
-inputGroup->addButton(ui->radioButton_useJoyStick);
-inputGroup->addButton(ui->radioButton_useKeyBoard);
-inputGroup->addButton(ui->gamepad_btn);
-inputGroup->setExclusive(true);
-
-// Устанавливаем геймпад по умолчанию
-ui->gamepad_btn->setChecked(true);
-useGamepad(); // активируем режим геймпада
+    inputGroup->addButton(ui->radioButton_useJoyStick);
+    inputGroup->addButton(ui->radioButton_useKeyBoard);
+    inputGroup->addButton(ui->gamepad_btn);
+    inputGroup->setExclusive(true);
 }
 
 void MainWindow::setWidget()
@@ -187,20 +183,21 @@ void MainWindow::useGamepad()
     gamepadInput = std::make_unique<GamepadInputSource>(gamepad, this);
     activeInput = gamepadInput.get();
 
-// --- Переключение режимов скорости (влево/вправо): крестовина ---
-connect(gamepad, &Gamepad::dPadRightPressed, this, [this]() {
-    // Переход к предыдущему режиму
-    int current = static_cast<int>(currentMode);
-    int previous = (current - 1 + 3) % 3;  
-    setSpeedMode(static_cast<SpeedMode>(previous));
-    
-});
-connect(gamepad, &Gamepad::dPadLeftPressed, this, [this]() {
-    int current = static_cast<int>(currentMode);
-    int next = (current + 1) % 3;
-    setSpeedMode(static_cast<SpeedMode>(next));
-    
-});
+    // --- Переключение режимов скорости (влево/вправо): крестовина ---
+    connect(gamepad, &Gamepad::dPadRightPressed, this, [this]() {
+        // Переход к предыдущему режиму
+        int current = static_cast<int>(currentMode);
+        int previous = (current - 1 + 3) % 3;  
+        setSpeedMode(static_cast<SpeedMode>(previous));
+        
+    });
+    connect(gamepad, &Gamepad::dPadLeftPressed, this, [this]() {
+        int current = static_cast<int>(currentMode);
+        int next = (current + 1) % 3;
+        setSpeedMode(static_cast<SpeedMode>(next));
+        
+    });
+}
 
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -336,21 +333,6 @@ void MainWindow::setBottom_mode()
     connect(this, &MainWindow::controlFlagRequested,
             rosBridge, &RosBridge::setControlFlagInternal,
             Qt::QueuedConnection);
-
-
-    // e_CSModeManualToggled();
-
-    // connect(
-    //     ui->pushButton_modeManual, SIGNAL(clicked()),
-    //     this, SLOT(e_CSModeManualToggled()));
-
-    // connect(
-    //     ui->pushButton_modeAutomated, SIGNAL(clicked()),
-    //     this, SLOT(e_CSModeAutomatedToggled()));
-
-    // connect(
-    //     ui->pushButton_modeAutomatic, SIGNAL(clicked()),
-    //     this, SLOT(e_CSModeAutomaticToggled()));
 }
 
 
@@ -459,10 +441,6 @@ void MainWindow::setSpeedMode(SpeedMode mode)
     saveSettings();
 }
 
-
-
-
-}
 void MainWindow::updateUi_Compass(float yaw)
 {
     ui->compass->setYaw(yaw);
