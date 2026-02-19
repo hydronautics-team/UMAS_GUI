@@ -1,18 +1,26 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+
+
 #include <QMainWindow>
 #include <QTimer>
 #include <QDebug>
 #include <QProcess>
 #include <QTime>
 #include <QButtonGroup>
+
+#include <QString>
+
+// Legacy include'ы удалены.
+
 #include <QKeyEvent>
 #include <memory>
 
 #include "joy_stick.h"
 #include "key_board.h"
 #include "input/i_input_source.h"
+#include "input/gamepad_input_source.h"
 #include "control/control_service.h"
 // #include "power_system.h"
 // #include "mode_automatic.h"
@@ -21,49 +29,41 @@
 #include "ros2_bridge.h"
 #include "uv_state.h"
 
+#include <QSettings>
+#include "Gamepad/gamepad.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
-
-/*!
- * \brief MainWindow - класс формы главного окна, в котором
- *  реализованы основные методы для работы с ним.
- */
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    /*!
-     * \brief MainWindow конструктор, в котором создается главная UI форма.
-     */
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
-    /*!
-     * \brief setConsole устанавливает настройки для консоли.
-     */
     void setConsole();
 
 private:
-    /*!
-     * \brief setTimer_updateImpact устанавливает таймер
-     *  обработки пульта управления.
-     * \param periodUpdateMsec период обновления таймера
-     *  обработки значений пульта управления.
-     */
-    void setTimer_updateImpact(int periodUpdateMsec);
+    Gamepad *gamepad = nullptr;
+    std::unique_ptr<GamepadInputSource> gamepadInput;
+    // Используем enum class с фиксированным типом uint8_t
+    enum class SpeedMode : uint8_t { Slow = 0, Medium = 1, Fast = 2 };
+    SpeedMode currentMode; // инициализируется в конструкторе
 
-    /*!
-     * \brief setBottom устанавливает все используемые кнопки.
-     */
+    QMap<int, QMap<QString, double>> speedModeGains; // [режим][имя]
+    QVector<QSpinBox*> gainSpinBoxes;
+    QStringList gainNames = {"surge", "sway", "depth", "yaw", "pitch", "roll"};
+
+    void saveCurrentModeGains();
+    void setSpinBoxValuesForCurrentMode();
+    void saveSettings();
+    void loadSettings();
+    void useGamepad();
+
+    void setTimer_updateImpact(int periodUpdateMsec);
     void setBottom();
-    /*!
-     * \brief setBottom_mode устанавливает кнопки и слоты,
-     *  связанные с режимами управления.
-     */
     void setBottom_mode();
 
 
@@ -71,38 +71,28 @@ private:
      * \brief setTab устанавливает названия вкладкам.
      */
     void setTab();
-
-    /*!
-     * \brief setUpdateUI устанавливает слоты обновления для UI формы.
-     */
     void setUpdateUI();
-
-    void setModeAutomatic_mission_cpp();
-
     void setWidget();
 
     void setInterface();
+
+
+    bool status_keyboard = false;
+
+
+    // legacy widgets (сейчас не используются в сборке)
     // PowerSystem         *powerSystem;
     // CheckMsg            *checkMsg;
-    // CheckImu            *checkImu;
     // ModeAutomatic       *modeAutomatic;
-    // MapWidget           *mapWidget;
     Diagnostic_board    *diagnostic_board;
     RosBridge           *rosBridge;
     UVState             *uvState;
 
 private slots:
+    // Единый слот для переключения режима скорости
+    void setSpeedMode(SpeedMode mode);
 
-    /*!
-     * \brief displayText слот для вывода сообщений в консоль.
-     * \param str является выводимой строкой.
-     */
     void displayText(QString str);
-
-    /*!
-     * \brief updateUi_fromControl слот для обновления на UI форме
-     *  данных управляющих воздействий.
-     */
     void updateUi_fromControl();
 
     /*!
@@ -110,55 +100,28 @@ private slots:
      * \param yaw новое значение курса.
      */
     void updateUi_Compass(float yaw);
-
     void useKeyBoard();
     void useJoyStick();
 
 
 signals:
-    /*!
-     * \brief updateCompass сигнал запуска обновления компаса на UI форме.
-     * \param yaw новое значение курса.
-     */
     void updateCompass(float yaw);
 
     void publishTwistRequested(double x, double y, double z,
                                double angular_x, double angular_y, double angular_z);
     void controlFlagRequested(uint8_t bit, bool value);
-    /*!
-     * \brief updateIMU сигнал запуска обновления данных с БСО на UI форме.
-     * \param imuData структура данных с обновленными значениями с БСО.
-     */
-    // legacy signal (пока не используется)
-    void updateIMU(DataAH127C imuData);
-    /*!
-     * \brief updateSetupMsg сигнал запуска обновления отправленных и полученных
-     *  данных на UI форме.
-     */
-    void updateSetupMsg();
-
-    void updateDataMission();
-
-    void updateStatePushButton();
-
-    void updateMap();
-
-    void pointAdded(qreal x, qreal y);
-
-    void toggleMissionPlanning_cppPointsEnabled();
-
-    // void signal_setMarker(const QGeoCoordinate &coordinate);
-    void signal_sendCurrentPos(double latitude, double longitude);
+    // legacy signals (пока не используются)
+    // void updateIMU(DataAH127C imuData);
+    // void updateSetupMsg();
+    // void updateDataMission();
+    // void updateStatePushButton();
+    // void updateMap();
+    // void pointAdded(qreal x, qreal y);
+    // void toggleMissionPlanning_cppPointsEnabled();
+    // void signal_sendCurrentPos(double latitude, double longitude);
 
 protected:
-    /*!
-     * \brief ui указатель на главную форму.
-     */
     Ui::MainWindow *ui;
-
-    /*!
-     * \brief updateTimer таймер обновления данных от пульта управления.
-     */
     QTimer *updateTimer = nullptr;
 
     std::unique_ptr<JoyStick> joyStick;
@@ -172,4 +135,5 @@ protected:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 };
+
 #endif // MAINWINDOW_H

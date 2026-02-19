@@ -48,6 +48,10 @@ find_package(Qt5 REQUIRED COMPONENTS Widgets )
 include_directories(${Python3_INCLUDE_DIRS})
 
 set(PROJECT_SOURCES
+        Gamepad/gamepad.cpp
+        Gamepad/gamepad.h
+        input/gamepad_input_source.h
+        input/gamepad_input_source.cpp
         main.cpp
         mainwindow.cpp
         mainwindow.h
@@ -113,6 +117,7 @@ target_link_libraries(UMAS_GUI
     # Qt${QT_VERSION_MAJOR}::WebEngineWidgets
     # Qt${QT_VERSION_MAJOR}::Positioning
     Python3::Python
+
     )
 
 

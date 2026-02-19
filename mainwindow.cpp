@@ -34,10 +34,41 @@ MainWindow::MainWindow(QWidget *parent)
     setTab();
     setUpdateUI();
 
+    // Инициализация спинбоксов
+    gainSpinBoxes = {
+        ui->spinBox_gain_surge,
+        ui->spinBox_gain_sway,
+        ui->spinBox_gain_depth,
+        ui->spinBox_gain_yaw,
+        ui->spinBox_gain_pitch,
+        ui->spinBox_gain_roll
+    };
+
+    loadSettings();
+    setSpinBoxValuesForCurrentMode();
+
+    // Подключаем сигналы спинбоксов напрямую к saveCurrentModeGains через лямбду
+    for (auto spinBox : gainSpinBoxes) {
+        connect(spinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+                this, [this]() { saveCurrentModeGains(); });
+    }
+
+    // Инициализируем текущий режим (по умолчанию Medium)
+    setSpeedMode(SpeedMode::Medium);
+
+    
 
 
+    QButtonGroup *inputGroup = new QButtonGroup(this);
+inputGroup->addButton(ui->radioButton_useJoyStick);
+inputGroup->addButton(ui->radioButton_useKeyBoard);
+inputGroup->addButton(ui->gamepad_btn);
+inputGroup->setExclusive(true);
+
+// Устанавливаем геймпад по умолчанию
+ui->gamepad_btn->setChecked(true);
+useGamepad(); // активируем режим геймпада
 }
-
 
 void MainWindow::setWidget()
 {
@@ -63,9 +94,6 @@ void MainWindow::setConsole()
 {
     displayText("Приложение работает");
     displayText("Установите соединение для работы с агентом");
-
-    // connect(&uv_interface, SIGNAL(displayText_toConsole(QString)),
-    //         this, SLOT(displayText(QString)));
 }
 
 void MainWindow::displayText(QString str)
@@ -85,18 +113,28 @@ void MainWindow::setTimer_updateImpact(int periodUpdateMsec)
             this, &MainWindow::useJoyStick);
     connect(ui->radioButton_useKeyBoard, &QRadioButton::clicked,
             this, &MainWindow::useKeyBoard);
+    connect(ui->gamepad_btn, &QRadioButton::clicked,
+            this, &MainWindow::useGamepad);
 
     updateTimer = new QTimer(this);
     connect(
         updateTimer, SIGNAL(timeout()),
-        this, SLOT(updateUi_fromControl())
-        );
+        this, SLOT(updateUi_fromControl()));
     updateTimer->start(periodUpdateMsec);
     displayText("Таймер обновления джойстика запущен");
 }
 
 void MainWindow::useKeyBoard()
 {
+    gamepadInput.reset();
+    if (gamepad) { delete gamepad; gamepad = nullptr; }
+
+    if (!keyBoard) {
+        keyBoard = std::make_unique<KeyBoard>();
+    }
+
+    ui->radioButton_useKeyBoard->setChecked(true);
+    status_keyboard = true;
     activeInput = keyBoard.get();
     displayText("Используемые клавиши(должна быть английская раскладка):\n"
                 "Клавиша O - вперед по маршу\n"
@@ -111,13 +149,59 @@ void MainWindow::useKeyBoard()
                 "Клавиша E - вправо по крену\n"
                 "Клавиша K - влево по лагу\n"
                 "Клавиша ; - вправо по лагу\n");
-
 }
 
 void MainWindow::useJoyStick()
 {
+    gamepadInput.reset();
+    if (gamepad) { delete gamepad; gamepad = nullptr; }
+
+    if (!joyStick) {
+        joyStick = std::make_unique<JoyStick>();
+    }
+
     activeInput = joyStick.get();
 }
+
+void MainWindow::useGamepad()
+{
+    // Отсоединяемся от других источников ввода
+    joyStick.reset();
+    keyBoard.reset();
+    gamepadInput.reset();
+    if (gamepad) { delete gamepad; gamepad = nullptr; }
+
+    gamepad = new Gamepad(0, this);
+    if (!gamepad->isConnected()) {
+        displayText("Геймпад не обнаружен! Проверьте подключение.");
+        delete gamepad;
+        gamepad = nullptr;
+        return;
+    }
+
+
+    connect(gamepad, &Gamepad::backButtonPressed,
+            this, &MainWindow::useKeyBoard);
+
+    displayText("Геймпад подключен. Режим управления с геймпада активирован.");
+    gamepadInput = std::make_unique<GamepadInputSource>(gamepad, this);
+    activeInput = gamepadInput.get();
+
+// --- Переключение режимов скорости (влево/вправо): крестовина ---
+connect(gamepad, &Gamepad::dPadRightPressed, this, [this]() {
+    // Переход к предыдущему режиму
+    int current = static_cast<int>(currentMode);
+    int previous = (current - 1 + 3) % 3;  
+    setSpeedMode(static_cast<SpeedMode>(previous));
+    
+});
+connect(gamepad, &Gamepad::dPadLeftPressed, this, [this]() {
+    int current = static_cast<int>(currentMode);
+    int next = (current + 1) % 3;
+    setSpeedMode(static_cast<SpeedMode>(next));
+    
+});
+
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
@@ -181,6 +265,22 @@ void MainWindow::setBottom()
 {
     setBottom_mode();
 
+    // Подключение кнопок скорости к единому слоту
+    // Предполагается, что в UI кнопки переименованы в pushButton_speedFast и т.д.
+    if (ui->pushButton_speedFast) {
+        connect(ui->pushButton_speedFast, &QPushButton::clicked,
+                this, [this]() { setSpeedMode(SpeedMode::Fast); });
+    }
+
+    if (ui->pushButton_speedMedium) {
+        connect(ui->pushButton_speedMedium, &QPushButton::clicked,
+                this, [this]() { setSpeedMode(SpeedMode::Medium); });
+    }
+
+    if (ui->pushButton_speedSlow) {
+        connect(ui->pushButton_speedSlow, &QPushButton::clicked,
+                this, [this]() { setSpeedMode(SpeedMode::Slow); });
+    }
     connect(ui->pushButton_zeroYaw, &QPushButton::clicked,
             rosBridge, &RosBridge::zeroYawInternal,
             Qt::QueuedConnection);
@@ -261,7 +361,6 @@ void MainWindow::setTab()
     ui->tabWidget->setTabText(2,  "Контроль сообщений");
     ui->tabWidget->setTabText(3,  "Режимы питания");
     ui->tabWidget->setCurrentIndex(4);
-
 }
 
 void MainWindow::setUpdateUI()
@@ -274,7 +373,98 @@ void MainWindow::setUpdateUI()
     //         modeAutomatic, SLOT(updateUi_DataMission()));
 }
 
-void MainWindow::updateUi_Compass(float yaw) {
+void MainWindow::loadSettings()
+{
+    QSettings settings("/UMAS_GUI/umas_settings.ini", QSettings::IniFormat);
+
+    for (int mode = 0; mode < 3; ++mode) {
+        settings.beginGroup(QString("SpeedMode_%1").arg(mode));
+
+        QMap<QString, double> gains;
+        for (int i = 0; i < gainNames.size(); ++i) {
+            double defaultValue = 0;
+            if (mode == static_cast<int>(SpeedMode::Slow)) defaultValue = 10;
+            else if (mode == static_cast<int>(SpeedMode::Medium)) defaultValue = 50;
+            else if (mode == static_cast<int>(SpeedMode::Fast)) defaultValue = 100;
+
+            gains[gainNames[i]] = settings.value(gainNames[i], defaultValue).toDouble();
+        }
+
+        speedModeGains[mode] = gains;
+        settings.endGroup();
+    }
+
+    int savedMode = settings.value("CurrentSpeedMode", static_cast<int>(SpeedMode::Medium)).toInt();
+    currentMode = static_cast<SpeedMode>(savedMode);
+}
+
+void MainWindow::saveSettings()
+{
+    QSettings settings("/UMAS_GUI/umas_settings.ini", QSettings::IniFormat);
+
+    for (int mode = 0; mode < 3; ++mode) {
+        settings.beginGroup(QString("SpeedMode_%1").arg(mode));
+
+        for (int i = 0; i < gainNames.size(); ++i) {
+            settings.setValue(gainNames[i], speedModeGains[mode][gainNames[i]]);
+        }
+
+        settings.endGroup();
+    }
+
+    settings.setValue("CurrentSpeedMode", static_cast<int>(currentMode));
+}
+
+void MainWindow::saveCurrentModeGains()
+{
+    for (int i = 0; i < gainSpinBoxes.size(); ++i) {
+        speedModeGains[static_cast<int>(currentMode)][gainNames[i]] = gainSpinBoxes[i]->value();
+    }
+    saveSettings();
+}
+
+void MainWindow::setSpinBoxValuesForCurrentMode()
+{
+    for (auto spinBox : gainSpinBoxes) {
+        spinBox->blockSignals(true);
+    }
+
+    for (int i = 0; i < gainSpinBoxes.size(); ++i) {
+        gainSpinBoxes[i]->setValue(speedModeGains[static_cast<int>(currentMode)][gainNames[i]]);
+    }
+
+    for (auto spinBox : gainSpinBoxes) {
+        spinBox->blockSignals(false);
+    }
+}
+
+// Единый слот для переключения режима скорости
+void MainWindow::setSpeedMode(SpeedMode mode)
+{
+    saveCurrentModeGains();
+    currentMode = mode;
+    setSpinBoxValuesForCurrentMode();
+
+    // Обновляем стили кнопок (используем новые имена)
+    ui->pushButton_speedFast->setStyleSheet(
+        mode == SpeedMode::Fast ? "background-color: purple; font-size: 25px" :
+                                   "background-color: white; font-size: 25px");
+    ui->pushButton_speedMedium->setStyleSheet(
+        mode == SpeedMode::Medium ? "background-color: purple; font-size: 25px" :
+                                     "background-color: white; font-size: 25px");
+    ui->pushButton_speedSlow->setStyleSheet(
+        mode == SpeedMode::Slow ? "background-color: purple; font-size: 25px" :
+                                   "background-color: white; font-size: 25px");
+
+    saveSettings();
+}
+
+
+
+
+}
+void MainWindow::updateUi_Compass(float yaw)
+{
     ui->compass->setYaw(yaw);
 }
 
