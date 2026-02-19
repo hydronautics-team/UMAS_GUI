@@ -6,7 +6,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    // Инициализация ROS Thread
+
     rosBridge = new RosBridge(this);
     rosBridge->start();
 
@@ -19,8 +19,6 @@ MainWindow::MainWindow(QWidget *parent)
     setTab();
     setUpdateUI();
 
-
-
     // Инициализация спинбоксов
     gainSpinBoxes = {
         ui->spinBox_gain_surge,
@@ -31,21 +29,32 @@ MainWindow::MainWindow(QWidget *parent)
         ui->spinBox_gain_roll
     };
 
-    // Загрузка сохраненных значений для ВСЕХ режимов
     loadSettings();
-
-    // Устанавливаем начальные значения для текущего режима
     setSpinBoxValuesForCurrentMode();
 
-    // Подключаем сигналы
+    // Подключаем сигналы спинбоксов напрямую к saveCurrentModeGains через лямбду
     for (auto spinBox : gainSpinBoxes) {
         connect(spinBox, QOverload<int>::of(&QSpinBox::valueChanged),
-                this, &MainWindow::onGainValueChanged);
+                this, [this]() { saveCurrentModeGains(); });
     }
-    // К каждому спинбоксу привязывается сигнал onGainValueChanged()
 
+    // Инициализируем текущий режим (по умолчанию Medium)
+    setSpeedMode(SpeedMode::Medium);
+
+    connect(ui->gamepad_btn, &QRadioButton::clicked,
+        this, &MainWindow::useGamepad);
+
+
+    QButtonGroup *inputGroup = new QButtonGroup(this);
+inputGroup->addButton(ui->radioButton_useJoyStick);
+inputGroup->addButton(ui->radioButton_useKeyBoard);
+inputGroup->addButton(ui->gamepad_btn);
+inputGroup->setExclusive(true);
+
+// Устанавливаем геймпад по умолчанию
+ui->gamepad_btn->setChecked(true);
+useGamepad(); // активируем режим геймпада
 }
-
 
 void MainWindow::setWidget()
 {
@@ -53,92 +62,17 @@ void MainWindow::setWidget()
     ui->horizontalLayout_for_powerSystem->addWidget(powerSystem);
     checkMsg = new CheckMsg(this);
     ui->horizontalLayout_for_checkMsg->addWidget(checkMsg);
-    // checkImu = new CheckImu(this);
-    // ui->horizontalLayout_for_checkImu->addWidget(checkImu);
     modeAutomatic = new ModeAutomatic(this);
     ui->verticalLayout_modeAutomatic->addWidget(modeAutomatic);
     diagnostic_board = new Diagnostic_board(this);
     ui->horizontalLayout_diagnosticBoard->addWidget(diagnostic_board);
 
-    // setMission_map
-    // connect(
-    //     modeAutomatic->ui->pushButton_missionPlanning_goto_on_trajectory, &QPushButton::clicked,
-    //     ui->map, &Map::updateUi_missionPlanning_goto_traj_onoff);
-    // connect(
-    //     modeAutomatic->ui->pushButton_missionPlanning_goto_on_trajectory_clear, &QPushButton::clicked,
-    //     ui->map, &Map::updateUi_missionPlanning_goto_traj_clear);
-    // // setMission_goTo
-    // connect(
-    //     modeAutomatic, &ModeAutomatic::signal_pushButton_missionPlanning_goto_updateMap,
-    //     ui->map, &Map::updateUi_missionPlanning_goto_goal);
-    // // setMission_go_trajectory
-    // connect(
-    //     modeAutomatic, &ModeAutomatic::signal_pushButton_missionPlanning_go_trajectory_updateMap,
-    //     ui->map, &Map::updateUi_missionPlanning_goto_goal);
-    // // setMission_cpp
-    // connect(
-    //     ui->map, &Map::pointAdded,
-    //     modeAutomatic, &ModeAutomatic::addPointToTable);
-    // connect(
-    //     modeAutomatic, &ModeAutomatic::requestUpdateChart,
-    //     ui->map, &Map::updateChart);
-    // connect(
-    //     modeAutomatic, &ModeAutomatic::requestClearLines,
-    //     ui->map, &Map::clearLines);
-    // connect(
-    //     modeAutomatic, &ModeAutomatic::plotLineSeries,
-    //     ui->map, &Map::onPlotLineSeries);
-    //     // Подключение кнопки для переключения состояния
-    // connect(
-    //     modeAutomatic->ui->pushButton_missionPlanning_cpp_on_off, &QPushButton::toggled,
-    //     ui->map, &Map::setMissionPlanning_cpp_Enabled);
     connect(
-        modeAutomatic,&ModeAutomatic::displayText_toConsole,
+        modeAutomatic, &ModeAutomatic::displayText_toConsole,
         this, &MainWindow::displayText);
     connect(
         modeAutomatic, &ModeAutomatic::set_stackedWidget_mode,
         ui->stackedWidget_mode, &QStackedWidget::setCurrentIndex);
-
-    // mapWidget = new MapWidget(this);
-    // ui->horizontalLayout_mapWidget->addWidget(mapWidget);
-
-    // connect(
-    //     modeAutomatic->ui->pushButton_missionPlanning_cpp_on_off, &QPushButton::toggled,
-    //     mapWidget, &MapWidget::toggleAddPointMode_for_cpp);
-    // connect(
-    //     modeAutomatic, &ModeAutomatic::requestClearLines,
-    //     mapWidget, &MapWidget::clearMapItems);
-    // connect(
-    //     mapWidget, &MapWidget::signal_addPointToTable,
-    //     modeAutomatic, &ModeAutomatic::addPointToTable);
-    // connect(
-    //     modeAutomatic, &ModeAutomatic::requestAddLine,
-    //     mapWidget, &MapWidget::addLine);
-    // connect(
-    //     this, &MainWindow::signal_sendCurrentPos,
-    //     mapWidget, &MapWidget::setCurrentPos);
-    // connect(
-    //     ui->pushButton_sendReper_map_onoff, &QPushButton::toggled,
-    //     mapWidget, &MapWidget::toggleAddPointMode_for_marker);
-
-    // connect(
-    //     mapWidget, &MapWidget::signal_addPoint_to_gui,
-    //     modeAutomatic, &ModeAutomatic::slot_addPoint_to_gui);
-
-    // connect(
-    //     modeAutomatic->ui->pushButton_missionPlanning_goto_point_onoff, &QPushButton::toggled,
-    //     mapWidget, &MapWidget::toggleAddPointMode_for_goto_point);
-
-    // connect(
-    //     modeAutomatic->ui->pushButton_missionPlanning_go_circle_onoff, &QPushButton::toggled,
-    //     mapWidget, &MapWidget::toggleAddPointMode_for_go_circle_point);
-
-    // connect(
-    //     modeAutomatic->ui->lineEdit_missionPlanning_go_circle_radius, &QLineEdit::textChanged,
-    //     mapWidget, &MapWidget::setRadius_circle);
-    // mapWidget->setRadius_circle(modeAutomatic->ui->lineEdit_missionPlanning_go_circle_radius->text());
-
-
 }
 
 void MainWindow::setGUI_reper()
@@ -146,34 +80,17 @@ void MainWindow::setGUI_reper()
     connect(
         ui->pushButton_sendReper, &QPushButton::clicked,
         this, &MainWindow::slot_pushButton_sendReper);
-    // connect(
-    //     this, &MainWindow::signal_setMarker,
-    //     mapWidget, &MapWidget::setMarker);
-    // connect(
-    //     mapWidget, &MapWidget::signal_addMarker_to_gui,
-    //     this, &MainWindow::slot_addMarker_to_gui);
-
 }
 
 void MainWindow::slot_pushButton_sendReper()
 {
-
     qDebug() << "hello";
-    // Получение текста из QLineEdit
-    QString latitudeStr = ui->lineEdit_reper_latitude->text();  // Широта
-    QString longitudeStr = ui->lineEdit_reper_longitude->text();  // Долгота
+    QString latitudeStr = ui->lineEdit_reper_latitude->text();
+    QString longitudeStr = ui->lineEdit_reper_longitude->text();
 
-    // Преобразование текста в double
     double latitude = latitudeStr.toDouble();
     double longitude = longitudeStr.toDouble();
 
-    // Создание объекта координат
-    // QGeoCoordinate reperCoordinate(latitude, longitude);
-
-    // Отправка сигнала с координатами
-    // emit signal_setMarker(reperCoordinate);
-
-    // Отправка репера на борт
     CoordinatePoint msg;
     msg.x_point = latitude;
     msg.y_point = longitude;
@@ -182,15 +99,14 @@ void MainWindow::slot_pushButton_sendReper()
 
 void MainWindow::slot_addMarker_to_gui(double latitude, double longitude)
 {
-    ui->lineEdit_reper_latitude->setText(QString::number(latitude, 'd', 14));  // Широта
-    ui->lineEdit_reper_longitude->setText(QString::number(longitude, 'd', 14)); // Долгота
+    ui->lineEdit_reper_latitude->setText(QString::number(latitude, 'd', 14));
+    ui->lineEdit_reper_longitude->setText(QString::number(longitude, 'd', 14));
 
     CoordinatePoint msg;
     msg.x_point = latitude;
     msg.y_point = longitude;
     uv_interface.setReper(msg);
 }
-
 
 void MainWindow::setInterface()
 {
@@ -205,7 +121,6 @@ void MainWindow::setInterface()
         modeAutomatic, &ModeAutomatic::slot_getInterface);
 
     signal_setInterface(&uv_interface);
-
 }
 
 void MainWindow::setConsole()
@@ -224,8 +139,6 @@ void MainWindow::displayText(QString str)
     ui->textEdit_console->append(currentTime + " " + str);
 }
 
-//
-
 void MainWindow::setTimer_updateImpact(int periodUpdateMsec)
 {
     joyStick = new JoyStick(this);
@@ -236,17 +149,30 @@ void MainWindow::setTimer_updateImpact(int periodUpdateMsec)
     QTimer *updateTimer = new QTimer(this);
     connect(
         updateTimer, SIGNAL(timeout()),
-        this, SLOT(updateUi_fromControl())
-        );
+        this, SLOT(updateUi_fromControl()));
     updateTimer->start(periodUpdateMsec);
     displayText("Таймер обновления джойстика запущен");
 }
 
 void MainWindow::useKeyBoard()
 {
-    delete joyStick;
 
-    keyBoard = new KeyBoard(this);
+    if (gamepad) {
+        delete gamepad;
+        gamepad = nullptr;
+    }
+    // Если использовался джойстик – тоже удаляем (на всякий случай)
+    if (joyStick) {
+        delete joyStick;
+        joyStick = nullptr;
+    }
+    // Если клавиатура ещё не создана – создаём
+    if (!keyBoard) {
+        keyBoard = new KeyBoard(this);
+    }
+       ui->radioButton_useKeyBoard->setChecked(true);
+    m_gamepadActive = false;
+    status_keyboard = true;
     displayText("Используемые клавиши(должна быть английская раскладка):\n"
                 "Клавиша O - вперед по маршу\n"
                 "Клавиша L - назад по маршу\n"
@@ -260,50 +186,78 @@ void MainWindow::useKeyBoard()
                 "Клавиша E - вправо по крену\n"
                 "Клавиша K - влево по лагу\n"
                 "Клавиша ; - вправо по лагу\n");
-
 }
 
 void MainWindow::useJoyStick()
 {
     delete keyBoard;
-
     joyStick = new JoyStick(this);
+    m_gamepadActive = false;
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
-    keyBoard->keyPressEvent(event);
+    if (keyBoard)
+        keyBoard->keyPressEvent(event);
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent *event)
 {
-    keyBoard->keyReleaseEvent(event);
+    if (keyBoard)
+        keyBoard->keyReleaseEvent(event);
 }
 
-void MainWindow::updateUi_fromControl(){
-
+void MainWindow::updateUi_fromControl()
+{
     ControlData control = uv_interface.getControlData();
     DataAH127C imuData = uv_interface.getImuData();
 
-    ui->compass->setYawDesirable(control.yaw, imuData.yaw, uv_interface.getCSMode());
+    if (m_gamepadActive) {
+        control.march = m_gamepad_right_marsh;
+        control.depth = m_gamepadDepth;
+        control.yaw   = m_gamepad_right_course;  
+        control.pitch = m_gamepadV;
+        control.roll  = m_gamepadCren;
+    }
+    double desiredYawForCompass = control.yaw;
+    if (m_gamepadActive) {
 
+        desiredYawForCompass = control.yaw * 10;
+    }
+
+
+
+ui->label_controlMarch->setFixedWidth(38); 
+ui->label_controlYaw->setFixedWidth(38); 
+ui->label_controlDepth->setFixedWidth(38); 
+ui->label_controlKren->setFixedWidth(30); 
+ui->label_controlDif->setFixedWidth(30); 
+
+
+
+    ui->compass->setYawDesirable(desiredYawForCompass, imuData.yaw, uv_interface.getCSMode());
+    
     ui->label_controlYaw->setNum(control.yaw * ui->spinBox_gain_yaw->value());
     ui->label_controlMarch->setNum(control.march * ui->spinBox_gain_surge->value());
     ui->label_controlDif->setNum(control.pitch * ui->spinBox_gain_pitch->value());
     ui->label_controlLag->setNum(control.lag * ui->spinBox_gain_sway->value());
     ui->label_controlDepth->setNum(control.depth * ui->spinBox_gain_depth->value());
     ui->label_controlKren->setNum(control.roll * ui->spinBox_gain_roll->value());
-    rosBridge->publishCommand(control.march * ui->spinBox_gain_surge->value(), control.lag * ui->spinBox_gain_sway->value(), control.depth * ui->spinBox_gain_depth->value(), control.roll * ui->spinBox_gain_roll->value(), control.pitch * ui->spinBox_gain_pitch->value(), control.yaw * ui->spinBox_gain_yaw->value());
+
+
+    rosBridge->publishCommand(control.march * ui->spinBox_gain_surge->value(),
+                              control.lag * ui->spinBox_gain_sway->value(),
+                              control.depth * ui->spinBox_gain_depth->value(),
+                              control.roll * ui->spinBox_gain_roll->value(),
+                              control.pitch * ui->spinBox_gain_pitch->value(),
+                              control.yaw * ui->spinBox_gain_yaw->value());
 }
 
 void MainWindow::updateUi_Map()
 {
     GPS_coordinate gps_coordinate = uv_interface.getCoordinateGPS();
-    emit signal_sendCurrentPos(gps_coordinate.latitude, gps_coordinate.longitude);  // Отправка сигнала с текущими координатами
-
+    emit signal_sendCurrentPos(gps_coordinate.latitude, gps_coordinate.longitude);
 }
-
-//
 
 void MainWindow::setBottom()
 {
@@ -312,31 +266,25 @@ void MainWindow::setBottom()
     setBottom_modeSelection();
     setBottom_selectAgent();
 
-    connect(ui->pushButton_zeroYaw,
-            &QPushButton::clicked,
-            rosBridge,
-            &RosBridge::zeroYaw);
+    connect(ui->pushButton_zeroYaw, &QPushButton::clicked,
+            rosBridge, &RosBridge::zeroYaw);
 
-    // Инициализация трех кнопок для режимов
-    if (ui->pushButton_speedFast_2) {
-        connect(ui->pushButton_speedFast_2, &QPushButton::clicked,
-                this, &MainWindow::setSpeedModeFast);
+    // Подключение кнопок скорости к единому слоту
+    // Предполагается, что в UI кнопки переименованы в pushButton_speedFast и т.д.
+    if (ui->pushButton_speedFast) {
+        connect(ui->pushButton_speedFast, &QPushButton::clicked,
+                this, [this]() { setSpeedMode(SpeedMode::Fast); });
     }
 
-    if (ui->pushButton_speedMedium_2) {
-        connect(ui->pushButton_speedMedium_2, &QPushButton::clicked,
-                this, &MainWindow::setSpeedModeMedium);
+    if (ui->pushButton_speedMedium) {
+        connect(ui->pushButton_speedMedium, &QPushButton::clicked,
+                this, [this]() { setSpeedMode(SpeedMode::Medium); });
     }
 
-    if (ui->pushButton_speedSlow_2) {
-        connect(ui->pushButton_speedSlow_2, &QPushButton::clicked,
-                this, &MainWindow::setSpeedModeSlow);
+    if (ui->pushButton_speedSlow) {
+        connect(ui->pushButton_speedSlow, &QPushButton::clicked,
+                this, [this]() { setSpeedMode(SpeedMode::Slow); });
     }
-
-
-    ui->pushButton_speedMedium_2->setStyleSheet("background-color: purple; font-size: 25px");
-
-
 }
 
 void MainWindow::setBottom_mode()
@@ -367,45 +315,36 @@ void MainWindow::setBottom_mode()
     modeAutomated->addButton(ui->pushButton_modeAutomated_roll);
     modeAutomated->setExclusive(false);
 
-    connect(ui->pushButton_modeAutomated_surge,  &QPushButton::toggled,
+    connect(ui->pushButton_modeAutomated_surge, &QPushButton::toggled,
             rosBridge, &RosBridge::setModeSurge);
-
-    connect(ui->pushButton_modeAutomated_sway,   &QPushButton::toggled,
+    connect(ui->pushButton_modeAutomated_sway, &QPushButton::toggled,
             rosBridge, &RosBridge::setModeSway);
-
-    connect(ui->pushButton_modeAutomated_depth,  &QPushButton::toggled,
+    connect(ui->pushButton_modeAutomated_depth, &QPushButton::toggled,
             rosBridge, &RosBridge::setModeHeave);
-
-    connect(ui->pushButton_modeAutomated_yaw,    &QPushButton::toggled,
+    connect(ui->pushButton_modeAutomated_yaw, &QPushButton::toggled,
             rosBridge, &RosBridge::setModeYaw);
-
-    connect(ui->pushButton_modeAutomated_pitch,  &QPushButton::toggled,
+    connect(ui->pushButton_modeAutomated_pitch, &QPushButton::toggled,
             rosBridge, &RosBridge::setModePitch);
-
-    connect(ui->pushButton_modeAutomated_roll,   &QPushButton::toggled,
+    connect(ui->pushButton_modeAutomated_roll, &QPushButton::toggled,
             rosBridge, &RosBridge::setModeRoll);
-
 
     e_CSModeManualToggled();
 
-    connect(
-        ui->pushButton_modeManual, SIGNAL(clicked()),
-        this, SLOT(e_CSModeManualToggled()));
-
-    connect(
-        ui->pushButton_modeAutomated, SIGNAL(clicked()),
-        this, SLOT(e_CSModeAutomatedToggled()));
-
-    connect(
-        ui->pushButton_modeAutomatic, SIGNAL(clicked()),
-        this, SLOT(e_CSModeAutomaticToggled()));
+    connect(ui->pushButton_modeManual, SIGNAL(clicked()),
+            this, SLOT(e_CSModeManualToggled()));
+    connect(ui->pushButton_modeAutomated, SIGNAL(clicked()),
+            this, SLOT(e_CSModeAutomatedToggled()));
+    connect(ui->pushButton_modeAutomatic, SIGNAL(clicked()),
+            this, SLOT(e_CSModeAutomaticToggled()));
 }
 
-void MainWindow::e_CSModeManualToggled() {
+void MainWindow::e_CSModeManualToggled()
+{
     uv_interface.setCSMode(e_CSMode::MODE_MANUAL);
 }
 
-void MainWindow::e_CSModeAutomatedToggled() {
+void MainWindow::e_CSModeAutomatedToggled()
+{
     uv_interface.setCSMode(e_CSMode::MODE_AUTOMATED);
 }
 
@@ -415,17 +354,14 @@ void MainWindow::e_CSModeAutomaticToggled()
     ui->stackedWidget_mode->setCurrentIndex(1);
 }
 
-
 void MainWindow::setBottom_connection()
 {
     ui->pushButton_breakConnection->setEnabled(false);
 
-    connect(
-        ui->pushButton_connection, SIGNAL(clicked()),
-        this, SLOT(setConnection()));
-    connect(
-        ui->pushButton_breakConnection, SIGNAL(clicked()),
-        this, SLOT(breakConnection()));
+    connect(ui->pushButton_connection, SIGNAL(clicked()),
+            this, SLOT(setConnection()));
+    connect(ui->pushButton_breakConnection, SIGNAL(clicked()),
+            this, SLOT(breakConnection()));
 }
 
 void MainWindow::setConnection()
@@ -452,7 +388,8 @@ void MainWindow::setConnection()
     }
 }
 
-void MainWindow::updateUi_fromAgent1() {
+void MainWindow::updateUi_fromAgent1()
+{
     DataAH127C imuData = uv_interface.getImuData();
 
     emit updateCompass(imuData.yaw);
@@ -462,44 +399,30 @@ void MainWindow::updateUi_fromAgent1() {
     emit updateMap();
 }
 
-
 void MainWindow::breakConnection()
 {
     ui->pushButton_connection->setEnabled(true);
-
     displayText("Соединение разорвано");
     communicationAgent1->stopExhange();
-
     delete communicationAgent1;
-
     ui->pushButton_breakConnection->setEnabled(false);
 }
-
-//
 
 void MainWindow::setBottom_modeSelection()
 {
     setModeSelection(0);
-    connect(
-        ui->comboBox_modeSelection, SIGNAL(activated(int)),
-        this, SLOT(setModeSelection(int)));
+    connect(ui->comboBox_modeSelection, SIGNAL(activated(int)),
+            this, SLOT(setModeSelection(int)));
 }
 
 void MainWindow::setModeSelection(int index)
 {
-
-    if (index == 1){
-        uv_interface.setModeSelection(0); //агент
-    }
-    else{
-        uv_interface.setModeSelection(1); //модель
+    if (index == 1) {
+        uv_interface.setModeSelection(0); // агент
+    } else {
+        uv_interface.setModeSelection(1); // модель
     }
 }
-
-
-//
-
-
 
 void MainWindow::setBottom_selectAgent()
 {
@@ -518,13 +441,12 @@ void MainWindow::setBottom_selectAgent()
 
 void MainWindow::pushButton_selectAgent1(bool stateBottom)
 {
-    if (stateBottom){
+    if (stateBottom) {
         uv_interface.setCurrentAgent(0);
         displayText("Установлен ввод и вывод данных с агента 1");
     }
     updateStatePushButton();
 }
-
 
 void MainWindow::updateUi_statePushButton()
 {
@@ -534,8 +456,6 @@ void MainWindow::updateUi_statePushButton()
     else
         ui->comboBox_modeSelection->setCurrentIndex(1);
 
-
-    //
     switch (uv_interface.getCSMode()) {
     case e_CSMode::MODE_MANUAL:
         ui->pushButton_modeManual->setChecked(true);
@@ -553,19 +473,16 @@ void MainWindow::setTab()
 {
     ui->tabWidget->setTabText(0, "Карта");
     ui->tabWidget->setTabText(1, "БСО");
-    ui->tabWidget->setTabText(2,  "Контроль сообщений");
-    ui->tabWidget->setTabText(3,  "Режимы питания");
-    ui->tabWidget->setTabText(4,  "Карта ГИC");
+    ui->tabWidget->setTabText(2, "Контроль сообщений");
+    ui->tabWidget->setTabText(3, "Режимы питания");
+    ui->tabWidget->setTabText(4, "Карта ГИC");
     ui->tabWidget->setCurrentIndex(4);
-
 }
 
 void MainWindow::setUpdateUI()
 {
     connect(this, SIGNAL(updateCompass(float)),
             this, SLOT(updateUi_Compass(float)));
-    // connect(this, SIGNAL(updateIMU(DataAH127C)),
-    //         checkImu, SLOT(updateUi_imu(DataAH127C)));
     connect(this, SIGNAL(updateSetupMsg()),
             checkMsg, SLOT(updateUi_checkMsg()));
     connect(this, SIGNAL(updateDataMission()),
@@ -574,115 +491,180 @@ void MainWindow::setUpdateUI()
             this, &MainWindow::updateUi_Map);
 }
 
-
-void MainWindow::loadSettings() {
+void MainWindow::loadSettings()
+{
     QSettings settings("/UMAS_GUI/umas_settings.ini", QSettings::IniFormat);
 
-    // Загружаем значения для каждого режима
-    for (int mode = 0; mode < 3; mode++) {
+    for (int mode = 0; mode < 3; ++mode) {
         settings.beginGroup(QString("SpeedMode_%1").arg(mode));
 
         QMap<QString, double> gains;
-        for (int i = 0; i < gainNames.size(); i++) {
-            // Значения по умолчанию для каждого режима
+        for (int i = 0; i < gainNames.size(); ++i) {
             double defaultValue = 0;
-            if (mode == SLOW) defaultValue = 10;
-            else if (mode == MEDIUM) defaultValue = 50;
-            else if (mode == FAST) defaultValue = 100;
+            if (mode == static_cast<int>(SpeedMode::Slow)) defaultValue = 10;
+            else if (mode == static_cast<int>(SpeedMode::Medium)) defaultValue = 50;
+            else if (mode == static_cast<int>(SpeedMode::Fast)) defaultValue = 100;
 
-            gains[gainNames[i]] = settings.value(gainNames[i],defaultValue).toDouble();
+            gains[gainNames[i]] = settings.value(gainNames[i], defaultValue).toDouble();
         }
 
         speedModeGains[mode] = gains;
         settings.endGroup();
     }
 
-
-    currentMode = static_cast<SpeedMode>(
-        settings.value("CurrentSpeedMode", MEDIUM).toInt()
-        );
+    int savedMode = settings.value("CurrentSpeedMode", static_cast<int>(SpeedMode::Medium)).toInt();
+    currentMode = static_cast<SpeedMode>(savedMode);
 }
 
-void MainWindow::saveSettings() {
-     QSettings settings("/UMAS_GUI/umas_settings.ini", QSettings::IniFormat);
+void MainWindow::saveSettings()
+{
+    QSettings settings("/UMAS_GUI/umas_settings.ini", QSettings::IniFormat);
 
-    // Сохраняем значения для всех режимов
-    for (int mode = 0; mode < 3; mode++) {
+    for (int mode = 0; mode < 3; ++mode) {
         settings.beginGroup(QString("SpeedMode_%1").arg(mode));
 
-        for (int i = 0; i < gainNames.size(); i++) {
-            settings.setValue(gainNames[i],speedModeGains[mode][gainNames[i]]);
+        for (int i = 0; i < gainNames.size(); ++i) {
+            settings.setValue(gainNames[i], speedModeGains[mode][gainNames[i]]);
         }
 
         settings.endGroup();
     }
 
-    // Сохраняем текущий режим
-    settings.setValue("CurrentSpeedMode", currentMode);
+    settings.setValue("CurrentSpeedMode", static_cast<int>(currentMode));
 }
 
-void MainWindow::saveCurrentModeGains() {
-    // Сохраняем текущие значения спинбоксов в текущий режим
-    for (int i = 0; i < gainSpinBoxes.size(); i++) {
-        speedModeGains[currentMode][gainNames[i]] = gainSpinBoxes[i]->value();
+void MainWindow::saveCurrentModeGains()
+{
+    for (int i = 0; i < gainSpinBoxes.size(); ++i) {
+        speedModeGains[static_cast<int>(currentMode)][gainNames[i]] = gainSpinBoxes[i]->value();
     }
-
-    // Сохраняем в настройки
     saveSettings();
 }
 
-void MainWindow::setSpinBoxValuesForCurrentMode() {
-    // блокировка сигналов
+void MainWindow::setSpinBoxValuesForCurrentMode()
+{
     for (auto spinBox : gainSpinBoxes) {
         spinBox->blockSignals(true);
     }
 
-    // Устанавливаем значения из текущего режима
-    for (int i = 0; i < gainSpinBoxes.size(); i++) {
-        gainSpinBoxes[i]->setValue(speedModeGains[currentMode][gainNames[i]]);
+    for (int i = 0; i < gainSpinBoxes.size(); ++i) {
+        gainSpinBoxes[i]->setValue(speedModeGains[static_cast<int>(currentMode)][gainNames[i]]);
     }
 
-    // Разблокируем сигналы
     for (auto spinBox : gainSpinBoxes) {
         spinBox->blockSignals(false);
     }
 }
 
-void MainWindow::onGainValueChanged() {
-    // Сохраняем изменения в текущем режиме
+// Единый слот для переключения режима скорости
+void MainWindow::setSpeedMode(SpeedMode mode)
+{
     saveCurrentModeGains();
-}
-
-void MainWindow::setSpeedModeFast() {
-    saveCurrentModeGains(); // Сохраняем текущие значения
-    currentMode = FAST;
+    currentMode = mode;
     setSpinBoxValuesForCurrentMode();
-    ui->pushButton_speedFast_2->setStyleSheet("background-color: purple;font-size: 25px");
-    ui->pushButton_speedMedium_2->setStyleSheet("background-color: white;font-size: 25px");
-    ui->pushButton_speedSlow_2->setStyleSheet("background-color: white;font-size: 25px");
-}
 
-void MainWindow::setSpeedModeMedium() {
-    saveCurrentModeGains();
-    currentMode = MEDIUM;
-    setSpinBoxValuesForCurrentMode();
-    ui->pushButton_speedFast_2->setStyleSheet("background-color: white; font-size: 25px");
-    ui->pushButton_speedMedium_2->setStyleSheet("background-color: purple; font-size: 25px");
-    ui->pushButton_speedSlow_2->setStyleSheet("background-color: white; font-size: 25px");
-}
+    // Обновляем стили кнопок (используем новые имена)
+    ui->pushButton_speedFast->setStyleSheet(
+        mode == SpeedMode::Fast ? "background-color: purple; font-size: 25px" :
+                                   "background-color: white; font-size: 25px");
+    ui->pushButton_speedMedium->setStyleSheet(
+        mode == SpeedMode::Medium ? "background-color: purple; font-size: 25px" :
+                                     "background-color: white; font-size: 25px");
+    ui->pushButton_speedSlow->setStyleSheet(
+        mode == SpeedMode::Slow ? "background-color: purple; font-size: 25px" :
+                                   "background-color: white; font-size: 25px");
 
-void MainWindow::setSpeedModeSlow() {
-    saveCurrentModeGains();
-    currentMode = SLOW;
-    setSpinBoxValuesForCurrentMode();
-    ui->pushButton_speedFast_2->setStyleSheet("background-color: white; font-size: 25px");
-    ui->pushButton_speedMedium_2->setStyleSheet("background-color: white; font-size: 25px");
-    ui->pushButton_speedSlow_2->setStyleSheet("background-color: purple; font-size: 25px");
+    saveSettings();
 }
 
 
+void MainWindow::useGamepad()
+{
+    if (joyStick) { delete joyStick; joyStick = nullptr; }
+    if (keyBoard) { delete keyBoard; keyBoard = nullptr; }
+    if (gamepad) { delete gamepad; gamepad = nullptr; }
 
-void MainWindow::updateUi_Compass(float yaw) {
+    gamepad = new Gamepad(0, this);
+    if (!gamepad->isConnected()) {
+        displayText("Геймпад не обнаружен! Проверьте подключение.");
+        delete gamepad;
+        gamepad = nullptr;
+        return;
+    }
+
+
+    connect(gamepad, &Gamepad::backButtonPressed,
+            this, &MainWindow::useKeyBoard);
+
+    displayText("Геймпад подключен. Режим управления с геймпада активирован.");
+m_gamepadActive = true;
+    // Сброс всех значений при старте
+    m_gamepadMarch = 0;
+    m_gamepadDepth = 0;
+    m_gamepadYaw = 0;
+    m_gamepadPitch = 0;
+    m_gamepadCren = 0;
+    m_gamepadU = 0;
+    m_gamepadV = 0;
+    m_gamepad_right_marsh = 0;
+    m_gamepad_right_course = 0;
+
+    // правый джойстик
+     connect(gamepad, &Gamepad::rightStickXMoved, this, [this](float value) {
+        m_gamepadU = std::round(value)  / 100.0f;   // преобразуем -100..100 в -1..1
+        qDebug() << m_gamepadU << "Ось U";
+
+    });
+    connect(gamepad, &Gamepad::rightStickYMoved, this, [this](float value) {
+        m_gamepadV = std::round(value) / 100.0f;
+        qDebug() << m_gamepadV << "Ось V";
+    });
+
+     // левый джойстик
+
+    connect(gamepad, &Gamepad::leftStickXMoved, this, [this](float value){
+  
+        m_gamepad_right_course = std::round(value) / 100.0f;
+         qDebug() << "leftStickX value:" << value << "-> m_gamepad_right_course:" << m_gamepad_right_course;
+    });
+
+        connect(gamepad, &Gamepad::leftStickYMoved, this, [this](float value){
+        m_gamepad_right_marsh = (-1) * std::round(value) / 100.0f;
+    });
+
+
+
+// --- Ккрен X / B ---
+connect(gamepad, &Gamepad::buttonXPressed, this, [this]() { m_gamepadCren = -10; });
+connect(gamepad, &Gamepad::buttonXReleased, this, [this]() { m_gamepadCren = 0; });
+connect(gamepad, &Gamepad::buttonBPressed, this, [this]() { m_gamepadCren = 10; });
+connect(gamepad, &Gamepad::buttonBReleased, this, [this]() { m_gamepadCren = 0; });
+
+// --- Глубина (вниз/вверх): L1 / R1 ---
+connect(gamepad, &Gamepad::L1Pressed, this, [this]() { m_gamepadDepth = 10; });
+connect(gamepad, &Gamepad::L1Released, this, [this]() { m_gamepadDepth = 0; });
+connect(gamepad, &Gamepad::R1Pressed, this, [this]() { m_gamepadDepth = -10; });
+connect(gamepad, &Gamepad::R1Released, this, [this]() { m_gamepadDepth = 0; });
+
+// --- Переключение режимов скорости (влево/вправо): крестовина ---
+connect(gamepad, &Gamepad::dPadRightPressed, this, [this]() {
+    // Переход к предыдущему режиму
+    int current = static_cast<int>(currentMode);
+    int previous = (current - 1 + 3) % 3;  
+    setSpeedMode(static_cast<SpeedMode>(previous));
+    
+});
+connect(gamepad, &Gamepad::dPadLeftPressed, this, [this]() {
+    int current = static_cast<int>(currentMode);
+    int next = (current + 1) % 3;
+    setSpeedMode(static_cast<SpeedMode>(next));
+    
+});
+
+
+}
+void MainWindow::updateUi_Compass(float yaw)
+{
     ui->compass->setYaw(yaw);
 }
 

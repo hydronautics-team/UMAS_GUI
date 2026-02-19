@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+
+
 #include <QMainWindow>
 #include <QTimer>
 #include <QDebug>
@@ -8,12 +10,13 @@
 #include <QTime>
 #include <QButtonGroup>
 
+#include <QString>
+
 #include "remote_control.h"
 #include "uv_state.h"
 #include "i_user_interface_data.h"
 #include "pc_protocol.h"
 #include "i_server_data.h"
-// #include "map.h"
 #include "i_basic_data.h"
 #include "joy_stick.h"
 #include "key_board.h"
@@ -21,270 +24,123 @@
 #include "check_msg.h"
 #include "check_imu.h"
 #include "mode_automatic.h"
-// #include "map_widget.h"
 #include "diagnostic_board.h"
 #include "ros2_bridge.h"
-
 #include <QSettings>
+#include "Gamepad/gamepad.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
-
-/*!
- * \brief MainWindow - класс формы главного окна, в котором
- *  реализованы основные методы для работы с ним.
- */
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    /*!
-     * \brief MainWindow конструктор, в котором создается главная UI форма.
-     */
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
-    /*!
-     * \brief setConsole устанавливает настройки для консоли.
-     */
     void setConsole();
 
 private:
+    Gamepad *gamepad; 
+    // Используем enum class с фиксированным типом uint8_t
+    enum class SpeedMode : uint8_t { Slow = 0, Medium = 1, Fast = 2 };
+    SpeedMode currentMode; // инициализируется в конструкторе
 
-
-    enum SpeedMode { SLOW = 0, MEDIUM = 1, FAST = 2 }; // перечисление, для трех режимов скоростей
-    SpeedMode currentMode = MEDIUM; // храним текущий режим, по умолчанию среднйи
-
-    // хранение значений: [режим][спинбокс]
-    QMap<int, QMap<QString, double>> speedModeGains;
-
-    /*
-        map - словарь из словарей
-        int - первый ключ, отвечает за номер режима 0, 1, 2
-        QString - второй ключ , имя спинбокса
-
-        SpeedMode = {
-            0: {  // SLOW режим
-                "surge": 10.0,
-                "sway": 10.0,
-                "depth": 10.0,
-            },
-            1: {  // MEDIUM режим
-                "surge": 50.0,
-                "sway": 50.0,
-            },
-            2: {  // FAST режим
-                "surge": 100.0,
-                "sway": 100.0,
-            }
-        }
-
-    */
-
-    // Массив спинбоксов
+    QMap<int, QMap<QString, double>> speedModeGains; // [режим][имя]
     QVector<QSpinBox*> gainSpinBoxes;
     QStringList gainNames = {"surge", "sway", "depth", "yaw", "pitch", "roll"};
 
-    void saveCurrentModeGains(); // Сохраняем текущие значения спинбоксов в текущий режим
-    void loadCurrentModeGains();
-    void setSpinBoxValuesForCurrentMode(); // начальные значения для текущего режима
+    void saveCurrentModeGains();
+    void setSpinBoxValuesForCurrentMode();
+    void saveSettings();
+    void loadSettings();
+    void useGamepad();
 
-    void saveSettings(); // сохранение настроек
-    void loadSettings(); // загрузка настроек для ВСЕХ режимов
-
-
-
-
-    /*!
-     * \brief setTimer_updateImpact устанавливает таймер
-     *  обработки пульта управления.
-     * \param periodUpdateMsec период обновления таймера
-     *  обработки значений пульта управления.
-     */
     void setTimer_updateImpact(int periodUpdateMsec);
-
-    /*!
-     * \brief setBottom устанавливает все используемые кнопки.
-     */
     void setBottom();
-    /*!
-     * \brief setBottom_mode устанавливает кнопки и слоты,
-     *  связанные с режимами управления.
-     */
     void setBottom_mode();
-
     void setBottom_connection();
-    /*!
-     * \brief setBottom_modeSelection устанавливает кнопки и слоты,
-     *  связанные с режимом вывода данных.
-     */
     void setBottom_modeSelection();
-
     void setBottom_selectAgent();
-
-    /*!
-     * \brief setTab устанавливает названия вкладкам.
-     */
     void setTab();
-
-    /*!
-     * \brief setUpdateUI устанавливает слоты обновления для UI формы.
-     */
     void setUpdateUI();
-
-    void setModeAutomatic_mission_cpp();
-
     void setWidget();
     void setGUI_reper();
-
     void setInterface();
+
+
+    bool m_gamepadActive = false;
+    bool status_keyboard = false;
+float m_gamepadMarch = 0.0f;
+
+float m_gamepadDepth = 0.0f;
+float m_gamepadYaw = 0.0f;
+float m_gamepadPitch = 0.0f;
+float m_gamepadCren = 0.0f; // Крен
+
+
+
+float m_gamepadU = 0.0f;   // для оси U (правый стик X)
+float m_gamepadV = 0.0f; // для оси V (правый стик Y)
+
+
+float m_gamepad_right_marsh = 0.0f; //  левый стик ось У
+float m_gamepad_right_course = 0.0f;
+
+
     PowerSystem         *powerSystem;
     CheckMsg            *checkMsg;
-    // CheckImu            *checkImu;
     ModeAutomatic       *modeAutomatic;
-    // MapWidget           *mapWidget;
     Diagnostic_board    *diagnostic_board;
     RosBridge           *rosBridge;
 
 private slots:
-    void onGainValueChanged();
-    void setSpeedModeFast(); // слот для быстрого режима
-    void setSpeedModeMedium(); // слот для среднего режима
-    void setSpeedModeSlow(); // слот для медленного режима
-    /*!
-     * \brief displayText слот для вывода сообщений в консоль.
-     * \param str является выводимой строкой.
-     */
+    // Единый слот для переключения режима скорости
+    void setSpeedMode(SpeedMode mode);
+
     void displayText(QString str);
-
-    /*!
-     * \brief updateUi_fromControl слот для обновления на UI форме
-     *  данных управляющих воздействий.
-     */
     void updateUi_fromControl();
-
     void updateUi_Map();
-
-    /*!
-     * \brief e_CSModeManualToggled слот для установки ручного режима
-     *  управления.
-     */
     void e_CSModeManualToggled();
-    /*!
-     * \brief e_CSModeAutomatedToggled слот для установки автоматизированного
-     *  режима управления.
-     */
     void e_CSModeAutomatedToggled();
-    /*!
-     * \brief e_CSModeAutomaticToggled слот для установки автоматического
-     *  режима управления.
-     */
     void e_CSModeAutomaticToggled();
-
-    /*!
-     * \brief setConnection слот установления соединения.
-     */
     void setConnection();
-    /*!
-     * \brief updateUi_fromAgent1 слот вызова сигналов обновления UI формы.
-     */
     void updateUi_fromAgent1();
-
-    /*!
-     * \brief breakConnection слот разрыва соединения.
-     */
     void breakConnection();
-
-    /*!
-     * \brief setModeSelection слот установления вывода данных.
-     * \param index выбор вывода данных.
-     */
     void setModeSelection(int index);
-
-    /*!
-     * \brief updateUi_Compass слот обновления компаса на UI форме.
-     * \param yaw новое значение курса.
-     */
     void updateUi_Compass(float yaw);
-
     void useKeyBoard();
     void useJoyStick();
-
     void pushButton_selectAgent1(bool stateBottom);
-
     void updateUi_statePushButton();
-
     void slot_pushButton_sendReper();
-
     void slot_addMarker_to_gui(double x, double y);
 
-
-
-
 signals:
-    /*!
-     * \brief updateCompass сигнал запуска обновления компаса на UI форме.
-     * \param yaw новое значение курса.
-     */
     void updateCompass(float yaw);
-    /*!
-     * \brief updateIMU сигнал запуска обновления данных с БСО на UI форме.
-     * \param imuData структура данных с обновленными значениями с БСО.
-     */
     void updateIMU(DataAH127C imuData);
-    /*!
-     * \brief updateSetupMsg сигнал запуска обновления отправленных и полученных
-     *  данных на UI форме.
-     */
     void updateSetupMsg();
-
     void updateDataMission();
-
     void updateStatePushButton();
-
     void updateMap();
-
     void pointAdded(qreal x, qreal y);
-
     void toggleMissionPlanning_cppPointsEnabled();
-
     void signal_setInterface(IUserInterfaceData *uv_interface);
-    // void signal_setMarker(const QGeoCoordinate &coordinate);
     void signal_sendCurrentPos(double latitude, double longitude);
 
 protected:
-    /*!
-     * \brief ui указатель на главную форму.
-     */
     Ui::MainWindow *ui;
-
-    /*!
-     * \brief updateTimer таймер обновления данных от пульта управления.
-     */
     QTimer *updateTimer = nullptr;
-
     JoyStick *joyStick = nullptr;
     KeyBoard *keyBoard = nullptr;
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 
-    /*!
-     * \brief uv_interface интерфейс взаимодействия с глобальной переменной,
-     * с принимаемыми и отправляемыми сообщениями.
-     */
     IUserInterfaceData uv_interface;
-    /*!
-     * \brief communicationAgent1 указатель на объект класса для UDP соединения.
-     */
     Pult::PC_Protocol   *communicationAgent1;
-
-    /*!
-     * \brief pult объект класса для обновления задающих воздействий
-     */
     RemoteControl pult;
-
 };
+
 #endif // MAINWINDOW_H
