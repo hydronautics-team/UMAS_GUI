@@ -24,6 +24,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(ament_cmake REQUIRED)
 
+
 # include_directories(/opt/ros/humble/include)
 
 include_directories("${PROJECT_SOURCE_DIR}/compass")
@@ -50,6 +51,8 @@ find_package(Qt5 REQUIRED COMPONENTS Widgets )
 include_directories(${Python3_INCLUDE_DIRS})
 
 set(PROJECT_SOURCES
+        Gamepad/gamepad.cpp
+        Gamepad/gamepad.h
         main.cpp
         mainwindow.cpp
         mainwindow.h
@@ -138,6 +141,7 @@ target_link_libraries(UMAS_GUI
     # Qt${QT_VERSION_MAJOR}::WebEngineWidgets
     # Qt${QT_VERSION_MAJOR}::Positioning
     Python3::Python
+
     )
 
 
