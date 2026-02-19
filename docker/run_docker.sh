@@ -2,6 +2,23 @@
 set -e
 
 # -------------------------
+# Определяем путь к проекту
+# -------------------------
+# Скрипт должен работать независимо от текущей директории запуска.
+# По умолчанию считаем, что корень проекта находится на уровень выше папки docker/.
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+DEFAULT_PROJECT_ROOT="$(realpath "${SCRIPT_DIR}/..")"
+
+# Можно переопределить исходную директорию проекта:
+#   UMAS_GUI_DIR=/path/to/UMAS_GUI ./docker/run_docker.sh
+PROJECT_ROOT="${UMAS_GUI_DIR:-$DEFAULT_PROJECT_ROOT}"
+
+if [ ! -d "$PROJECT_ROOT" ]; then
+    echo "ERROR: PROJECT_ROOT does not exist: $PROJECT_ROOT" >&2
+    exit 1
+fi
+
+# -------------------------
 # Настройки
 # -------------------------
 CONTAINER_NAME="qt_ros2"
@@ -44,7 +61,7 @@ docker run -it \
     -e DISPLAY=$DISPLAY \
     -e ROS_DOMAIN_ID=$ROS_DOMAIN_ID \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
-    -v ~/Desktop/hydro/UMAS_GUI:/UMAS_GUI:rw \
+    -v "${PROJECT_ROOT}:/UMAS_GUI:rw" \
     $IMAGE_NAME \
     /bin/bash
 
