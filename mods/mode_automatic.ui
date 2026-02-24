@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>413</width>
+    <width>481</width>
     <height>783</height>
    </rect>
   </property>
@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0,1,0,0,0,0,0,1,0">
+    <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,0,1,0,0,0,0,0,0,0,0,0,1,0">
      <item>
       <widget class="QLabel" name="label_38">
        <property name="sizePolicy">
@@ -70,16 +70,9 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_missionPlanning_following">
+          <widget class="QPushButton" name="pushButton_missionPlanning_go_circle">
            <property name="text">
-            <string>Следование</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButton_missionPlanning_go_trajectory">
-           <property name="text">
-            <string>Движение по траектории</string>
+            <string>Движение по окружности</string>
            </property>
           </widget>
          </item>
@@ -105,194 +98,8 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="page">
-        <layout class="QVBoxLayout" name="verticalLayout_9">
-         <item>
-          <widget class="QLabel" name="label_54">
-           <property name="text">
-            <string>Введите параметры 3 точек</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_12">
-           <item>
-            <widget class="QLabel" name="label_missionPlanning_go_trajectory_x">
-             <property name="text">
-              <string>x1, см</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_go_trajectory_x_1">
-             <property name="maximum">
-              <double>10000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_57">
-             <property name="text">
-              <string>y1, см</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_go_trajectory_y_1">
-             <property name="maximum">
-              <double>10000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_58">
-             <property name="text">
-              <string>r1, см</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_go_trajectory_r_1">
-             <property name="maximum">
-              <double>10000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_13">
-           <item>
-            <widget class="QLabel" name="label_missionPlanning_go_trajectory_x_2">
-             <property name="text">
-              <string>x2, см</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_go_trajectory_x_2">
-             <property name="maximum">
-              <double>10000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_59">
-             <property name="text">
-              <string>y2, см</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_go_trajectory_y_2">
-             <property name="maximum">
-              <double>10000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_60">
-             <property name="text">
-              <string>r2, см</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_go_trajectory_r_2">
-             <property name="maximum">
-              <double>10000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_14">
-           <item>
-            <widget class="QLabel" name="label_missionPlanning_goto_trajectory_x_3">
-             <property name="text">
-              <string>x3, см</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_go_trajectory_x_3">
-             <property name="maximum">
-              <double>10000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_61">
-             <property name="text">
-              <string>y3, см</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_go_trajectory_y_3">
-             <property name="maximum">
-              <double>10000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_62">
-             <property name="text">
-              <string>r3, см</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_go_trajectory_r_3">
-             <property name="maximum">
-              <double>10000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButton_missionPlanning_go_trajectory_update">
-           <property name="text">
-            <string>Обновить</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButton_missionPlanning_go_trajectory_clean">
-           <property name="text">
-            <string>Очистить цель</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButton_missionPlanning_go_trajectory_back">
-           <property name="text">
-            <string>Вернуться к выбору миссий</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="verticalSpacer_7">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </widget>
        <widget class="QWidget" name="page_missionPlanning_goto">
-        <layout class="QVBoxLayout" name="verticalLayout_11" stretch="0,0,0,0,0,0">
+        <layout class="QVBoxLayout" name="verticalLayout_11" stretch="0,0,0,0,0">
          <item>
           <widget class="QLabel" name="label_53">
            <property name="text">
@@ -304,64 +111,38 @@
           </widget>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_11">
-           <item>
-            <widget class="QLabel" name="label_missionPlanning_goto_x">
+          <widget class="QPushButton" name="pushButton_missionPlanning_goto_point_onoff">
+           <property name="text">
+            <string>Тыкнуть по карте</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout">
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="lineEdit_missionPlanning_goto_latitude"/>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="lineEdit_missionPlanning_goto_longitude"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label">
              <property name="text">
-              <string>x, см</string>
+              <string>Широта</string>
              </property>
             </widget>
            </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_goto_x">
-             <property name="maximum">
-              <double>10000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_55">
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_2">
              <property name="text">
-              <string>y, см</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_goto_y">
-             <property name="maximum">
-              <double>10000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_56">
-             <property name="text">
-              <string>Радиус, см</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="doubleSpinBox_missionPlanning_goto_r">
-             <property name="maximum">
-              <double>10000.000000000000000</double>
+              <string>Долгота</string>
              </property>
             </widget>
            </item>
           </layout>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButton_missionPlanning_goto_update">
-           <property name="text">
-            <string>Обновить</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButton_missionPlanning_goto_clean">
-           <property name="text">
-            <string>Очистить цель</string>
-           </property>
-          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="pushButton_missionPlanning_goto_back">
@@ -455,6 +236,112 @@
          </item>
         </layout>
        </widget>
+       <widget class="QWidget" name="page_missionPlanning_go_circle">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QLabel" name="label_56">
+           <property name="text">
+            <string>Введите параметры точки</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_missionPlanning_go_circle_onoff">
+           <property name="text">
+            <string>Тыкнуть по карте</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="formLayout_2">
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="lineEdit_missionPlanning_go_circle_latitude"/>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="lineEdit_missionPlanning_go_circle_longitude"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Широта</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>Долгота</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>Радиус</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="lineEdit_missionPlanning_go_circle_radius">
+             <property name="text">
+              <string>5</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_missionPlanning_go_circle_update">
+           <property name="text">
+            <string>Обновить данные (на всякий случай)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_missionPlanning_go_circle_back">
+           <property name="text">
+            <string>Вернуться к выбору миссий</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_7">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>22</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_missionPlanning_keepPos">
+       <property name="text">
+        <string>Удержание</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit_missionPlanning_keepPos_radius">
+       <property name="text">
+        <string>4</string>
+       </property>
       </widget>
      </item>
      <item>
@@ -504,20 +391,6 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_missionControl_modeCancel">
-           <property name="text">
-            <string>Отмена</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButton_missionControl_modeStop">
-           <property name="text">
-            <string>Пауза</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="QPushButton" name="pushButton_missionControl_modeComplete">
            <property name="text">
             <string>Завершение</string>
@@ -539,6 +412,42 @@
        </item>
        <item>
         <widget class="QLabel" name="label_missonStatus">
+         <property name="text">
+          <string>- Отсутствует</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_10">
+       <item>
+        <widget class="QLabel" name="label_54">
+         <property name="text">
+          <string>Текущая миссия:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_missonCurrent">
+         <property name="text">
+          <string>- Отсутствует</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_11">
+       <item>
+        <widget class="QLabel" name="label_55">
+         <property name="text">
+          <string>Текущая от борта:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_missonCurrent_toPult">
          <property name="text">
           <string>- Отсутствует</string>
          </property>

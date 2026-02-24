@@ -15,7 +15,10 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Charts)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Network)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Sql)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Gui)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS WebEngineWidgets)
+find_package(Qt5 REQUIRED COMPONENTS Widgets Quick QuickControls2 Positioning Location)
 
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Location)
 
 
 include_directories("${PROJECT_SOURCE_DIR}/compass")
@@ -28,17 +31,16 @@ include_directories("${PROJECT_SOURCE_DIR}/ui_utils")
 include_directories("${PROJECT_SOURCE_DIR}/missions")
 include_directories("${PROJECT_SOURCE_DIR}/tabs")
 include_directories("${PROJECT_SOURCE_DIR}/mods")
+include_directories("${PROJECT_SOURCE_DIR}/Diagnostic_bord_UI/Diagnostic_bord")
 include_directories("${PROJECT_SOURCE_DIR}")
 
 include_directories(${Python3_INCLUDE_DIRS})
-#include_directories(${pybind11_INCLUDE_DIRS})
 
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
-#find_package(pybind11 REQUIRED)
+find_package(Qt5 REQUIRED COMPONENTS Widgets Quick QuickWidgets Positioning Location)
 
 include_directories(${Python3_INCLUDE_DIRS})
-#include_directories(${pybind11_INCLUDE_DIRS})
 
 set(PROJECT_SOURCES
         main.cpp
@@ -83,7 +85,11 @@ set(PROJECT_SOURCES
         tabs/check_msg.h tabs/check_msg.cpp tabs/check_msg.ui
         tabs/check_imu.h tabs/check_imu.cpp tabs/check_imu.ui
         mods/mode_automatic.h mods/mode_automatic.cpp mods/mode_automatic.ui
-)
+        map/map_widget.h map/map_widget.cpp map/map_widget.ui map/map.html
+        Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.cpp
+        Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.h
+        Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.ui
+        )
 
 
 
@@ -117,11 +123,13 @@ target_link_libraries(UMAS_GUI PRIVATE
     Qt${QT_VERSION_MAJOR}::Network
     Qt${QT_VERSION_MAJOR}::Sql
     Qt${QT_VERSION_MAJOR}::Gui
+    Qt${QT_VERSION_MAJOR}::WebEngineWidgets
+    Qt${QT_VERSION_MAJOR}::Positioning
     Python3::Python
-#    pybind11::module
     )
 
 
+target_link_libraries(UMAS_GUI PRIVATE Qt5::Core Qt5::Widgets Qt5::Location)
 
 
 set_target_properties(UMAS_GUI PROPERTIES

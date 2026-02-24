@@ -107,8 +107,6 @@ public slots:
      * \brief updateUi_map слот обновления данных о расположении UWB и агента.
      * \param dataUWB структура с информацией об расположении агента.
      */
-    void updateUi_map(DataUWB dataUWB);
-    void updateUi_map2(DataUWB dataUWB);
     void updateUi_missionPlanning_goto_goal(double x, double y, double r, int flag_clear);
     void updateUi_missionPlanning_goto_goal_clear();
 

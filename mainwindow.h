@@ -21,6 +21,8 @@
 #include "check_msg.h"
 #include "check_imu.h"
 #include "mode_automatic.h"
+#include "map_widget.h"
+#include "diagnostic_board.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -66,11 +68,6 @@ private:
      *  связанные с режимами управления.
      */
     void setBottom_mode();
-    /*!
-     * \brief setBottom_modeAutomated устанавливает кнопки и слоты,
-     *  связанные с автоматизированным режимом управления.
-     */
-    void setBottom_modeAutomated();
 
     void setBottom_connection();
     /*!
@@ -87,11 +84,6 @@ private:
     void setTab();
 
     /*!
-     * \brief setMap устанавливает настройки для карты.
-     */
-    void setMap();
-
-    /*!
      * \brief setUpdateUI устанавливает слоты обновления для UI формы.
      */
     void setUpdateUI();
@@ -99,10 +91,15 @@ private:
     void setModeAutomatic_mission_cpp();
 
     void setWidget();
-    PowerSystem *powerSystem;
-    CheckMsg    *checkMsg;
-    CheckImu    *checkImu;
-    ModeAutomatic *modeAutomatic;
+    void setGUI_reper();
+
+    void setInterface();
+    PowerSystem         *powerSystem;
+    CheckMsg            *checkMsg;
+    CheckImu            *checkImu;
+    ModeAutomatic       *modeAutomatic;
+    MapWidget           *mapWidget;
+    Diagnostic_board    *diagnostic_board;
 
 
 
@@ -116,18 +113,12 @@ private slots:
     void displayText(QString str);
 
     /*!
-     * \brief setLocationUWB слот записи данных о месторасположении
-     *  3 uwb-модулей.
-     * \param x координаты по оси X.
-     * \param y координаты по оси Y.
-     */
-    void setLocationUWB(double *x, double *y);
-
-    /*!
      * \brief updateUi_fromControl слот для обновления на UI форме
      *  данных управляющих воздействий.
      */
     void updateUi_fromControl();
+
+    void updateUi_Map();
 
     /*!
      * \brief e_CSModeManualToggled слот для установки ручного режима
@@ -146,39 +137,6 @@ private slots:
     void e_CSModeAutomaticToggled();
 
     /*!
-     * \brief stabilizeYawToggled слот для переключения канала курса.
-     * \param state состояние нажатия кнопки.
-     */
-    void stabilizeYawToggled(bool state);
-    /*!
-     * \brief stabilizePitchToggled слот для переключения канала дифферента.
-     * \param state состояние нажатия кнопки.
-     */
-    void stabilizePitchToggled(bool state);
-    /*!
-     * \brief stabilizeRollToggled слот для переключения канала крена.
-     * \param state состояние нажатия кнопки.
-     */
-    void stabilizeRollToggled(bool state);
-    /*!
-     * \brief stabilizeMarchToggled слот для переключения канала марша.
-     * \param state состояние нажатия кнопки.
-     */
-    void stabilizeMarchToggled(bool state);
-    /*!
-     * \brief stabilizeLagToggled слот для переключения канала лага.
-     * \param state состояние нажатия кнопки.
-     */
-    void stabilizeLagToggled(bool state);
-
-    /*!
-     * \brief stabilizeDepthToggled слот для переключения канала глубины.
-     * \param state состояние нажатия кнопки.
-     */
-    void stabilizeDepthToggled(bool state);
-
-
-    /*!
      * \brief setConnection слот установления соединения.
      */
     void setConnection();
@@ -186,7 +144,6 @@ private slots:
      * \brief updateUi_fromAgent1 слот вызова сигналов обновления UI формы.
      */
     void updateUi_fromAgent1();
-    void updateUi_fromAgent2();
 
     /*!
      * \brief breakConnection слот разрыва соединения.
@@ -209,9 +166,12 @@ private slots:
     void useJoyStick();
 
     void pushButton_selectAgent1(bool stateBottom);
-    void pushButton_selectAgent2(bool stateBottom);
 
     void updateUi_statePushButton();
+
+    void slot_pushButton_sendReper();
+
+    void slot_addMarker_to_gui(double x, double y);
 
 
 signals:
@@ -233,14 +193,17 @@ signals:
 
     void updateDataMission();
 
-    void updateMap(DataUWB dataUWB);
-    void updateMapForAgent2(DataUWB dataUWB_agent2);
-
     void updateStatePushButton();
+
+    void updateMap();
 
     void pointAdded(qreal x, qreal y);
 
     void toggleMissionPlanning_cppPointsEnabled();
+
+    void signal_setInterface(IUserInterfaceData *uv_interface);
+    void signal_setMarker(const QGeoCoordinate &coordinate);
+    void signal_sendCurrentPos(double latitude, double longitude);
 
 protected:
     /*!
@@ -267,9 +230,6 @@ protected:
      * \brief communicationAgent1 указатель на объект класса для UDP соединения.
      */
     Pult::PC_Protocol   *communicationAgent1;
-
-    Pult::PC_Protocol   *communicationAgent2;
-
 
     /*!
      * \brief pult объект класса для обновления задающих воздействий

@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QDebug>
+#include <QTime>
+
 
 /*!
  * \brief e_CSMode enum класс режимов работы системы управления.
@@ -11,7 +13,6 @@ enum class e_CSMode : quint8 {
     MODE_MANUAL = 0,            //! Ручной
     MODE_AUTOMATED,             //! Автоматизированный
     MODE_AUTOMATIC,             //! Автоматический
-    MODE_GROUP                  //! Групповой
 };
 
 /*!
@@ -32,38 +33,48 @@ enum class e_StabilizationContours : unsigned char {
  */
 enum class power_Mode : quint8
 { //режим работы
-    MODE_2 = 0,     //! Включены вычислитель, wifi, uwb
-    MODE_3,         //! Включены вычислитель, wifi, uwb, гидроакустика
-    MODE_4,         //! Включены вычислитель, wifi, uwb, гидроакустика, ВМА
-    MODE_5          //! Выключить вычислитель на 5 секунд и включить обратно
+    MODE_2 = 0,     //! На ВМА не идет ШИМ
+    MODE_3,         //! На ВМА идет ШИМ
 };
 
 #pragma pack(push,1)
 
-/*!
- * \brief The mission_Control enum - команды управления миссией
- */
+enum class mission_List : quint8
+{ //список миссий
+    NO_MISSION = 0, //нет миссии
+    MOVE_TO_POINT, //выход в точку
+    KEEP_POS, //удержание в точке
+    MOVE_CIRCLE, //движение по окружности
+    MOVE_TACK //движение галсами
+};
+
+struct CoordinatePoint
+{
+    double x_point;
+    double y_point;
+};
+
+struct MissionParam
+{
+    float radius;
+    CoordinatePoint point_mission;
+    CoordinatePoint first_point_tack;
+    CoordinatePoint second_point_tack;
+};
+
 enum class mission_Control : quint8
-{
-    MODE_IDLE = 0,  //!ожидание
-    MODE_START,     //!отправка запроса на выполнение миссии
-    MODE_CANCEL,    //!отмена выполнения миссии
-    MODE_STOP,      //!пауза, остановить временно
-    MODE_COMPLETE   //!завершить миссию
+{ //команды управления миссией
+    MODE_IDLE = 0, //ожидание
+    MODE_START, //отправка запроса на выполнение миссии
+    MODE_COMPLETE //завершить миссию
 };
 
-/*!
- * \brief The mission_Status enum состояния миссий
- */
 enum class mission_Status : quint8
-{
-    MODE_IDLE = 0,  //!ожидание
-    MODE_ERROR,     //!ошибка инициализации миссии
-    MODE_RUNNING,   //!миссия запущена и выполняется
-    MODE_STOPPED,   //!миссия приостановлена, на паузе
-    MODE_PERFOMED,  //!миссия завершена
+{ //состояние миссии
+    MODE_IDLE = 0, //ожидание
+    MODE_RUNNING, //миссия запущена и выполняется
+    MODE_PERFOMED, //миссия завершена
 };
-
 
 /*!
  * \brief FlagAH127C_bort class структура, передаваемая на пульт.
@@ -107,8 +118,6 @@ struct ControlVMA
     float VMA2     = 0;
     float VMA3     = 0;
     float VMA4     = 0;
-    float VMA5     = 0;
-    float VMA6     = 0;
 };
 
 /*!
@@ -169,38 +178,62 @@ struct DataAH127C {
     float quat [4];
 };
 
-/*!
- * \brief DataPressure class структура данных с датчика давления
- */
-struct DataPressure {
-    DataPressure();
-    float temperature;      //! Temperature returned in deg C.
-    float depth;            //! Depth returned in meters
-    float pressure;         //! Pressure returned in mbar or mbar*conversion rate.
+struct DataGANS
+{ //структура данных с ГАНСА
+
+    double azimuth     = 0; // Горизонтальный угол на ответчик, град.
+    double distance    = 0; // Дистанция до ответчика, м
+    double dataValue   = 0; // Значение запрошенного параметра
+
+    double temperature      = 0; // Температура воды, °С
+    double depth            = 0; // Глубина базовой станции от поверхности, м
+
+    double roll_GANS  = 0; // Крен, °. 0 - вертикальное положение, 0..+90 - поворот на правый борт, 0..-90 - поворот на левый борт
+    double pitch_GANS = 0; // Дифферент, °. 0 - вертикальное положение, 0..+90 - крен на нос, 0..-90 - крен на корму
 };
 
-/*!
- * \brief DataUWB class структура данных с UWB модуля.
- */
-struct DataUWB
+struct GPS_angular
 {
-    uint16_t error_code = 0;
-    uint16_t connection_field = 0;
-    float locationX = 0;            //! Координата аппарата по оси X
-    float locationY = 0;            //! Координата аппарата по оси Y
-    float distanceToBeacon[4];      //! Расстоние до i-го маяка
-    float distanceToAgent[10];      //! Расстояние до i-го агента
+    QTime time_UTC;    // Время UTC
+    double yaw = 0;        // Курс (рысканье)
+    double pitch;      // Килевая качка
+    double roll;       // Бортовая качка
+    char dataType;  // Тип данных (N - курс от GPS, G - гиро курс)
 };
 
-/*!
- * \brief PultUWB class структура данных с выставленным положением маяков.
- *  Идет от пульта.
- */
-struct PultUWB
+struct GPS_coordinate
 {
-    float beacon_x[3];
-    float beacon_y[3];
+    QTime time;           // UTC Время обсервации
+    double latitude;      // Широта
+    char latHemisphere;   // Полушарие (N/S)
+    double longitude;     // Долгота
+    char lonHemisphere;   // Полушарие (E/W)
+    int quality;          // Индикатор качества обсервации
+    int satellitesUsed;   // Количество спутников
+    double hdop;          // Величина горизонтального геометрического фактора (HDOP)
+    double altitude;      // Высота антенны над уровнем моря (геоидом)
+    char altitudeUnit;    // Единица измерения высоты (м)
+    double geoidHeight;   // Превышение геоида над эллипсоидом WGS84
+    char geoidUnit;       // Единица измерения превышения геоида (м)
+    double dgpsAge = 0;       // Возраст дифференциальной поправки
+    int dgpsStationId = 0;    // Идентификатор ККС
 };
+
+struct Diagnostic {
+    quint16 voltage_bat;
+    quint16 voltage_5v;
+    quint16 voltage_12v;
+    quint16 voltage_4;
+    quint16 current_1;
+    quint16 current_2;
+    quint16 current_3;
+    quint16 current_4;
+    quint8 PMW1;
+    quint8 PMW2;
+    quint8 PMW3;
+    quint8 PMW4;
+};
+
 
 /*!
  * \brief ToPult class структура данных, принимаемых на пульте.
@@ -216,11 +249,14 @@ struct ToPult
     Header header;
     AUVCurrentData auvData;             //! Данные о текущих параметрах
     DataAH127C dataAH127C;              //! Данные с БСО
-    DataPressure dataPressure;          //! Данные с датчика давления
-    DataUWB dataUWB;                    //! Данные с UWB
     FlagAH127C_bort flagAH127C_bort;    //! Флаги для настрой
-    quint8 ID_mission;
-    mission_Status missionStatus;
+    DataGANS dataGANS;
+    GPS_angular angularGPS;
+    GPS_coordinate coordinateGPS;
+    Diagnostic diagnostics;
+    mission_List missionList = mission_List::NO_MISSION; //выбор миссии
+    mission_Status missionStatus = mission_Status::MODE_IDLE; //состояние выполнения миссии
+    quint8 first_point_complete; //флаг прохождения точки для движения галсами
     uint checksum;
 };
 
@@ -231,13 +267,14 @@ struct FromPult
 {
     ControlData controlData;                        //! Данные, которые идут с пульта при замыканиии контуров
     e_CSMode cSMode;                                //! Режим работы
-    PultUWB pultUWB;                                //! Флаги для настрой
     ControlContoursFlags controlContoursFlags;      //! Флаги замыкания контуров (1 - замкнуты)
     quint8 modeAUV_selection;                       //! Текущий выбор модель/реальный НПА
     power_Mode pMode;                               //! Режим работы системы питания
     FlagAH127C_pult flagAH127C_pult;
-    quint8 ID_mission_AUV;
-    mission_Control missionControl;
+    CoordinatePoint reper; //координаты выставленного на карте репера
+    mission_List mission = mission_List::NO_MISSION; //выбор миссии
+    MissionParam mission_param; //параметры для задания миссии
+    mission_Control missionControl = mission_Control::MODE_IDLE; //команды запуска миссии
     uint checksum;
 };
 
@@ -253,9 +290,10 @@ public:
     UVState();
     Header header;
     DataAH127C imuData;
-    DataPressure dataPressure;
-    DataUWB dataUWB;
-    PultUWB pultUWB;
+    DataGANS dataGANS;
+    GPS_angular angularGPS;
+    GPS_coordinate coordinateGPS;
+    Diagnostic diagnostics;
 
     AUVCurrentData auvData;
 
@@ -268,10 +306,14 @@ public:
     ControlData control;
     power_Mode pMode;
 
-    quint8 ID_mission;
+    mission_List missionListToPult;
+    mission_List missionListFromPult;
     mission_Status missionStatus;
-    quint8 ID_mission_AUV;
+    quint8 first_point_complete;
+    CoordinatePoint reper;
+    MissionParam mission_param;
     mission_Control missionControl;
+
 
     int checksum_msg_gui_send;
     int checksum_msg_agent_send;

@@ -21,10 +21,10 @@ public:
 
 public slots:
     void updateUi_checkMsg();
-
+    void slot_getInterface(IUserInterfaceData *interface);
 private:
     Ui::CheckMsg *ui;
-    IUserInterfaceData uv_interface;
+    IUserInterfaceData *uv_interface;
 
 
 };

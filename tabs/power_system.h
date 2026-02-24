@@ -21,7 +21,7 @@ public:
 
 private:
     Ui::PowerSystem *ui;
-    IUserInterfaceData uv_interface;
+    IUserInterfaceData *uv_interface;
 
     // таймеры
     QTimer *timer_off_powerMode_5;
@@ -33,10 +33,12 @@ private:
 private slots:
     void pushButton_on_powerMode_2();
     void pushButton_on_powerMode_3();
-    void pushButton_on_powerMode_4();
     void pushButton_on_powerMode_5();
 
     void off_powerMode_5();
+
+public slots:
+    void slot_getInterface(IUserInterfaceData *uv_interface);
 
 };
 

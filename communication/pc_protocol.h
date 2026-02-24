@@ -38,6 +38,7 @@ public slots:
     void sendData(){
         send_data = uv_server.generateFullMessage(nmbAgent);
         udpProtocol->send_data = send_data;
+        qDebug() << (int)(send_data.cSMode);
         udpProtocol->sendData();
     }
 

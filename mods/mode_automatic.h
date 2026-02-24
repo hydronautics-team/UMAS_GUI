@@ -6,6 +6,7 @@
 #include <QButtonGroup>
 #include <QTimer>
 #include <QProcess>
+#include <QGeoCoordinate>
 
 #include "i_user_interface_data.h"
 #include "map.h"
@@ -34,42 +35,42 @@ signals:
     void displayText_toConsole(QString str);
 
     void set_stackedWidget_mode(int index);
+    void requestAddLine(const QVector<QPointF> &coordinates);
 
 private:
-    IUserInterfaceData uv_interface;
+    IUserInterfaceData *uv_interface;
 
     void setBottom_modeAutomatic();
 
     void setMission_control();
     void setMission_goTo();
-    void setMission_go_trajectory();
-    void setMission_go_following();
+    void setMission_go_circle();
     void setMission_cpp();
 
 private slots:
     void slot_pushButton_missionPlanning_cpp_make();
     void slot_pushButton_missionPlanning_cpp_make_clean();
-    void slot_pushButton_missionPlanning_cpp_back();
     void slot_pushButton_missionPlanning_cpp();
     void test_automatic_after();
     void slot_pushButton_missionControl_modeIdle();
 
 
     void slot_pushButton_missionControl_modeStart();
-    void slot_pushButton_missionControl_modeCancel();
-    void slot_pushButton_missionControl_modeStop();
     void slot_pushButton_missionControl_modeComplete();
     void slot_pushButton_missionPlanning_goto();
-    void slot_pushButton_missionPlanning_goto_update();
-    void slot_pushButton_missionPlanning_goto_back();
-    void slot_pushButton_missionPlanning_go_trajectory_update();
-    void slot_pushButton_missionPlanning_go_trajectory_back();
-    void slot_pushButton_missionPlanning_following();
-    void slot_pushButton_missionPlanning_go_trajectory();
+    void slot_pushButton_missionPlanning_back();
+    void slot_pushButton_missionPlanning_go_circle();
     void updateUi_DataMission();
+
+    void slot_pushButton_missionPlanning_keepPos(bool checked);
+    void slot_pushButton_missionPlanning_go_circle_update();
+
+
 
 public slots:
     void addPointToTable(qreal x, qreal y);
+    void slot_getInterface(IUserInterfaceData *interface);
+    void slot_addPoint_to_gui(double latitude, double longitude);
 
 };
 

@@ -24,10 +24,8 @@ public:
 public slots:
     void updateUi_imu(DataAH127C imuData);
 
-
 private:
     Ui::CheckImu *ui;
-    IUserInterfaceData uv_interface;
 
     void setBottom_setupIMU();
     void setBottom_setupIMU_check();

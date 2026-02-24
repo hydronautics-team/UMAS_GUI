@@ -1,3 +1,6 @@
 [submodule "algorithm_cpp"]
 	path = algorithm_cpp
 	url = git@github.com:DaShakuev/algorithm_cpp.git
+[submodule "Diagnostic_bord_UI"]
+	path = Diagnostic_bord_UI
+	url = https://github.com/Svvyppy/Diagnostic_bord_UI.git

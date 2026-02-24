@@ -118,24 +118,6 @@ void Map::onPlotLineSeries(QLineSeries* series_cpp) {
 }
 
 
-void Map::updateUi_map(DataUWB dataUWB)
-{
-    drawCurrentCoords(agent1Coords, missionPlanning_goto_traj, dataUWB.locationX, dataUWB.locationY);
-
-    range[0] = dataUWB.distanceToBeacon[0];
-    range[1] = dataUWB.distanceToBeacon[1];
-    range[2] = dataUWB.distanceToBeacon[2];
-
-    drawCircle(circle1, beacon1, x[0], y[0], range[0], 1);
-    drawCircle(circle2, beacon2, x[1], y[1], range[1], 1);
-    drawCircle(circle3, beacon3, x[2], y[2], range[2], 1);
-}
-
-void Map::updateUi_map2(DataUWB dataUWB)
-{
-    drawCurrentCoords(agent2Coords, missionPlanning_goto_traj, dataUWB.locationX, dataUWB.locationY);
-}
-
 void Map::updateUi_missionPlanning_goto_goal(double x, double y, double r, int flag_clear)
 {
 //    drawCurrentCoords(missionPlanning_goto_goal, x, y);
