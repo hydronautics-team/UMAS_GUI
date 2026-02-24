@@ -27,7 +27,7 @@ void RosBridge::run()
     // Namespace "qt_controller" — все относительные топики получат префикс /qt_controller/
     node_ = rclcpp::Node::make_shared("qt_controller_node", "qt_controller");
 
-    twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("control/data", 10);
+    twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/control/data", 10);
 
     pose_sub_ = node_->create_subscription<geometry_msgs::msg::Pose>(
         "pose_topic", 10,
@@ -42,10 +42,10 @@ void RosBridge::run()
         });
 
     control_flags_pub_ =
-        node_->create_publisher<std_msgs::msg::UInt8>("control/loop_flags", 10);
+        node_->create_publisher<std_msgs::msg::UInt8>("/control/loop_flags", 10);
 
     zero_yaw_pub_ =
-        node_->create_publisher<std_msgs::msg::Bool>("imu/zero_yaw", 10);
+        node_->create_publisher<std_msgs::msg::Bool>("/imu/zero_yaw", 10);
 
     is_ready_ = true;
 
