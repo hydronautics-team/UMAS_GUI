@@ -1,21 +1,40 @@
 #include "uv_state.h"
 
-UVState::UVState()
+UVState::UVState(QObject* parent)
+    : QObject(parent)
 {
-    modeAUV_selection = true;
-    cSMode = e_CSMode::MODE_MANUAL;
+}
 
-    controlContoursFlags.depth = 1;
-    controlContoursFlags.lag = 1;
-    controlContoursFlags.march = 1;
-    controlContoursFlags.pitch = 1;
-    controlContoursFlags.roll = 1;
-    controlContoursFlags.yaw = 1;
+void UVState::setImu(const UVState::ImuData& imu)
+{
+    imu_ = imu;
+    emit imuUpdated(imu_);
+}
 
-    pMode = power_Mode::MODE_2;
+void UVState::setPose(double x, double y, double z)
+{
+    pose_.x = x;
+    pose_.y = y;
+    pose_.z = z;
+    emit poseUpdated(pose_);
+}
 
+void UVState::setPose(const UVState::Pose& pose)
+{
+    pose_ = pose;
+    emit poseUpdated(pose_);
+}
 
+void UVState::setDiagnostics(const UVState::Diagnostics& diagnostics)
+{
+    diagnostics_ = diagnostics;
+    emit diagnosticsUpdated(diagnostics_);
+}
 
+void UVState::setControlFlags(std::uint8_t flags)
+{
+    control_flags_ = flags;
+    emit controlFlagsUpdated(control_flags_);
 }
 
 ControlData::ControlData() {

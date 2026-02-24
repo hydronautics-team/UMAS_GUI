@@ -31,7 +31,7 @@ void PowerSystem::setBottom_powerMode()
     ui->pushButton_powerMode_4->setCheckable(true);
     ui->pushButton_powerMode_5->setCheckable(true);
 
-    uv_interface->setPowerMode(power_Mode::MODE_2);
+    // uv_interface->setPowerMode(power_Mode::MODE_2);
     ui->pushButton_powerMode_2->setChecked(true);
 
     connect(
@@ -49,12 +49,13 @@ void PowerSystem::setBottom_powerMode()
 
 void PowerSystem::pushButton_on_powerMode_2()
 {
-    uv_interface->setPowerMode(power_Mode::MODE_2);
+    // uv_interface->setPowerMode(power_Mode::MODE_2);
+    qDebug() << "Заглушка питание 2"
 }
 
 void PowerSystem::pushButton_on_powerMode_3()
 {
-    uv_interface->setPowerMode(power_Mode::MODE_3);
+    // uv_interface->setPowerMode(power_Mode::MODE_3);
 }
 
 
