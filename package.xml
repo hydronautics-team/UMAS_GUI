@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>UMAS_GUI</name>
+  <version>0.1.0</version>
+  <description>UMAS GUI with Qt and ROS2 bridge</description>
+  <maintainer email="you@example.com">Your Name</maintainer>
+  <license>Apache-2.0</license>
+
+  <!-- build tool -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- build/runtime deps -->
+  <depend>rclcpp</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+
+  <!-- optional: if используешь Python3 в CMake -->
+  <build_depend>python3</build_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

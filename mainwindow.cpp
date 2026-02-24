@@ -7,331 +7,446 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    // Центральная модель состояния ПА (телеметрия/состояние для UI)
+    uvState = new UVState(this);
 
-    timerUpdateImpact(joystick.periodUpdateMsec);
+    // Инициализация ROS Thread
+    rosBridge = new RosBridge(this);
+    rosBridge->start();
 
-//  установка всех кнопок и слотов к ним
-    setBottom(ui, this);
+    connect(this, &MainWindow::publishTwistRequested,
+            rosBridge, &RosBridge::publishTwistInternal,
+            Qt::QueuedConnection);
 
-//    установка названий к вкладкам
-    setTab(ui);
+    // ROS -> UVState (QueuedConnection: RosBridge живёт в другом потоке)
+    connect(rosBridge, &RosBridge::poseReceived,
+            uvState, static_cast<void (UVState::*)(const UVState::Pose&)>(&UVState::setPose),
+            Qt::QueuedConnection);
+
+    connect(rosBridge, &RosBridge::controlFlagsPublished,
+            uvState, &UVState::setControlFlags,
+            Qt::QueuedConnection);
+
+    setWidget();
+    setConsole();
+    setTimer_updateImpact(10);
+    setBottom();
+    setTab();
+    setUpdateUI();
+
+    // Инициализация спинбоксов
+    gainSpinBoxes = {
+        ui->spinBox_gain_surge,
+        ui->spinBox_gain_sway,
+        ui->spinBox_gain_depth,
+        ui->spinBox_gain_yaw,
+        ui->spinBox_gain_pitch,
+        ui->spinBox_gain_roll
+    };
+
+    loadSettings();
+    setSpinBoxValuesForCurrentMode();
+
+    // Подключаем сигналы спинбоксов напрямую к saveCurrentModeGains через лямбду
+    for (auto spinBox : gainSpinBoxes) {
+        connect(spinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+                this, [this]() { saveCurrentModeGains(); });
+    }
+
+    // Инициализируем текущий режим (по умолчанию Medium)
+    setSpeedMode(SpeedMode::Medium);
+
+    
 
 
-    connect(this, SIGNAL(updateCompass(float)),
-            this, SLOT(updateUi_Compass(float)));
-    connect(this, SIGNAL(updateIMU(DataAH127C)),
-            this, SLOT(updateUi_IMU(DataAH127C)));
-    connect(this, SIGNAL(updateSetupMsg()),
-            this, SLOT(updateUi_SetupMsg()));
+    QButtonGroup *inputGroup = new QButtonGroup(this);
+    inputGroup->addButton(ui->radioButton_useJoyStick);
+    inputGroup->addButton(ui->radioButton_useKeyBoard);
+    inputGroup->addButton(ui->gamepad_btn);
+    inputGroup->setExclusive(true);
+}
+
+void MainWindow::setWidget()
+{
+    // powerSystem = new PowerSystem(this);
+    // ui->horizontalLayout_for_powerSystem->addWidget(powerSystem);
+    // checkMsg = new CheckMsg(this);
+    // ui->horizontalLayout_for_checkMsg->addWidget(checkMsg);
+    // modeAutomatic = new ModeAutomatic(this);
+    // ui->verticalLayout_modeAutomatic->addWidget(modeAutomatic);
+    diagnostic_board = new Diagnostic_board(this);
+    ui->horizontalLayout_diagnosticBoard->addWidget(diagnostic_board);
+
+    // connect(
+    //     modeAutomatic,&ModeAutomatic::displayText_toConsole,
+    //     this, &MainWindow::displayText);
+    // connect(
+    //     modeAutomatic, &ModeAutomatic::set_stackedWidget_mode,
+    //     ui->stackedWidget_mode, &QStackedWidget::setCurrentIndex);
 }
 
 
-void MainWindow::setBottom(Ui::MainWindow *ui, QObject *ts) {
+void MainWindow::setConsole()
+{
+    displayText("Приложение работает");
+    displayText("Установите соединение для работы с агентом");
+}
+
+void MainWindow::displayText(QString str)
+{
+    QString currentTime = QTime::currentTime().toString("HH:mm:ss");
+    qInfo() << currentTime << str;
+    ui->textEdit_console->append(currentTime + " " + str);
+}
+
+void MainWindow::setTimer_updateImpact(int periodUpdateMsec)
+{
+    joyStick = std::make_unique<JoyStick>();
+    keyBoard = std::make_unique<KeyBoard>();
+    activeInput = joyStick.get();
+
+    connect(ui->radioButton_useJoyStick, &QRadioButton::clicked,
+            this, &MainWindow::useJoyStick);
+    connect(ui->radioButton_useKeyBoard, &QRadioButton::clicked,
+            this, &MainWindow::useKeyBoard);
+    connect(ui->gamepad_btn, &QRadioButton::clicked,
+            this, &MainWindow::useGamepad);
+
+    updateTimer = new QTimer(this);
+    connect(
+        updateTimer, SIGNAL(timeout()),
+        this, SLOT(updateUi_fromControl()));
+    updateTimer->start(periodUpdateMsec);
+    displayText("Таймер обновления джойстика запущен");
+}
+
+void MainWindow::useKeyBoard()
+{
+    gamepadInput.reset();
+    if (gamepad) { delete gamepad; gamepad = nullptr; }
+
+    if (!keyBoard) {
+        keyBoard = std::make_unique<KeyBoard>();
+    }
+
+    ui->radioButton_useKeyBoard->setChecked(true);
+    status_keyboard = true;
+    activeInput = keyBoard.get();
+    displayText("Используемые клавиши(должна быть английская раскладка):\n"
+                "Клавиша O - вперед по маршу\n"
+                "Клавиша L - назад по маршу\n"
+                "Клавиша W - вниз по дифференту\n"
+                "Клавиша S - вверх по дифференту\n"
+                "Клавиша A - влево по курсу\n"
+                "Клавиша D - вправо по курсу\n"
+                "Клавиша C - вниз по глубине\n"
+                "Клавиша V - вверх по глубине\n"
+                "Клавиша Q - влево по крену\n"
+                "Клавиша E - вправо по крену\n"
+                "Клавиша K - влево по лагу\n"
+                "Клавиша ; - вправо по лагу\n");
+}
+
+void MainWindow::useJoyStick()
+{
+    gamepadInput.reset();
+    if (gamepad) { delete gamepad; gamepad = nullptr; }
+
+    if (!joyStick) {
+        joyStick = std::make_unique<JoyStick>();
+    }
+
+    activeInput = joyStick.get();
+}
+
+void MainWindow::useGamepad()
+{
+    // Отсоединяемся от других источников ввода
+    joyStick.reset();
+    keyBoard.reset();
+    gamepadInput.reset();
+    if (gamepad) { delete gamepad; gamepad = nullptr; }
+
+    gamepad = new Gamepad(0, this);
+    if (!gamepad->isConnected()) {
+        displayText("Геймпад не обнаружен! Проверьте подключение.");
+        delete gamepad;
+        gamepad = nullptr;
+        return;
+    }
+
+
+    connect(gamepad, &Gamepad::backButtonPressed,
+            this, &MainWindow::useKeyBoard);
+
+    displayText("Геймпад подключен. Режим управления с геймпада активирован.");
+    gamepadInput = std::make_unique<GamepadInputSource>(gamepad, this);
+    activeInput = gamepadInput.get();
+
+    // --- Переключение режимов скорости (влево/вправо): крестовина ---
+    connect(gamepad, &Gamepad::dPadRightPressed, this, [this]() {
+        // Переход к предыдущему режиму
+        int current = static_cast<int>(currentMode);
+        int previous = (current - 1 + 3) % 3;  
+        setSpeedMode(static_cast<SpeedMode>(previous));
+        
+    });
+    connect(gamepad, &Gamepad::dPadLeftPressed, this, [this]() {
+        int current = static_cast<int>(currentMode);
+        int next = (current + 1) % 3;
+        setSpeedMode(static_cast<SpeedMode>(next));
+        
+    });
+}
+
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    if (activeInput == keyBoard.get() && keyBoard) {
+        keyBoard->keyPressEvent(event);
+    }
+    QMainWindow::keyPressEvent(event);
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event)
+{
+    if (activeInput == keyBoard.get() && keyBoard) {
+        keyBoard->keyReleaseEvent(event);
+    }
+    QMainWindow::keyReleaseEvent(event);
+}
+
+void MainWindow::updateUi_fromControl(){
+    if (activeInput != nullptr) {
+        const auto command = activeInput->poll();
+        if (command.has_value()) {
+            controlService.apply(command.value());
+        }
+    }
+
+    const auto scaled = applyGains(controlService.snapshot());
+    updateControlLabels(scaled);
+
+    emit publishTwistRequested(
+        scaled.march,
+        scaled.lag,
+        scaled.depth,
+        scaled.roll,
+        scaled.pitch,
+        scaled.yaw);
+}
+
+umas::input::ControlCommand MainWindow::applyGains(const umas::input::ControlCommand& raw) const
+{
+    umas::input::ControlCommand scaled = raw;
+    scaled.yaw *= ui->spinBox_gain_yaw->value();
+    scaled.march *= ui->spinBox_gain_surge->value();
+    scaled.pitch *= ui->spinBox_gain_pitch->value();
+    scaled.lag *= ui->spinBox_gain_sway->value();
+    scaled.depth *= ui->spinBox_gain_depth->value();
+    scaled.roll *= ui->spinBox_gain_roll->value();
+    return scaled;
+}
+
+void MainWindow::updateControlLabels(const umas::input::ControlCommand& scaled)
+{
+    ui->label_controlYaw->setNum(scaled.yaw);
+    ui->label_controlMarch->setNum(scaled.march);
+    ui->label_controlDif->setNum(scaled.pitch);
+    ui->label_controlLag->setNum(scaled.lag);
+    ui->label_controlDepth->setNum(scaled.depth);
+    ui->label_controlKren->setNum(scaled.roll);
+}
+
+void MainWindow::setBottom()
+{
+    setBottom_mode();
+
+    // Подключение кнопок скорости к единому слоту
+    // Предполагается, что в UI кнопки переименованы в pushButton_speedFast и т.д.
+    if (ui->pushButton_speedFast) {
+        connect(ui->pushButton_speedFast, &QPushButton::clicked,
+                this, [this]() { setSpeedMode(SpeedMode::Fast); });
+    }
+
+    if (ui->pushButton_speedMedium) {
+        connect(ui->pushButton_speedMedium, &QPushButton::clicked,
+                this, [this]() { setSpeedMode(SpeedMode::Medium); });
+    }
+
+    if (ui->pushButton_speedSlow) {
+        connect(ui->pushButton_speedSlow, &QPushButton::clicked,
+                this, [this]() { setSpeedMode(SpeedMode::Slow); });
+    }
+    connect(ui->pushButton_zeroYaw, &QPushButton::clicked,
+            rosBridge, &RosBridge::zeroYawInternal,
+            Qt::QueuedConnection);
+
+}
+
+void MainWindow::setBottom_mode()
+{
     ui->pushButton_modeManual->setCheckable(true);
     ui->pushButton_modeAutomated->setCheckable(true);
-    QButtonGroup *mode = new QButtonGroup(ts);
+    ui->pushButton_modeAutomatic->setCheckable(false);
+    QButtonGroup *mode = new QButtonGroup(this);
     mode->addButton(ui->pushButton_modeManual);
     mode->addButton(ui->pushButton_modeAutomated);
+    mode->addButton(ui->pushButton_modeAutomatic);
     mode->setExclusive(true);
+
     ui->pushButton_modeManual->setChecked(true);
 
-    ui->pushButton_modeAutomated_march->setCheckable(true);
-    ui->pushButton_modeAutomated_lag->setCheckable(true);
-    ui->pushButton_modeAutomated_psi->setCheckable(true);
-    ui->pushButton_modeAutomated_tetta->setCheckable(true);
-    ui->pushButton_modeAutomated_gamma->setCheckable(true);
-    QButtonGroup *modeAutomated = new QButtonGroup(ts);
-    modeAutomated->addButton(ui->pushButton_modeAutomated_march);
-    modeAutomated->addButton(ui->pushButton_modeAutomated_lag);
-    modeAutomated->addButton(ui->pushButton_modeAutomated_psi);
-    modeAutomated->addButton(ui->pushButton_modeAutomated_tetta);
-    modeAutomated->addButton(ui->pushButton_modeAutomated_gamma);
+    ui->pushButton_modeAutomated_surge->setCheckable(true);
+    ui->pushButton_modeAutomated_sway->setCheckable(true);
+    ui->pushButton_modeAutomated_depth->setCheckable(true);
+    ui->pushButton_modeAutomated_yaw->setCheckable(true);
+    ui->pushButton_modeAutomated_pitch->setCheckable(true);
+    ui->pushButton_modeAutomated_roll->setCheckable(true);
+    QButtonGroup *modeAutomated = new QButtonGroup(this);
+    modeAutomated->addButton(ui->pushButton_modeAutomated_surge);
+    modeAutomated->addButton(ui->pushButton_modeAutomated_sway);
+    modeAutomated->addButton(ui->pushButton_modeAutomated_depth);
+    modeAutomated->addButton(ui->pushButton_modeAutomated_yaw);
+    modeAutomated->addButton(ui->pushButton_modeAutomated_pitch);
+    modeAutomated->addButton(ui->pushButton_modeAutomated_roll);
     modeAutomated->setExclusive(false);
-    setBottom_powerMode(ui, ts);
 
+    connect(ui->pushButton_modeAutomated_surge, &QPushButton::toggled,
+            this, [this](bool checked){ emit controlFlagRequested(0, checked); });
 
-    setBottom_connect(ui, ts);
+    connect(ui->pushButton_modeAutomated_sway, &QPushButton::toggled,
+            this, [this](bool checked){ emit controlFlagRequested(1, checked); });
+
+    connect(ui->pushButton_modeAutomated_depth, &QPushButton::toggled,
+            this, [this](bool checked){ emit controlFlagRequested(2, checked); });
+
+    connect(ui->pushButton_modeAutomated_yaw, &QPushButton::toggled,
+            this, [this](bool checked){ emit controlFlagRequested(3, checked); });
+
+    connect(ui->pushButton_modeAutomated_pitch, &QPushButton::toggled,
+            this, [this](bool checked){ emit controlFlagRequested(4, checked); });
+
+    connect(ui->pushButton_modeAutomated_roll, &QPushButton::toggled,
+            this, [this](bool checked){ emit controlFlagRequested(5, checked); });
+
+    connect(this, &MainWindow::controlFlagRequested,
+            rosBridge, &RosBridge::setControlFlagInternal,
+            Qt::QueuedConnection);
 }
 
-void MainWindow::setBottom_powerMode(Ui::MainWindow *ui, QObject *ts)
+
+void MainWindow::setTab()
 {
-    QButtonGroup *powerMode = new QButtonGroup(ts);
-    powerMode->addButton(ui->pushButton_powerMode_2);
-    powerMode->addButton(ui->pushButton_powerMode_3);
-    powerMode->addButton(ui->pushButton_powerMode_4);
-    powerMode->addButton(ui->pushButton_powerMode_5);
-
-    ui->pushButton_powerMode_2->setCheckable(true);
-    ui->pushButton_powerMode_3->setCheckable(true);
-    ui->pushButton_powerMode_4->setCheckable(true);
-    ui->pushButton_powerMode_5->setCheckable(true);
-
-    ui->pushButton_powerMode_2->setChecked(true);
-
-    uv_interface.setPowerMode(power_Mode::MODE_2);
-
-
-    connect(
-        ui->pushButton_powerMode_2, SIGNAL(clicked()),
-        ts, SLOT(pushButton_on_powerMode_2()));
-
-    connect(
-        ui->pushButton_powerMode_3, SIGNAL(clicked()),
-        ts, SLOT(pushButton_on_powerMode_3()));
-
-    connect(
-        ui->pushButton_powerMode_4, SIGNAL(clicked()),
-        ts, SLOT(pushButton_on_powerMode_4()));
-
-    connect(
-        ui->pushButton_powerMode_5, SIGNAL(clicked()),
-        ts, SLOT(pushButton_on_powerMode_5()));
-}
-
-void MainWindow::pushButton_on_powerMode_2()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_2);
-}
-
-void MainWindow::pushButton_on_powerMode_3()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_3);
-}
-
-void MainWindow::pushButton_on_powerMode_4()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_4);
-}
-
-void MainWindow::pushButton_on_powerMode_5()
-{
-    uv_interface.setPowerMode(power_Mode::MODE_5);
-}
-
-void MainWindow::setBottom_connect(Ui::MainWindow *ui, QObject *ts)
-{
-    connect(
-        ui->pushButton_modeManual, SIGNAL(clicked()),
-        ts, SLOT(e_CSModeManualToggled()));
-
-    connect(
-        ui->pushButton_modeAutomated, SIGNAL(clicked()),
-        ts, SLOT(e_CSModeAutomatedToggled()));
-
-    connect(
-        ui->pushButton_modeAutomated_gamma, SIGNAL(toggled(bool)),
-        ts, SLOT(stabilizeRollToggled(bool)));
-
-    connect(
-        ui->pushButton_modeAutomated_lag, SIGNAL(toggled(bool)),
-        ts, SLOT(stabilizeLagToggled(bool)));
-
-    connect(
-        ui->pushButton_modeAutomated_march, SIGNAL(toggled(bool)),
-        ts, SLOT(stabilizeMarchToggled(bool)));
-
-    connect(
-        ui->pushButton_modeAutomated_psi, SIGNAL(toggled(bool)),
-        ts, SLOT(stabilizeYawToggled(bool)));
-
-    connect(
-        ui->pushButton_modeAutomated_tetta, SIGNAL(toggled(bool)),
-        ts, SLOT(stabilizePitchToggled(bool)));
-
-    connect(
-        ui->comboBox_modeSelection, SIGNAL(activated(int)),
-        ts, SLOT(setModeSelection(int)));
-
-    connect(
-        ui->pushButton_connection, SIGNAL(clicked()),
-        ts, SLOT(setConnection()));
-
-    connect(
-        ui->pushButton_setupIMU, SIGNAL(clicked()),
-        ts, SLOT(setupIMU()));
-}
-
-void MainWindow::setTab(Ui::MainWindow *ui)
-{
-    ui->tabWidget->setTabText(0, "Карта");
+    ui->tabWidget->setTabText(0, "Камера");
     ui->tabWidget->setTabText(1, "БСО");
     ui->tabWidget->setTabText(2,  "Контроль сообщений");
     ui->tabWidget->setTabText(3,  "Режимы питания");
+    ui->tabWidget->setCurrentIndex(4);
 }
 
+void MainWindow::setUpdateUI()
+{
+    connect(this, SIGNAL(updateCompass(float)),
+            this, SLOT(updateUi_Compass(float)));
+    // connect(this, SIGNAL(updateSetupMsg()),
+    //         checkMsg, SLOT(updateUi_checkMsg()));
+    // connect(this, SIGNAL(updateDataMission()),
+    //         modeAutomatic, SLOT(updateUi_DataMission()));
+}
 
+void MainWindow::loadSettings()
+{
+    QSettings settings("/UMAS_GUI/umas_settings.ini", QSettings::IniFormat);
 
+    for (int mode = 0; mode < 3; ++mode) {
+        settings.beginGroup(QString("SpeedMode_%1").arg(mode));
 
+        QMap<QString, double> gains;
+        for (int i = 0; i < gainNames.size(); ++i) {
+            double defaultValue = 0;
+            if (mode == static_cast<int>(SpeedMode::Slow)) defaultValue = 10;
+            else if (mode == static_cast<int>(SpeedMode::Medium)) defaultValue = 50;
+            else if (mode == static_cast<int>(SpeedMode::Fast)) defaultValue = 100;
 
+            gains[gainNames[i]] = settings.value(gainNames[i], defaultValue).toDouble();
+        }
 
+        speedModeGains[mode] = gains;
+        settings.endGroup();
+    }
+
+    int savedMode = settings.value("CurrentSpeedMode", static_cast<int>(SpeedMode::Medium)).toInt();
+    currentMode = static_cast<SpeedMode>(savedMode);
+}
+
+void MainWindow::saveSettings()
+{
+    QSettings settings("/UMAS_GUI/umas_settings.ini", QSettings::IniFormat);
+
+    for (int mode = 0; mode < 3; ++mode) {
+        settings.beginGroup(QString("SpeedMode_%1").arg(mode));
+
+        for (int i = 0; i < gainNames.size(); ++i) {
+            settings.setValue(gainNames[i], speedModeGains[mode][gainNames[i]]);
+        }
+
+        settings.endGroup();
+    }
+
+    settings.setValue("CurrentSpeedMode", static_cast<int>(currentMode));
+}
+
+void MainWindow::saveCurrentModeGains()
+{
+    for (int i = 0; i < gainSpinBoxes.size(); ++i) {
+        speedModeGains[static_cast<int>(currentMode)][gainNames[i]] = gainSpinBoxes[i]->value();
+    }
+    saveSettings();
+}
+
+void MainWindow::setSpinBoxValuesForCurrentMode()
+{
+    for (auto spinBox : gainSpinBoxes) {
+        spinBox->blockSignals(true);
+    }
+
+    for (int i = 0; i < gainSpinBoxes.size(); ++i) {
+        gainSpinBoxes[i]->setValue(speedModeGains[static_cast<int>(currentMode)][gainNames[i]]);
+    }
+
+    for (auto spinBox : gainSpinBoxes) {
+        spinBox->blockSignals(false);
+    }
+}
+
+// Единый слот для переключения режима скорости
+void MainWindow::setSpeedMode(SpeedMode mode)
+{
+    saveCurrentModeGains();
+    currentMode = mode;
+    setSpinBoxValuesForCurrentMode();
+
+    // Обновляем стили кнопок (используем новые имена)
+    ui->pushButton_speedFast->setStyleSheet(
+        mode == SpeedMode::Fast ? "background-color: purple; font-size: 25px" :
+                                   "background-color: white; font-size: 25px");
+    ui->pushButton_speedMedium->setStyleSheet(
+        mode == SpeedMode::Medium ? "background-color: purple; font-size: 25px" :
+                                     "background-color: white; font-size: 25px");
+    ui->pushButton_speedSlow->setStyleSheet(
+        mode == SpeedMode::Slow ? "background-color: purple; font-size: 25px" :
+                                   "background-color: white; font-size: 25px");
+
+    saveSettings();
+}
+
+void MainWindow::updateUi_Compass(float yaw)
+{
+    ui->compass->setYaw(yaw);
+}
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
-
-void MainWindow::timerUpdateImpact(int periodUpdateMsec){
-    QTimer *updateTimer = new QTimer(this);
-    connect(
-        updateTimer, SIGNAL(timeout()),
-        this, SLOT(updateUi_fromControl())
-        );
-    updateTimer->start(periodUpdateMsec);
-
-}
-
-void MainWindow::updateUi_fromControl(){
-    ControlData control = uv_interface.getControlData();
-    DataAH127C imuData = uv_interface.getImuData();
-    bool mode = uv_interface.getCSMode();
-
-    ui->label_impactDataDepth->setText(QString::number(control.depth, 'f', 2));
-    ui->label_impactDataRoll->setText(QString::number(control.roll, 'f', 2));
-    ui->label_impactDataPitch->setText(QString::number(control.pitch, 'f', 2));
-    ui->label_impactDataYaw->setText(QString::number(control.yaw, 'f', 2));
-    ui->label_impactDataMarch->setText(QString::number(control.march, 'f', 2));
-    ui->label_impactDataLag->setText(QString::number(control.lag, 'f', 2));
-
-    ui->compass->setYawDesirable(control.yaw, imuData.yaw, mode);
-}
-
-void MainWindow::updateUi_Compass(float yaw) {
-    ui->compass->setYaw(yaw);
-}
-
-void MainWindow::updateUi_IMU(DataAH127C imuData){
-    ui->label_IMUdata_accel_X->setText(QString::number(imuData.X_accel, 'f', 2));
-    ui->label_IMUdata_accel_Y->setText(QString::number(imuData.Y_accel, 'f', 2));
-    ui->label_IMUdata_accel_Z->setText(QString::number(imuData.Z_accel, 'f', 2));
-
-    ui->label_IMUdata_rate_X->setText(QString::number(imuData.X_rate, 'f', 2));
-    ui->label_IMUdata_rate_Y->setText(QString::number(imuData.Y_rate, 'f', 2));
-    ui->label_IMUdata_rate_Z->setText(QString::number(imuData.Z_rate, 'f', 2));
-
-    ui->label_IMUdata_magn_X->setText(QString::number(imuData.X_magn, 'f', 2));
-    ui->label_IMUdata_magn_Y->setText(QString::number(imuData.Y_magn, 'f', 2));
-    ui->label_IMUdata_magn_Z->setText(QString::number(imuData.Z_magn, 'f', 2));
-
-    ui->label_IMUdata_q0->setText(QString::number(imuData.quat[0], 'f', 2));
-    ui->label_IMUdata_q1->setText(QString::number(imuData.quat[1], 'f', 2));
-    ui->label_IMUdata_q2->setText(QString::number(imuData.quat[2], 'f', 2));
-    ui->label_IMUdata_q3->setText(QString::number(imuData.quat[3], 'f', 2));
-
-    ui->label_IMUdata_yaw->setText(QString::number(imuData.yaw, 'f', 2));
-    ui->label_IMUdata_pitch->setText(QString::number(imuData.pitch, 'f', 2));
-    ui->label_IMUdata_roll->setText(QString::number(imuData.roll, 'f', 2));
-}
-
-void MainWindow::updateUi_SetupMsg()
-{
-    power_Mode pMode = uv_interface.getPowerMode();
-    bool modeSelection = uv_interface.getModeSelection();
-    bool CsMode = uv_interface.getCSMode();
-    ControlContoursFlags controlContoursFlags = uv_interface.getControlContoursFlags();
-    ControlData control = uv_interface.getControlData();
-    AUVCurrentData auvData = uv_interface.getAUVCurrentData();
-
-    ui->label_tab_setupMsg_send_powerMode_count->setNum(static_cast<int>(pMode));
-    ui->label_tab_setupMsg_send_modeAUV_selection_mode->setText(QString::number(modeSelection, 'f', 2));
-    ui->label_tab_setupMsg_send_cSMode_count->setNum(static_cast<int>(CsMode));
-    ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_yaw->setNum(controlContoursFlags.yaw);
-    ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_pitch->setNum(controlContoursFlags.pitch);
-    ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_roll->setNum(controlContoursFlags.roll);
-    ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_march->setNum(controlContoursFlags.march);
-    ui->label_tab_setupMsg_send_controlContoursFlags_data_flags_lag->setNum(controlContoursFlags.lag);
-    ui->label_tab_setupMsg_send_Impact_data_count_yaw->setNum(control.yaw);
-    ui->label_tab_setupMsg_send_Impact_data_count_pitch->setNum(control.pitch);
-    ui->label_tab_setupMsg_send_Impact_data_count_roll->setNum(control.roll);
-    ui->label_tab_setupMsg_send_Impact_data_count_march->setNum(control.march);
-    ui->label_tab_setupMsg_send_Impact_data_count_lag->setNum(control.lag);
-    ui->label_tab_setupMsg_send_Impact_data_count_depth->setNum(control.depth);
-
-    ui->labelt_tab_setupMsg_received_modeAUV_selection_mode->setNum(auvData.modeAUV_Real);
-    ui->label_tab_setupMsg_received_cSMode_count->setNum(auvData.modeReal);
-    ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_yaw->setNum(auvData.controlReal.yaw);
-    ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_pitch->setNum(auvData.controlReal.pitch);
-    ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_roll->setNum(auvData.controlReal.roll);
-    ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_march->setNum(auvData.controlReal.march);
-    ui->label_tab_setupMsg_received_controlContoursFlags_data_flags_lag->setNum(auvData.controlReal.lag);
-//    ui->label_tab_setupMsg_received_Impact_data_count_yaw->setNum(auvData.signalVMA_real.yaw);
-//    ui->label_tab_setupMsg_received_Impact_data_count_pitch->setNum(auvData.signalVMA_real.pitch);
-//    ui->label_tab_setupMsg_received_Impact_data_count_roll->setNum(auvData.signalVMA_real.roll);
-//    ui->label_tab_setupMsg_received_Impact_data_count_march->setNum(auvData.signalVMA_real.march);
-//    ui->label_tab_setupMsg_received_Impact_data_count_lag->setNum(auvData.signalVMA_real.lag);
-//    ui->label_tab_setupMsg_received_Impact_data_count_depth->setNum(auvData.signalVMA_real.depth);
-}
-
-void MainWindow::setConnection()
-{
-    ui->pushButton_connection->setEnabled(false);
-
-    pultProtocol = new Pult::PC_Protocol(QHostAddress("192.168.137.2"), 13051,
-                                         QHostAddress("192.168.137.11"), 13050, 10);
-
-    qDebug() << "-----start exchange";
-    pultProtocol->startExchange();
-
-    connect(pultProtocol, SIGNAL(dataReceived()),
-            this, SLOT(updateUi_fromAgent()));
-}
-
-void MainWindow::stabilizeMarchToggled(bool state) {
-    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_MARCH, state);
-}
-
-void MainWindow::stabilizeYawToggled(bool state) {
-    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_YAW, state);
-}
-
-void MainWindow::stabilizePitchToggled(bool state) {
-    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_PITCH, state);
-}
-
-void MainWindow::stabilizeRollToggled(bool state) {
-    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_ROLL, state);
-}
-
-
-void MainWindow::stabilizeLagToggled(bool state) {
-    uv_interface.setControlContoursFlags(e_StabilizationContours::CONTOUR_LAG, state);
-}
-
-void MainWindow::e_CSModeManualToggled() {
-    uv_interface.setCSMode(e_CSMode::MODE_MANUAL);
-}
-
-void MainWindow::e_CSModeAutomatedToggled() {
-    ui->pushButton_modeAutomated_gamma->setChecked(true);
-    ui->pushButton_modeAutomated_lag->setChecked(true);
-    ui->pushButton_modeAutomated_march->setChecked(true);
-    ui->pushButton_modeAutomated_psi->setChecked(true);
-    ui->pushButton_modeAutomated_tetta->setChecked(true);
-
-    uv_interface.setCSMode(e_CSMode::MODE_AUTOMATED);
-}
-
-
-void MainWindow::setModeSelection(int index)
-{
-    if (index == 1)
-        uv_interface.setModeSelection(false);
-    else
-        uv_interface.setModeSelection(true);
-
-}
-
-void MainWindow::updateUi_fromAgent() {
-    DataAH127C imuData = uv_interface.getImuData();
-
-    emit updateCompass(imuData.yaw);
-    emit updateIMU(imuData);
-    emit updateSetupMsg();
-}
-
-void MainWindow::setupIMU()
-{
-    SetupIMU window_setupIMU;
-    window_setupIMU.setModal(false);
-    window_setupIMU.exec();
-}
-

@@ -1,19 +1,37 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+
+
 #include <QMainWindow>
 #include <QTimer>
 #include <QDebug>
-
+#include <QProcess>
+#include <QTime>
 #include <QButtonGroup>
 
-#include "remote_control.h"
-#include "uv_state.h"
-#include "i_user_interface_data.h"
-#include "pc_protocol.h"
-#include "i_server_data.h"
-#include "setup_imu.h"
+#include <QString>
 
+// Legacy include'ы удалены.
+
+#include <QKeyEvent>
+#include <memory>
+
+#include "joy_stick.h"
+#include "key_board.h"
+#include "input/i_input_source.h"
+#include "input/gamepad_input_source.h"
+#include "control/control_service.h"
+// #include "power_system.h"
+// #include "mode_automatic.h"
+// #include "map_widget.h"
+#include "diagnostic_board.h"
+#include "ros2_bridge.h"
+#include "uv_state.h"
+
+#include <QSettings>
+#include <QSpinBox>
+#include "Gamepad/gamepad.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -26,60 +44,97 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void setConsole();
 
-// оптимизация места
-    void setBottom(Ui::MainWindow *ui, QObject *ts);
-    void setBottom_powerMode(Ui::MainWindow *ui, QObject *ts);
-    void setBottom_connect(Ui::MainWindow *ui, QObject *ts);
-    void setTab(Ui::MainWindow *ui);
-//    void setLable_setupMsg(Ui::MainWindow *ui, QObject *ts);
+private:
+    Gamepad *gamepad = nullptr;
+    std::unique_ptr<GamepadInputSource> gamepadInput;
+    // Используем enum class с фиксированным типом uint8_t
+    enum class SpeedMode : uint8_t { Slow = 0, Medium = 1, Fast = 2 };
+    SpeedMode currentMode; // инициализируется в конструкторе
+
+    QMap<int, QMap<QString, double>> speedModeGains; // [режим][имя]
+    QVector<QSpinBox*> gainSpinBoxes;
+    QStringList gainNames = {"surge", "sway", "depth", "yaw", "pitch", "roll"};
+
+    void saveCurrentModeGains();
+    void setSpinBoxValuesForCurrentMode();
+    void saveSettings();
+    void loadSettings();
+    void useGamepad();
+
+    void setTimer_updateImpact(int periodUpdateMsec);
+    void setBottom();
+    void setBottom_mode();
 
 
-//
+    /*!
+     * \brief setTab устанавливает названия вкладкам.
+     */
+    void setTab();
+    void setUpdateUI();
+    void setWidget();
 
-    void timerUpdateImpact(int periodUpdateMsec);
+    void setInterface();
+
+
+    bool status_keyboard = false;
+
+
+    // legacy widgets (сейчас не используются в сборке)
+    // PowerSystem         *powerSystem;
+    // CheckMsg            *checkMsg;
+    // ModeAutomatic       *modeAutomatic;
+    Diagnostic_board    *diagnostic_board;
+    RosBridge           *rosBridge;
+    UVState             *uvState;
 
 private slots:
+    // Единый слот для переключения режима скорости
+    void setSpeedMode(SpeedMode mode);
+
+    void displayText(QString str);
     void updateUi_fromControl();
-    void stabilizeYawToggled(bool state);
-    void stabilizePitchToggled(bool state);
-    void stabilizeRollToggled(bool state);
-    void stabilizeMarchToggled(bool state);
-    void stabilizeLagToggled(bool state);
 
-    void e_CSModeManualToggled();
-    void e_CSModeAutomatedToggled();
-
-    void pushButton_on_powerMode_2();
-    void pushButton_on_powerMode_3();
-    void pushButton_on_powerMode_4();
-    void pushButton_on_powerMode_5();
-
-    void setModeSelection(int index);
-
-    void updateUi_fromAgent();
+    /*!
+     * \brief updateUi_Compass слот обновления компаса на UI форме.
+     * \param yaw новое значение курса.
+     */
     void updateUi_Compass(float yaw);
-    void updateUi_IMU(DataAH127C imuData);
-    void updateUi_SetupMsg();
+    void useKeyBoard();
+    void useJoyStick();
 
-    void setConnection();
-
-    void setupIMU();
 
 signals:
     void updateCompass(float yaw);
-    void updateIMU(DataAH127C imuData);
-    void updateSetupMsg();
 
-private:
+    void publishTwistRequested(double x, double y, double z,
+                               double angular_x, double angular_y, double angular_z);
+    void controlFlagRequested(uint8_t bit, bool value);
+    // legacy signals (пока не используются)
+    // void updateIMU(DataAH127C imuData);
+    // void updateSetupMsg();
+    // void updateDataMission();
+    // void updateStatePushButton();
+    // void updateMap();
+    // void pointAdded(qreal x, qreal y);
+    // void toggleMissionPlanning_cppPointsEnabled();
+    // void signal_sendCurrentPos(double latitude, double longitude);
+
+protected:
     Ui::MainWindow *ui;
     QTimer *updateTimer = nullptr;
 
-    IUserInterfaceData uv_interface;
-    Pult::PC_Protocol* pultProtocol;
+    std::unique_ptr<JoyStick> joyStick;
+    std::unique_ptr<KeyBoard> keyBoard;
+    umas::input::IInputSource *activeInput = nullptr;
+    umas::control::ControlService controlService;
 
-    RemoteControl joystick;
-    IServerData data;
+    umas::input::ControlCommand applyGains(const umas::input::ControlCommand& raw) const;
+    void updateControlLabels(const umas::input::ControlCommand& scaled);
 
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
 };
+
 #endif // MAINWINDOW_H

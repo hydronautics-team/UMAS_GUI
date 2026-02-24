@@ -11,5 +11,6 @@
 	"qpainter": "cpp",
 	"qchartview": "cpp",
 	"qtmath": "cpp"
-}
+},
+"ros.distro": "iron"
 }

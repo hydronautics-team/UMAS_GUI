@@ -4,7 +4,7 @@ Compass::Compass(QWidget *parent) :
     QFrame(parent) {
     setupUi(this);
     setYaw(0);
-    setYawDesirable(0, 0, 0);
+    setYawDesirable(0, 0, e_CSMode::MODE_MANUAL);
 }
 
 void Compass::paintEvent(QPaintEvent *e) {
@@ -14,7 +14,7 @@ void Compass::paintEvent(QPaintEvent *e) {
     painter.setRenderHint(QPainter::Antialiasing, true); // сглаживание
     painter.translate(width() / 2, height() / 2); // перенос системы координат
     int side = qMin(width(), height());
-    painter.scale(side / 200, side / 200); // масштабирование СК
+    painter.scale(side / 170, side / 170); // масштабирование СК
     painter.save();
     painter.rotate(yaw);
     painter.drawConvexPolygon(arrowCompass, 6);
@@ -33,7 +33,7 @@ void Compass::paintEvent(QPaintEvent *e) {
             painter.drawLine(0, -55, 0, -60);
         else {
             painter.drawLine(0, -50, 0, -60);
-            font.setPointSize(5);
+            font.setPointSize(3);
             painter.setFont(font);
             painter.drawText(-20, -85, 40, 40, Qt::AlignCenter | Qt::AlignTop, QString::number(i * 6));
         }
@@ -51,8 +51,8 @@ void Compass::setYaw(double yawNew) {
     update();
 }
 
-void Compass::setYawDesirable(double yawDesirableNew, double YawFromIMU, bool mode) {
-    if (mode == 0)
+void Compass::setYawDesirable(double yawDesirableNew, double YawFromIMU, e_CSMode mode) {
+    if (mode == e_CSMode::MODE_AUTOMATED)
         yawDesirable = yawDesirableNew + YawFromIMU;
     else
         yawDesirable = yawDesirableNew;
