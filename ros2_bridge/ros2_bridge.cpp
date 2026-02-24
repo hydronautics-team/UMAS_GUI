@@ -18,6 +18,14 @@ bool RosBridge::isReady() const
     return is_ready_.load();
 }
 
+sensor_msgs::msg::Image::ConstSharedPtr RosBridge::takeLatestCameraFrame()
+{
+    std::lock_guard<std::mutex> lock(camera_mutex_);
+    auto frame = latest_camera_frame_;
+    latest_camera_frame_.reset();
+    return frame;
+}
+
 void RosBridge::run()
 {
     if (!rclcpp::ok()) {
@@ -27,7 +35,7 @@ void RosBridge::run()
     // Namespace "qt_controller" — все относительные топики получат префикс /qt_controller/
     node_ = rclcpp::Node::make_shared("qt_controller_node", "qt_controller");
 
-    twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("control/data", 10);
+    twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/control/data", 10);
 
     pose_sub_ = node_->create_subscription<geometry_msgs::msg::Pose>(
         "pose_topic", 10,
@@ -39,6 +47,14 @@ void RosBridge::run()
             pose.y = msg->position.y;
             pose.z = msg->position.z;
             emit poseReceived(pose);
+        });
+
+    camera_sub_ = node_->create_subscription<sensor_msgs::msg::Image>(
+        "/stingray_core/topics/camera_1",
+        rclcpp::SensorDataQoS(),
+        [this](sensor_msgs::msg::Image::ConstSharedPtr msg) {
+            std::lock_guard<std::mutex> lock(camera_mutex_);
+            latest_camera_frame_ = std::move(msg);
         });
 
     control_flags_pub_ =

@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "video/video_player_widget.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -28,6 +29,17 @@ MainWindow::MainWindow(QWidget *parent)
             Qt::QueuedConnection);
 
     setWidget();
+
+    cameraFrameTimer_ = new QTimer(this);
+    connect(cameraFrameTimer_, &QTimer::timeout, this, [this]() {
+        if (!rosBridge || !videoPlayer_) return;
+        auto frame = rosBridge->takeLatestCameraFrame();
+        if (frame) {
+            videoPlayer_->onFrame(frame);
+        }
+    });
+    cameraFrameTimer_->start(33);
+
     setConsole();
     setTimer_updateImpact(10);
     setBottom();
@@ -76,6 +88,9 @@ void MainWindow::setWidget()
     // ui->verticalLayout_modeAutomatic->addWidget(modeAutomatic);
     diagnostic_board = new Diagnostic_board(this);
     ui->horizontalLayout_diagnosticBoard->addWidget(diagnostic_board);
+
+    videoPlayer_ = new VideoPlayerWidget(this);
+    ui->tab_video->addWidget(videoPlayer_);
 
     // connect(
     //     modeAutomatic,&ModeAutomatic::displayText_toConsole,

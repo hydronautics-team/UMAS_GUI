@@ -12,7 +12,6 @@
 
 #include <QString>
 
-// Legacy include'ы удалены.
 
 #include <QKeyEvent>
 #include <memory>
@@ -36,6 +35,8 @@
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
+
+class VideoPlayerWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -88,6 +89,8 @@ private:
     Diagnostic_board    *diagnostic_board;
     RosBridge           *rosBridge;
     UVState             *uvState;
+    VideoPlayerWidget   *videoPlayer_ = nullptr;
+    QTimer              *cameraFrameTimer_ = nullptr;
 
 private slots:
     // Единый слот для переключения режима скорости

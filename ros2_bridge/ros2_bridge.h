@@ -4,9 +4,11 @@
 #include <geometry_msgs/msg/pose.hpp>
 #include <std_msgs/msg/u_int8.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include <sensor_msgs/msg/image.hpp>
 #include <QThread>
 #include <QObject>
 #include <atomic>
+#include <mutex>
 
 #include "uv_state.h"
 
@@ -18,6 +20,7 @@ public:
     ~RosBridge() override;
 
     bool isReady() const;
+    sensor_msgs::msg::Image::ConstSharedPtr takeLatestCameraFrame();
 
     void run() override;
 
@@ -39,8 +42,12 @@ private:
     rclcpp::Node::SharedPtr node_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr twist_pub_;
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr pose_sub_;
+    rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr camera_sub_;
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr control_flags_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr zero_yaw_pub_;
+
+    std::mutex camera_mutex_;
+    sensor_msgs::msg::Image::ConstSharedPtr latest_camera_frame_;
 
     std::atomic<bool> is_ready_{false};
     uint8_t control_flags_ = 0;

@@ -22,6 +22,7 @@ find_package(Qt5 REQUIRED COMPONENTS Core  )
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(ament_cmake REQUIRED)
 
 # include_directories(/opt/ros/humble/include)
@@ -36,6 +37,7 @@ include_directories("${PROJECT_SOURCE_DIR}/tabs")
 include_directories("${PROJECT_SOURCE_DIR}/mods")
 include_directories("${PROJECT_SOURCE_DIR}/Diagnostic_bord_UI/Diagnostic_bord")
 include_directories("${PROJECT_SOURCE_DIR}/ros2_bridge")
+include_directories("${PROJECT_SOURCE_DIR}/video")
 include_directories("${PROJECT_SOURCE_DIR}")
 
 include_directories(${Python3_INCLUDE_DIRS})
@@ -76,6 +78,8 @@ set(PROJECT_SOURCES
         Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.ui
         ros2_bridge/ros2_bridge.h
         ros2_bridge/ros2_bridge.cpp
+        video/video_player_widget.h
+        video/video_player_widget.cpp
         )
 
 
@@ -103,7 +107,7 @@ else()
     endif()
 endif()
 
-ament_target_dependencies(UMAS_GUI rclcpp geometry_msgs)
+ament_target_dependencies(UMAS_GUI rclcpp geometry_msgs std_msgs sensor_msgs)
 
 target_link_libraries(UMAS_GUI
     sfml-graphics sfml-window sfml-system
