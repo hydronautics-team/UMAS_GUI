@@ -77,29 +77,19 @@ MainWindow::MainWindow(QWidget *parent)
     inputGroup->addButton(ui->gamepad_btn);
     inputGroup->setExclusive(true);
 }
-
 void MainWindow::setWidget()
 {
-    // powerSystem = new PowerSystem(this);
-    // ui->horizontalLayout_for_powerSystem->addWidget(powerSystem);
-    // checkMsg = new CheckMsg(this);
-    // ui->horizontalLayout_for_checkMsg->addWidget(checkMsg);
-    // modeAutomatic = new ModeAutomatic(this);
-    // ui->verticalLayout_modeAutomatic->addWidget(modeAutomatic);
     diagnostic_board = new Diagnostic_board(this);
     ui->horizontalLayout_diagnosticBoard->addWidget(diagnostic_board);
 
     videoPlayer_ = new VideoPlayerWidget(this);
-    ui->tab_video->addWidget(videoPlayer_);
 
-    // connect(
-    //     modeAutomatic,&ModeAutomatic::displayText_toConsole,
-    //     this, &MainWindow::displayText);
-    // connect(
-    //     modeAutomatic, &ModeAutomatic::set_stackedWidget_mode,
-    //     ui->stackedWidget_mode, &QStackedWidget::setCurrentIndex);
+    if (!ui->tab_video->layout()) {
+        ui->tab_video->setLayout(new QVBoxLayout(ui->tab_video));
+    }
+
+    ui->tab_video->layout()->addWidget(videoPlayer_);
 }
-
 
 void MainWindow::setConsole()
 {
