@@ -76,3 +76,4 @@ WORKDIR /UMAS_GUI
 COPY --from=builder /UMAS_GUI/build /UMAS_GUI/build
 
 CMD ["/bin/bash"]
+CMD ["/UMAS_GUI/build/UMAS_GUI"]
