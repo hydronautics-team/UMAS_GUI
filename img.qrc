@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>img/setupIMU_for_agent.png</file>
         <file>map/map.qml</file>
     </qresource>
 </RCC>
