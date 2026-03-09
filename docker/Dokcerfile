@@ -1,0 +1,78 @@
+# ================================
+# Stage 1 — Build
+# ================================
+FROM ubuntu:22.04 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    curl \
+    lsb-release \
+    gnupg2 \
+    locales \
+    python3-pip \
+    software-properties-common \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN locale-gen en_US en_US.UTF-8
+
+# ROS2
+RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
+RUN add-apt-repository universe
+RUN add-apt-repository "deb http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main"
+
+RUN apt-get update && apt-get install -y \
+    ros-humble-desktop \
+    libsfml-dev \
+    qtbase5-dev \
+    qtchooser \
+    qt5-qmake \
+    qtbase5-dev-tools \
+    qtdeclarative5-dev \
+    qttools5-dev \
+    qttools5-dev-tools \
+    qtmultimedia5-dev \
+    qtpositioning5-dev \
+    qtlocation5-dev \
+    libqt5serialport5-dev \
+    qtquickcontrols2-5-dev \
+    libqt5charts5-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /UMAS_GUI
+
+# копируем код
+COPY . .
+
+# сборка
+RUN mkdir build && \
+    cd build && \
+    cmake .. && \
+    make -j$(nproc)
+
+# ================================
+# Stage 2 — Runtime
+# ================================
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y \
+    ros-humble-desktop \
+    libsfml2.5 \
+    qtbase5-dev \
+    libqt5serialport5 \
+    libqt5charts5 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /UMAS_GUI
+
+# копируем только бинарник
+COPY --from=builder /UMAS_GUI/build /UMAS_GUI/build
+
+CMD ["/bin/bash"]
