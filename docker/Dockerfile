@@ -74,15 +74,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Workspace
 WORKDIR /UMAS_GUI
 
-
-
 # копируем код
 COPY . .
 
 # сборка
-RUN mkdir build && \
+RUN /bin/bash -c "source /opt/ros/humble/setup.bash && \
+    mkdir build && \
     cd build && \
     cmake .. && \
-    make -j$(nproc)
+    make -j$(nproc)"
 
 CMD ["/bin/bash"]
