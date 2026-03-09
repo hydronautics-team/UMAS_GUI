@@ -21,10 +21,14 @@ fi
 # -------------------------
 # Настройки
 # -------------------------
-CONTAINER_NAME="qt_ros2"
-IMAGE_NAME="qt-ros2"
+# CONTAINER_NAME="qt_ros2"
+# IMAGE_NAME="qt-ros2"
+
+IMAGE_NAME="${DOCKER_IMAGE:-svvyppy/umas_gui:latest}"  # можно переопределить через переменную
+CONTAINER_NAME="umas_gui_app"
 # NETWORK_NAME="ros2-net"
 NETWORK_NAME="host"
+
 
 # ROS2 параметры
 ROS_DOMAIN_ID=1
