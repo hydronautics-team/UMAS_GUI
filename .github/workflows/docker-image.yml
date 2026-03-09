@@ -29,7 +29,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ${{ github.workspace }}
           file: docker/Dockerfile
           push: true
           tags: |
