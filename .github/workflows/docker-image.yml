@@ -29,8 +29,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./UMAS_GUI
-          file: ./UMAS_GUI/docker/Dockerfile
+          context: .
+          file: ./docker/Dockerfile
           push: true
           tags: |
             svvyppy/umas_gui:latest
