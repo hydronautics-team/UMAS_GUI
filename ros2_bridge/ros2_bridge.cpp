@@ -41,6 +41,30 @@ void RosBridge::run()
             emit poseReceived(pose);
         });
 
+    yaw_sub_ = node_->create_subscription<std_msgs::msg::Float64>(
+        "~/orientation/yaw", 10,
+        [this](const std_msgs::msg::Float64::SharedPtr msg) {
+            current_yaw_.store(msg->data);
+        });
+
+    pitch_sub_ = node_->create_subscription<std_msgs::msg::Float64>(
+        "~/orientation/pitch", 10,
+        [this](const std_msgs::msg::Float64::SharedPtr msg) {
+            current_pitch_.store(msg->data);
+        });
+
+    roll_sub_ = node_->create_subscription<std_msgs::msg::Float64>(
+        "~/orientation/roll", 10,
+        [this](const std_msgs::msg::Float64::SharedPtr msg) {
+            current_roll_.store(msg->data);
+        });
+
+    depth_sub_ = node_->create_subscription<std_msgs::msg::Float64>(
+        "~/orientation/depth", 10,
+        [this](const std_msgs::msg::Float64::SharedPtr msg) {
+            current_depth_.store(msg->data);
+        });
+
     control_flags_pub_ =
         node_->create_publisher<std_msgs::msg::UInt8>("/control/loop_flags", 10);
 
@@ -66,10 +90,10 @@ void RosBridge::publishTwistInternal(double x, double y, double z,
     geometry_msgs::msg::Twist msg;
     msg.linear.x  = x;
     msg.linear.y  = y;
-    msg.linear.z  = z;
-    msg.angular.x = angular_x;
-    msg.angular.y = angular_y;
-    msg.angular.z = angular_z;
+    msg.linear.z  = z + current_depth_.load();
+    msg.angular.x = angular_x + current_roll_.load();
+    msg.angular.y = angular_y + current_pitch_.load();
+    msg.angular.z = angular_z + current_yaw_.load();
     twist_pub_->publish(msg);
 }
 
