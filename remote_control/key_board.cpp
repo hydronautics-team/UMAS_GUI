@@ -64,10 +64,10 @@ void KeyBoard::keyPressEvent(QKeyEvent *event)
         command_.roll = -10;
         break;
     case Qt::Key_K:
-        command_.lag = 10;
+        command_.lag = -10;
         break;
     case Qt::Key_Semicolon:
-        command_.lag = -10;
+        command_.lag = 10;
         break;
     }
     dirty_ = true;

@@ -122,6 +122,7 @@ void MainWindow::setTimer_updateImpact(int periodUpdateMsec)
 
 void MainWindow::useKeyBoard()
 {
+    activeInput = nullptr;
     gamepadInput.reset();
     if (gamepad) { delete gamepad; gamepad = nullptr; }
 
@@ -149,6 +150,7 @@ void MainWindow::useKeyBoard()
 
 void MainWindow::useJoyStick()
 {
+    activeInput = nullptr;
     gamepadInput.reset();
     if (gamepad) { delete gamepad; gamepad = nullptr; }
 
@@ -156,24 +158,33 @@ void MainWindow::useJoyStick()
         joyStick = std::make_unique<JoyStick>();
     }
 
+    if (!joyStick->isAvailable()) {
+        displayText("Джойстик не обнаружен. Переключение на клавиатуру.");
+        useKeyBoard();
+        return;
+    }
+
     activeInput = joyStick.get();
 }
 
 void MainWindow::useGamepad()
 {
-    // Отсоединяемся от других источников ввода
+    Gamepad* newGamepad = new Gamepad(0, this);
+    if (!newGamepad->isConnected()) {
+        displayText("Геймпад не обнаружен! Проверьте подключение.");
+        delete newGamepad;
+        newGamepad = nullptr;
+        useKeyBoard();
+        return;
+    }
+
+    // Отсоединяемся от других источников ввода только после успешного подключения
+    activeInput = nullptr;
     joyStick.reset();
     keyBoard.reset();
     gamepadInput.reset();
     if (gamepad) { delete gamepad; gamepad = nullptr; }
-
-    gamepad = new Gamepad(0, this);
-    if (!gamepad->isConnected()) {
-        displayText("Геймпад не обнаружен! Проверьте подключение.");
-        delete gamepad;
-        gamepad = nullptr;
-        return;
-    }
+    gamepad = newGamepad;
 
 
     connect(gamepad, &Gamepad::backButtonPressed,
