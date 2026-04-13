@@ -48,6 +48,11 @@ public:
     void setConsole();
 
 private:
+ QTimer* camera_timer_;
+
+
+
+
     Gamepad *gamepad = nullptr;
     std::unique_ptr<GamepadInputSource> gamepadInput;
     // Используем enum class с фиксированным типом uint8_t
@@ -93,6 +98,10 @@ private:
     QTimer              *cameraFrameTimer_ = nullptr;
 
 private slots:
+    void processCameraFrame();
+
+
+
     // Единый слот для переключения режима скорости
     void setSpeedMode(SpeedMode mode);
 

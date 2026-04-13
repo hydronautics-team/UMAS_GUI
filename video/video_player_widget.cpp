@@ -3,7 +3,7 @@
 #include <QResizeEvent>
 #include <QPixmap>
 #include <QDebug>
-#include <qmath.h>
+#include <sensor_msgs/msg/compressed_image.hpp>
 
 VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
     : QWidget(parent)
@@ -28,13 +28,15 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget* parent)
     layout->addWidget(statusLabel_);
 }
 
+// Слот для сырых изображений (если понадобятся)
 void VideoPlayerWidget::onFrame(sensor_msgs::msg::Image::ConstSharedPtr frame)
 {
     if (!frame) return;
-
+    qDebug() << "onFrame called, encoding:" << QString::fromStdString(frame->encoding)
+             << "size:" << frame->width << "x" << frame->height;
     ++frameCounter_;
 
-    QImage img = rosImageToQImage(frame);
+    QImage img = rosImageToQImage(frame).copy(); 
     if (img.isNull()) {
         statusLabel_->setText("Ошибка конвертации кадра");
         return;
@@ -70,6 +72,58 @@ void VideoPlayerWidget::updateDisplay()
     imageLabel_->setPixmap(pix);
 }
 
+void VideoPlayerWidget::onFrameQImage(const QImage &img)
+{
+    if (img.isNull()) return;
+
+    ++frameCounter_;
+    current_frame_ = img;
+    updateDisplay();
+
+    statusLabel_->setText(
+        QString("Кадр #%1 | %2x%3 | compressed")
+            .arg(frameCounter_)
+            .arg(img.width())
+            .arg(img.height()));
+
+    qDebug() << "onFrameQImage received, size:" << img.width() << "x" << img.height();
+}
+
+QImage VideoPlayerWidget::compressedImageToQImage(const sensor_msgs::msg::CompressedImage::ConstSharedPtr &msg)
+{
+    if (!msg || msg->data.empty()) {
+        qWarning() << "Empty compressed image data";
+        return QImage();
+    }
+
+    qDebug() << "compressedImageToQImage: data size =" << msg->data.size();
+
+    QByteArray data(reinterpret_cast<const char*>(msg->data.data()), msg->data.size());
+    QImage img;
+    if (img.loadFromData(data)) {
+        qDebug() << "Decoded compressed image, size:" << img.width() << "x" << img.height();
+        return img;
+    } else {
+        qWarning() << "Failed to decode compressed image, data size:" << msg->data.size();
+        return QImage();
+    }
+}
+
+void VideoPlayerWidget::onFrameCompressed(const sensor_msgs::msg::CompressedImage::ConstSharedPtr &msg)
+{
+    qDebug() << "onFrameCompressed called";
+    if (!msg) {
+        qDebug() << "msg is null";
+        return;
+    }
+    QImage img = compressedImageToQImage(msg);
+    if (!img.isNull()) {
+        onFrameQImage(img);
+    } else {
+        statusLabel_->setText("Ошибка декодирования сжатого кадра");
+    }
+}
+
 QImage VideoPlayerWidget::rosImageToQImage(const sensor_msgs::msg::Image::ConstSharedPtr& msg)
 {
     if (msg->data.empty() || msg->width == 0 || msg->height == 0) {
@@ -85,7 +139,7 @@ QImage VideoPlayerWidget::rosImageToQImage(const sensor_msgs::msg::Image::ConstS
     else if (encoding == "bgr8") {
         QImage img(msg->data.data(), msg->width, msg->height,
                    msg->step, QImage::Format_RGB888);
-        return img.rgbSwapped().copy();
+        return img.rgbSwapped();
     }
     else if (encoding == "mono8" || encoding == "8UC1") {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
@@ -116,7 +170,6 @@ QImage VideoPlayerWidget::rosImageToQImage(const sensor_msgs::msg::Image::ConstS
         return img.rgbSwapped().copy();
     }
     else if (encoding == "yuv422_yuy2" || encoding == "yuyv") {
-        // Формат YUYV (Y0, U, Y1, V) – 2 пикселя на 4 байта
         QImage rgbImage(msg->width, msg->height, QImage::Format_RGB888);
         const uint8_t* src = msg->data.data();
         size_t step = msg->step;
@@ -132,27 +185,21 @@ QImage VideoPlayerWidget::rosImageToQImage(const sensor_msgs::msg::Image::ConstS
                 uint8_t v  = src_row[3];
                 src_row += 4;
 
-                // Пиксель 0
                 int c = y0 - 16;
                 int d = u - 128;
                 int e = v - 128;
-
                 int r = (298 * c + 409 * e + 128) >> 8;
                 int g = (298 * c - 100 * d - 208 * e + 128) >> 8;
                 int b = (298 * c + 516 * d + 128) >> 8;
-
                 dst_row[0] = qBound(0, r, 255);
                 dst_row[1] = qBound(0, g, 255);
                 dst_row[2] = qBound(0, b, 255);
                 dst_row += 3;
 
-                // Пиксель 1
                 c = y1 - 16;
-
                 r = (298 * c + 409 * e + 128) >> 8;
                 g = (298 * c - 100 * d - 208 * e + 128) >> 8;
                 b = (298 * c + 516 * d + 128) >> 8;
-
                 dst_row[0] = qBound(0, r, 255);
                 dst_row[1] = qBound(0, g, 255);
                 dst_row[2] = qBound(0, b, 255);

@@ -48,14 +48,15 @@ void RosBridge::run()
             pose.z = msg->position.z;
             emit poseReceived(pose);
         });
-
-    camera_sub_ = node_->create_subscription<sensor_msgs::msg::Image>(
-        "/stingray_core/topics/camera_1",
-        rclcpp::SensorDataQoS(),
-        [this](sensor_msgs::msg::Image::ConstSharedPtr msg) {
-            std::lock_guard<std::mutex> lock(camera_mutex_);
-            latest_camera_frame_ = std::move(msg);
-        });
+camera_sub_ = node_->create_subscription<sensor_msgs::msg::Image>(
+    "/stingray_core/topics/camera_1",
+    rclcpp::QoS(100).reliable(),   // было 10, стало 100
+    [this](sensor_msgs::msg::Image::ConstSharedPtr msg) {
+        static int frame_counter = 0;
+        RCLCPP_INFO(node_->get_logger(), "Camera frame #%d", ++frame_counter);
+        std::lock_guard<std::mutex> lock(camera_mutex_);
+        latest_camera_frame_ = std::move(msg);
+    });
 
     control_flags_pub_ =
         node_->create_publisher<std_msgs::msg::UInt8>("control/loop_flags", 10);
