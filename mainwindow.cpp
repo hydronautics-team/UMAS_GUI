@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
             videoPlayer_->onFrame(frame);
         }
     });
-    cameraFrameTimer_->start(33);
+    cameraFrameTimer_->start(100);
 
     setConsole();
     setTimer_updateImpact(10);
@@ -445,6 +445,8 @@ void MainWindow::setSpeedMode(SpeedMode mode)
 
     saveSettings();
 }
+
+
 
 void MainWindow::updateUi_Compass(float yaw)
 {

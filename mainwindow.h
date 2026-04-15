@@ -98,7 +98,7 @@ private:
     QTimer              *cameraFrameTimer_ = nullptr;
 
 private slots:
-    void processCameraFrame();
+
 
 
 

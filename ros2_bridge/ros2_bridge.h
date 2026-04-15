@@ -9,7 +9,7 @@
 #include <QObject>
 #include <atomic>
 #include <mutex>
-
+#include <chrono>
 #include "uv_state.h"
 
 class RosBridge : public QThread {
@@ -39,6 +39,12 @@ public slots:
     void setControlFlagInternal(uint8_t bit, bool value);
 
 private:
+
+
+void createCameraSubscription();  // метод для создания подписки
+    rclcpp::TimerBase::SharedPtr camera_reset_timer_;
+
+
     rclcpp::Node::SharedPtr node_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr twist_pub_;
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr pose_sub_;
