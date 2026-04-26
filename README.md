@@ -56,9 +56,9 @@ DOCKER_IMAGE=<dockerhub-user>/umas-gui ./docker/run_image.sh
 
 Публикация Docker-образа через GitHub Actions
 - Workflow: `.github/workflows/docker-image.yml`
-- Запускается при push в `main`/`master`, при push git-тега `v*.*.*` и вручную через `workflow_dispatch`.
+- Запускается при push в любую ветку, при push git-тега `v*.*.*` и вручную через `workflow_dispatch`.
 - По умолчанию публикует образ в Docker Hub как `hydronautics/umas-gui`.
-- Теги: `latest` для default branch, имя ветки, git tag, `sha-<commit>`.
+- Теги: `latest` для ветки `develop`, имя ветки для остальных веток, git tag, `sha-<commit>`.
 
 В настройках GitHub репозитория нужно добавить:
 - Secret `DOCKERHUB_USERNAME` — имя пользователя Docker Hub.
