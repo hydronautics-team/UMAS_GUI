@@ -23,9 +23,10 @@ docker pull hydronautics/umas-gui
 
 После этого приложение стартует сразу: бинарник уже собран внутри образа.
 Если нужно временно запустить другой образ:
+например образ из ветки test/CI -> должно быть вот так test-CI
 ```bash
 # Bash
-DOCKER_IMAGE=<dockerhub-user>/umas-gui ./docker/run_image.sh
+DOCKER_IMAGE=hydronautics/umas-gui:<test-CI> ./docker/run_image.sh
 ```
 
 Локальная dev-схема с монтированием исходников:
