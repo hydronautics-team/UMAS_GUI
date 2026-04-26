@@ -3,11 +3,12 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <std_msgs/msg/u_int8.hpp>
+#include <std_msgs/msg/u_int8_multi_array.hpp>
 #include <std_msgs/msg/bool.hpp>
-#include <std_msgs/msg/float64.hpp>
 #include <QThread>
 #include <QObject>
 #include <atomic>
+#include <cstdint>
 
 #include "uv_state.h"
 
@@ -33,24 +34,18 @@ signals:
 public slots:
     void publishTwistInternal(double x, double y, double z,
                               double angular_x, double angular_y, double angular_z);
+    void publishLightsInternal(uint8_t left, uint8_t right);
     void zeroYawInternal();
     void setControlFlagInternal(uint8_t bit, bool value);
 
 private:
     rclcpp::Node::SharedPtr node_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr twist_pub_;
+    rclcpp::Publisher<std_msgs::msg::UInt8MultiArray>::SharedPtr lights_pub_;
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr pose_sub_;
-    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr yaw_sub_;
-    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr pitch_sub_;
-    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr roll_sub_;
-    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr depth_sub_;
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr control_flags_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr zero_yaw_pub_;
 
     std::atomic<bool> is_ready_{false};
-    std::atomic<double> current_yaw_{0.0};
-    std::atomic<double> current_pitch_{0.0};
-    std::atomic<double> current_roll_{0.0};
-    std::atomic<double> current_depth_{0.0};
     uint8_t control_flags_ = 0;
 };

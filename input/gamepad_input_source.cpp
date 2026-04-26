@@ -37,16 +37,12 @@ GamepadInputSource::GamepadInputSource(Gamepad* gamepad, QObject* parent)
     });
 
     // Крен: X/B
-    connect(gamepad_, &Gamepad::buttonXPressed,  this, [this]() { roll_ = -10.f; markDirty(); });
-    connect(gamepad_, &Gamepad::buttonXReleased, this, [this]() { roll_ =  0.f;  markDirty(); });
-    connect(gamepad_, &Gamepad::buttonBPressed,  this, [this]() { roll_ =  10.f; markDirty(); });
-    connect(gamepad_, &Gamepad::buttonBReleased, this, [this]() { roll_ =  0.f;  markDirty(); });
+    connect(gamepad_, &Gamepad::buttonXPressed, this, [this]() { roll_delta_ = -10.f; markDirty(); });
+    connect(gamepad_, &Gamepad::buttonBPressed, this, [this]() { roll_delta_ =  10.f; markDirty(); });
 
     // Глубина: L1/R1
-    connect(gamepad_, &Gamepad::L1Pressed,  this, [this]() { depth_ =  10.f; markDirty(); });
-    connect(gamepad_, &Gamepad::L1Released, this, [this]() { depth_ =  0.f;  markDirty(); });
-    connect(gamepad_, &Gamepad::R1Pressed,  this, [this]() { depth_ = -10.f; markDirty(); });
-    connect(gamepad_, &Gamepad::R1Released, this, [this]() { depth_ =  0.f;  markDirty(); });
+    connect(gamepad_, &Gamepad::L1Pressed, this, [this]() { depth_delta_ =  10.f; markDirty(); });
+    connect(gamepad_, &Gamepad::R1Pressed, this, [this]() { depth_delta_ = -10.f; markDirty(); });
 }
 
 void GamepadInputSource::markDirty()
@@ -56,7 +52,8 @@ void GamepadInputSource::markDirty()
 
 std::optional<umas::input::ControlCommand> GamepadInputSource::poll()
 {
-    if (!dirty_) {
+    const bool hasAngularVelocity = yaw_ != 0.f || pitch_ != 0.f;
+    if (!dirty_ && !hasAngularVelocity) {
         return std::nullopt;
     }
     dirty_ = false;
@@ -64,16 +61,31 @@ std::optional<umas::input::ControlCommand> GamepadInputSource::poll()
     umas::input::ControlCommand cmd;
     cmd.march = march_;
     cmd.lag   = lag_;
-    cmd.depth = depth_;
-    cmd.roll  = roll_;
+    cmd.depth = depth_delta_;
+    cmd.roll  = roll_delta_;
     cmd.pitch = pitch_;
     cmd.yaw   = yaw_;
+    cmd.pitch_is_velocity = true;
+    cmd.yaw_is_velocity = true;
     cmd.valid = true;
     cmd.timestamp_ms = now_ms();
+    depth_delta_ = 0.f;
+    roll_delta_ = 0.f;
     return cmd;
 }
 
 bool GamepadInputSource::isAvailable() const
 {
     return gamepad_ && gamepad_->isConnected();
+}
+
+void GamepadInputSource::reset()
+{
+    march_ = 0.f;
+    yaw_ = 0.f;
+    pitch_ = 0.f;
+    roll_delta_ = 0.f;
+    depth_delta_ = 0.f;
+    lag_ = 0.f;
+    markDirty();
 }

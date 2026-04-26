@@ -18,6 +18,10 @@ MainWindow::MainWindow(QWidget *parent)
             rosBridge, &RosBridge::publishTwistInternal,
             Qt::QueuedConnection);
 
+    connect(this, &MainWindow::publishLightsRequested,
+            rosBridge, &RosBridge::publishLightsInternal,
+            Qt::QueuedConnection);
+
     // ROS -> UVState (QueuedConnection: RosBridge живёт в другом потоке)
     connect(rosBridge, &RosBridge::poseReceived,
             uvState, static_cast<void (UVState::*)(const UVState::Pose&)>(&UVState::setPose),
@@ -31,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
     setConsole();
     setTimer_updateImpact(10);
     setBottom();
+    setupLightControls();
     setTab();
     setUpdateUI();
 
@@ -178,6 +183,8 @@ void MainWindow::useGamepad()
 
     connect(gamepad, &Gamepad::backButtonPressed,
             this, &MainWindow::useKeyBoard);
+    connect(gamepad, &Gamepad::startButtonPressed,
+            this, &MainWindow::resetControlImpact);
 
     displayText("Геймпад подключен. Режим управления с геймпада активирован.");
     gamepadInput = std::make_unique<GamepadInputSource>(gamepad, this);
@@ -220,20 +227,20 @@ void MainWindow::updateUi_fromControl(){
     if (activeInput != nullptr) {
         const auto command = activeInput->poll();
         if (command.has_value()) {
-            controlService.apply(command.value());
+            controlService.apply(applyGains(command.value()));
         }
     }
 
-    const auto scaled = applyGains(controlService.snapshot());
-    updateControlLabels(scaled);
+    const auto control = controlService.snapshot();
+    updateControlLabels(control);
 
     emit publishTwistRequested(
-        scaled.march,
-        scaled.lag,
-        scaled.depth,
-        scaled.roll,
-        scaled.pitch,
-        scaled.yaw);
+        control.march,
+        control.lag,
+        control.depth,
+        control.roll,
+        control.pitch,
+        control.yaw);
 }
 
 umas::input::ControlCommand MainWindow::applyGains(const umas::input::ControlCommand& raw) const
@@ -256,6 +263,23 @@ void MainWindow::updateControlLabels(const umas::input::ControlCommand& scaled)
     ui->label_controlLag->setNum(scaled.lag);
     ui->label_controlDepth->setNum(scaled.depth);
     ui->label_controlKren->setNum(scaled.roll);
+}
+
+void MainWindow::resetControlImpact()
+{
+    controlService.reset();
+
+    if (keyBoard) {
+        keyBoard->reset();
+    }
+    if (gamepadInput) {
+        gamepadInput->reset();
+    }
+
+    updateControlLabels(controlService.snapshot());
+
+    emit publishTwistRequested(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    displayText("Управляющее воздействие обнулено");
 }
 
 void MainWindow::setBottom()
@@ -333,6 +357,40 @@ void MainWindow::setBottom_mode()
     connect(this, &MainWindow::controlFlagRequested,
             rosBridge, &RosBridge::setControlFlagInternal,
             Qt::QueuedConnection);
+}
+
+void MainWindow::setupLightControls()
+{
+    auto *resetImpactButton = new QPushButton("Обнулить воздействие", this);
+    ui->horizontalLayout_15->addWidget(resetImpactButton);
+    connect(resetImpactButton, &QPushButton::clicked,
+            this, &MainWindow::resetControlImpact);
+
+    auto *leftLightLabel = new QLabel("Свет 1: 0", this);
+    auto *leftLightSlider = new QSlider(Qt::Horizontal, this);
+    leftLightSlider->setRange(0, 255);
+    leftLightSlider->setValue(0);
+
+    auto *rightLightLabel = new QLabel("Свет 2: 0", this);
+    auto *rightLightSlider = new QSlider(Qt::Horizontal, this);
+    rightLightSlider->setRange(0, 255);
+    rightLightSlider->setValue(0);
+
+    ui->horizontalLayout_15->addWidget(leftLightLabel);
+    ui->horizontalLayout_15->addWidget(leftLightSlider);
+    ui->horizontalLayout_15->addWidget(rightLightLabel);
+    ui->horizontalLayout_15->addWidget(rightLightSlider);
+
+    const auto publishLights = [this, leftLightLabel, leftLightSlider,
+                                rightLightLabel, rightLightSlider]() {
+        leftLightLabel->setText(QString("Свет 1: %1").arg(leftLightSlider->value()));
+        rightLightLabel->setText(QString("Свет 2: %1").arg(rightLightSlider->value()));
+        emit publishLightsRequested(static_cast<uint8_t>(leftLightSlider->value()),
+                                    static_cast<uint8_t>(rightLightSlider->value()));
+    };
+
+    connect(leftLightSlider, &QSlider::valueChanged, this, publishLights);
+    connect(rightLightSlider, &QSlider::valueChanged, this, publishLights);
 }
 
 

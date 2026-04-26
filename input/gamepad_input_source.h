@@ -19,6 +19,7 @@ public:
 
     std::optional<umas::input::ControlCommand> poll() override;
     bool isAvailable() const override;
+    void reset();
 
 private:
     void markDirty();
@@ -29,8 +30,8 @@ private:
     float march_ = 0.f; // surge
     float yaw_   = 0.f;
     float pitch_ = 0.f;
-    float roll_  = 0.f;
-    float depth_ = 0.f;
+    float roll_delta_ = 0.f;
+    float depth_delta_ = 0.f;
     float lag_   = 0.f;
 
     bool dirty_ = true;

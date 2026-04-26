@@ -17,9 +17,14 @@ public:
 
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
+    void reset();
 
 private:
     umas::input::ControlCommand command_;
+    double pending_depth_delta_ = 0.0;
+    double pending_roll_delta_ = 0.0;
+    double pending_pitch_delta_ = 0.0;
+    double pending_yaw_delta_ = 0.0;
     bool dirty_ = true;
 };
 

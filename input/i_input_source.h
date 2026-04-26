@@ -13,6 +13,10 @@ struct ControlCommand {
     double pitch = 0.0;
     double yaw = 0.0;
 
+    bool depth_is_velocity = false;
+    bool roll_is_velocity = false;
+    bool pitch_is_velocity = false;
+    bool yaw_is_velocity = false;
     bool valid = false;
     std::uint64_t timestamp_ms = 0;
 };

@@ -28,10 +28,14 @@ std::optional<umas::input::ControlCommand> JoyStick::poll()
     umas::input::ControlCommand command;
     command.march = -sf::Joystick::getAxisPosition(id, impactAxisMarch) / 2.0;
     command.lag = sf::Joystick::getAxisPosition(id, impactAxisLag) / 2.0;
-    command.depth = 0.0;
+    command.depth = sf::Joystick::getAxisPosition(id, impactAxisDepth) / 10.0;
     command.roll = sf::Joystick::getAxisPosition(id, impactAxisRoll) / 4.0;
     command.pitch = sf::Joystick::getAxisPosition(id, impactAxisPitch) / 10.0;
     command.yaw = sf::Joystick::getAxisPosition(id, impactAxisYaw) / 4.0;
+    command.roll_is_velocity = true;
+    command.pitch_is_velocity = true;
+    command.yaw_is_velocity = true;
+    command.depth_is_velocity = true;
     command.valid = true;
     command.timestamp_ms = static_cast<std::uint64_t>(
         std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -45,4 +49,3 @@ bool JoyStick::isAvailable() const
 {
     return sf::Joystick::isConnected(id);
 }
-

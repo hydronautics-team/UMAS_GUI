@@ -103,7 +103,7 @@ else()
     endif()
 endif()
 
-ament_target_dependencies(UMAS_GUI rclcpp geometry_msgs)
+ament_target_dependencies(UMAS_GUI rclcpp geometry_msgs std_msgs)
 
 target_link_libraries(UMAS_GUI
     sfml-graphics sfml-window sfml-system

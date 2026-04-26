@@ -15,6 +15,7 @@
 // Legacy include'ы удалены.
 
 #include <QKeyEvent>
+#include <cstdint>
 #include <memory>
 
 #include "joy_stick.h"
@@ -30,6 +31,9 @@
 #include "uv_state.h"
 
 #include <QSettings>
+#include <QLabel>
+#include <QPushButton>
+#include <QSlider>
 #include <QSpinBox>
 #include "Gamepad/gamepad.h"
 
@@ -66,6 +70,7 @@ private:
     void setTimer_updateImpact(int periodUpdateMsec);
     void setBottom();
     void setBottom_mode();
+    void setupLightControls();
 
 
     /*!
@@ -95,6 +100,7 @@ private slots:
 
     void displayText(QString str);
     void updateUi_fromControl();
+    void resetControlImpact();
 
     /*!
      * \brief updateUi_Compass слот обновления компаса на UI форме.
@@ -110,6 +116,7 @@ signals:
 
     void publishTwistRequested(double x, double y, double z,
                                double angular_x, double angular_y, double angular_z);
+    void publishLightsRequested(uint8_t left, uint8_t right);
     void controlFlagRequested(uint8_t bit, bool value);
     // legacy signals (пока не используются)
     // void updateIMU(DataAH127C imuData);

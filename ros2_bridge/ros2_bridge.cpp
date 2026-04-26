@@ -28,6 +28,7 @@ void RosBridge::run()
     node_ = rclcpp::Node::make_shared("qt_controller_node", "qt_controller");
 
     twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/control/data", 10);
+    lights_pub_ = node_->create_publisher<std_msgs::msg::UInt8MultiArray>("/lights/cmd", 10);
 
     pose_sub_ = node_->create_subscription<geometry_msgs::msg::Pose>(
         "pose_topic", 10,
@@ -39,30 +40,6 @@ void RosBridge::run()
             pose.y = msg->position.y;
             pose.z = msg->position.z;
             emit poseReceived(pose);
-        });
-
-    yaw_sub_ = node_->create_subscription<std_msgs::msg::Float64>(
-        "~/orientation/yaw", 10,
-        [this](const std_msgs::msg::Float64::SharedPtr msg) {
-            current_yaw_.store(msg->data);
-        });
-
-    pitch_sub_ = node_->create_subscription<std_msgs::msg::Float64>(
-        "~/orientation/pitch", 10,
-        [this](const std_msgs::msg::Float64::SharedPtr msg) {
-            current_pitch_.store(msg->data);
-        });
-
-    roll_sub_ = node_->create_subscription<std_msgs::msg::Float64>(
-        "~/orientation/roll", 10,
-        [this](const std_msgs::msg::Float64::SharedPtr msg) {
-            current_roll_.store(msg->data);
-        });
-
-    depth_sub_ = node_->create_subscription<std_msgs::msg::Float64>(
-        "~/orientation/depth", 10,
-        [this](const std_msgs::msg::Float64::SharedPtr msg) {
-            current_depth_.store(msg->data);
         });
 
     control_flags_pub_ =
@@ -90,11 +67,20 @@ void RosBridge::publishTwistInternal(double x, double y, double z,
     geometry_msgs::msg::Twist msg;
     msg.linear.x  = x;
     msg.linear.y  = y;
-    msg.linear.z  = z + current_depth_.load();
-    msg.angular.x = angular_x + current_roll_.load();
-    msg.angular.y = angular_y + current_pitch_.load();
-    msg.angular.z = angular_z + current_yaw_.load();
+    msg.linear.z  = z;
+    msg.angular.x = angular_x;
+    msg.angular.y = angular_y;
+    msg.angular.z = angular_z;
     twist_pub_->publish(msg);
+}
+
+void RosBridge::publishLightsInternal(uint8_t left, uint8_t right)
+{
+    if (!is_ready_ || !lights_pub_) return;
+
+    std_msgs::msg::UInt8MultiArray msg;
+    msg.data = {left, right};
+    lights_pub_->publish(msg);
 }
 
 void RosBridge::zeroYawInternal()
