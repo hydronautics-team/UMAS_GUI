@@ -12,7 +12,23 @@
   - std_msgs::msg::UInt8 → /control/loop_flags (флаги режимов управления)
 
 Сборка и запуск
-Рекомендуется использовать контейнеры, скрипты уже подготовлены в ./docker:
+Рекомендуется использовать контейнеры, скрипты уже подготовлены в ./docker.
+
+Быстрый запуск готового Docker-образа:
+```bash
+# Bash
+docker pull hydronautics/umas-gui
+./docker/run_image.sh
+```
+
+После этого приложение стартует сразу: бинарник уже собран внутри образа.
+Если нужно временно запустить другой образ:
+```bash
+# Bash
+DOCKER_IMAGE=<dockerhub-user>/umas-gui ./docker/run_image.sh
+```
+
+Локальная dev-схема с монтированием исходников:
 
 1) Собрать образ:
 ```bash
@@ -38,6 +54,17 @@
 ./docker/run_app.sh
 ```
 
+Публикация Docker-образа через GitHub Actions
+- Workflow: `.github/workflows/docker-image.yml`
+- Запускается при push в `main`/`master`, при push git-тега `v*.*.*` и вручную через `workflow_dispatch`.
+- По умолчанию публикует образ в Docker Hub как `hydronautics/umas-gui`.
+- Теги: `latest` для default branch, имя ветки, git tag, `sha-<commit>`.
+
+В настройках GitHub репозитория нужно добавить:
+- Secret `DOCKERHUB_USERNAME` — имя пользователя Docker Hub.
+- Secret `DOCKERHUB_TOKEN` — Docker Hub access token.
+- Optional Repository Variable `DOCKERHUB_REPOSITORY` — полное имя образа, если нужно переопределить `hydronautics/umas-gui`.
+
 Альтернативно (локально, при наличии ROS 2 и Qt):
 - В рабочей директории ROS 2 workspace:
 ```bash
@@ -60,4 +87,3 @@ cmake .. && make -j$(nproc)
 - uv/ — UVState (центральная модель состояния аппарата)
 - compass/, map/, Diagnostic_bord_UI/ — дополнительные UI-модули
 - Gamepad/, mods/ — вспомогательные модули и режимы
-

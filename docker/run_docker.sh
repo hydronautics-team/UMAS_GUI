@@ -22,7 +22,7 @@ fi
 # Настройки
 # -------------------------
 CONTAINER_NAME="qt_ros2"
-IMAGE_NAME="qt-ros2"
+IMAGE_NAME="${DOCKER_IMAGE:-hydronautics/umas-gui}"
 # NETWORK_NAME="ros2-net"
 NETWORK_NAME="host"
 
@@ -32,7 +32,7 @@ ROS_DOMAIN_ID=1
 # -------------------------
 # Создаём сеть, если её нет
 # -------------------------
-if ! docker network ls | grep -q "$NETWORK_NAME"; then
+if [ "$NETWORK_NAME" != "host" ] && ! docker network ls | grep -q "$NETWORK_NAME"; then
     echo "Creating docker network: $NETWORK_NAME"
     docker network create $NETWORK_NAME
 fi
@@ -42,6 +42,7 @@ fi
 # -------------------------
 echo "Giving root access to X server..."
 xhost +si:localuser:root
+trap 'echo "Revoking root access to X server..."; xhost -si:localuser:root >/dev/null 2>&1 || true' EXIT
 
 # -------------------------
 # Проверяем существующий контейнер
@@ -62,11 +63,5 @@ docker run -it \
     -e ROS_DOMAIN_ID=$ROS_DOMAIN_ID \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v "${PROJECT_ROOT}:/UMAS_GUI:rw" \
-    $IMAGE_NAME \
+    "$IMAGE_NAME" \
     /bin/bash
-
-# -------------------------
-# Отзываем доступ к X
-# -------------------------
-echo "Revoking root access to X server..."
-xhost -si:localuser:root

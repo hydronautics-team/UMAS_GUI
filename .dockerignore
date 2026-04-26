@@ -1,0 +1,14 @@
+.git
+.github
+.codex
+build
+install
+log
+*.o
+*.a
+*.so
+*.user
+*.swp
+*.swo
+__pycache__
+*.pyc

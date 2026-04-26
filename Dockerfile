@@ -1,4 +1,4 @@
-# Dockerfile: Qt5 + ROS2 Humble (Ubuntu 22.04) — исправлено имя пакета serialport
+# Dockerfile: Qt5 + ROS2 Humble (Ubuntu 22.04)
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -74,4 +74,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Workspace
 WORKDIR /UMAS_GUI
 
-CMD ["/bin/bash"]
+COPY . /UMAS_GUI
+
+RUN . /opt/ros/humble/setup.sh \
+    && cmake -S /UMAS_GUI -B /UMAS_GUI/build \
+    && cmake --build /UMAS_GUI/build --parallel "$(nproc)"
+
+CMD ["/bin/bash", "-lc", "source /opt/ros/humble/setup.bash && /UMAS_GUI/build/UMAS_GUI"]

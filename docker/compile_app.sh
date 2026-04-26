@@ -5,6 +5,7 @@ WORKDIR="/UMAS_GUI"
 
 echo "Compiling UMAS_GUI..."
 cd $WORKDIR
+source /opt/ros/humble/setup.bash
 
 # Очистка предыдущей сборки
 rm -rf build
