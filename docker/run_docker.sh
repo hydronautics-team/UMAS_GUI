@@ -27,7 +27,9 @@ IMAGE_NAME="${DOCKER_IMAGE:-hydronautics/umas-gui}"
 NETWORK_NAME="host"
 
 # ROS2 параметры
-ROS_DOMAIN_ID=1
+ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-1}"
+ROS_LOCALHOST_ONLY="${ROS_LOCALHOST_ONLY:-0}"
+RMW_IMPLEMENTATION="${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}"
 
 # -------------------------
 # Создаём сеть, если её нет
@@ -58,9 +60,12 @@ fi
 docker run -it \
     --name $CONTAINER_NAME \
     --network $NETWORK_NAME \
+    --ipc host \
     --privileged \
     -e DISPLAY=$DISPLAY \
     -e ROS_DOMAIN_ID=$ROS_DOMAIN_ID \
+    -e ROS_LOCALHOST_ONLY=$ROS_LOCALHOST_ONLY \
+    -e RMW_IMPLEMENTATION=$RMW_IMPLEMENTATION \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v "${PROJECT_ROOT}:/UMAS_GUI:rw" \
     "$IMAGE_NAME" \
