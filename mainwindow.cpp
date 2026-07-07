@@ -58,8 +58,8 @@ MainWindow::MainWindow(QWidget *parent)
                 this, [this]() { saveCurrentModeGains(); });
     }
 
-    // Инициализируем текущий режим (по умолчанию Medium)
-    setSpeedMode(SpeedMode::Medium);
+    // Инициализируем текущий режим (по умолчанию Slow)
+    setSpeedMode(SpeedMode::Slow);
 
     
 
