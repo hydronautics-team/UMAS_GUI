@@ -4,6 +4,7 @@
 #include <geometry_msgs/msg/pose.hpp>
 #include <std_msgs/msg/u_int8.hpp>
 #include <std_msgs/msg/u_int8_multi_array.hpp>
+#include <std_msgs/msg/float64.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <QThread>
 #include <QObject>
@@ -29,6 +30,7 @@ signals:
 
     // Сигналы для обновления UVState-модели.
     void poseReceived(const UVState::Pose& pose);
+    void diagnosticsReceived(const UVState::Diagnostics& diagnostics);
     void controlFlagsPublished(std::uint8_t flags);
 
 public slots:
@@ -42,6 +44,7 @@ private:
     rclcpp::Node::SharedPtr node_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr twist_pub_;
     rclcpp::Publisher<std_msgs::msg::UInt8MultiArray>::SharedPtr lights_pub_;
+    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr pressure_sensor_sub_;
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr pose_sub_;
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr control_flags_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr zero_yaw_pub_;

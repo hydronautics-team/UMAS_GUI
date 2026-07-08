@@ -218,50 +218,6 @@ struct Diagnostic {
     quint8 PMW4;
 };
 
-
-/*!
- * \brief ToPult class структура данных, принимаемых на пульте.
- */
-struct ToPult
-{
-    ToPult(int auvID=0)
-    {
-        header.senderID = auvID;
-        header.receiverID = 0;
-        header.msgSize = sizeof (ToPult);
-    }
-    Header header;
-    AUVCurrentData auvData;             //! Данные о текущих параметрах
-    DataAH127C dataAH127C;              //! Данные с БСО
-    FlagAH127C_bort flagAH127C_bort;    //! Флаги для настрой
-    DataGANS dataGANS;
-    GPS_angular angularGPS;
-    GPS_coordinate coordinateGPS;
-    Diagnostic diagnostics;
-    mission_List missionList = mission_List::NO_MISSION; //выбор миссии
-    mission_Status missionStatus = mission_Status::MODE_IDLE; //состояние выполнения миссии
-    quint8 first_point_complete; //флаг прохождения точки для движения галсами
-    uint checksum;
-};
-
-/*!
- * \brief FromPult class структура данных, передаваемая из пульта на агент.
- */
-struct FromPult
-{
-    ControlData controlData;                        //! Данные, которые идут с пульта при замыканиии контуров
-    e_CSMode cSMode;                                //! Режим работы
-    ControlContoursFlags controlContoursFlags;      //! Флаги замыкания контуров (1 - замкнуты)
-    quint8 modeAUV_selection;                       //! Текущий выбор модель/реальный НПА
-    power_Mode pMode;                               //! Режим работы системы питания
-    FlagAH127C_pult flagAH127C_pult;
-    CoordinatePoint reper; //координаты выставленного на карте репера
-    mission_List mission = mission_List::NO_MISSION; //выбор миссии
-    MissionParam mission_param; //параметры для задания миссии
-    mission_Control missionControl = mission_Control::MODE_IDLE; //команды запуска миссии
-    uint checksum;
-};
-
 #pragma pack (pop)
 
 /*!
@@ -302,17 +258,15 @@ public:
     };
 
     struct Diagnostics {
-        // Поля названы под текущий UI Diagnostic_board.
         float u_lipo_1 = 0.f;
         float u_lipo_2 = 0.f;
-        float u_diagnostic_board = 0.f;
-        float u_power_board = 0.f;
-        float current_12 = 0.f;
-        float current_5 = 0.f;
-        int pwm_1 = 0;
-        int pwm_2 = 0;
-        int pwm_3 = 0;
-        int pwm_4 = 0;
+        float depth = 0.f;
+        float distance_to_bottom = 0.f;
+        bool killswitch = false;
+        bool leak = false;
+        bool imu_ok = false;
+        bool pressure_sensor_ok = false;
+        bool dvl_ok = false;
         std::uint64_t timestamp_ms = 0;
     };
 
@@ -340,5 +294,8 @@ private:
     Diagnostics diagnostics_{};
     std::uint8_t control_flags_ = 0;
 };
+
+Q_DECLARE_METATYPE(UVState::Diagnostics)
+Q_DECLARE_METATYPE(UVState::Pose)
 
 #endif // UVSTATE_H

@@ -7,6 +7,9 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    qRegisterMetaType<UVState::Diagnostics>("UVState::Diagnostics");
+    qRegisterMetaType<UVState::Pose>("UVState::Pose");
+
     // Центральная модель состояния ПА (телеметрия/состояние для UI)
     uvState = new UVState(this);
 
@@ -21,6 +24,18 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, &MainWindow::publishLightsRequested,
             rosBridge, &RosBridge::publishLightsInternal,
             Qt::QueuedConnection);
+
+    connect(rosBridge, &RosBridge::diagnosticsReceived, this, [this](const UVState::Diagnostics& diag) {
+        qDebug() << "MainWindow received depth:" << diag.depth;
+
+        if (diagnostic_board) {
+            diagnostic_board->updateBattery(diag.u_lipo_1, diag.u_lipo_2);
+            diagnostic_board->updateDepth(diag.depth);
+            diagnostic_board->updateDistance(diag.distance_to_bottom);
+            diagnostic_board->updateStatus(diag.killswitch, diag.leak);
+            diagnostic_board->updateSensors(diag.pressure_sensor_ok, diag.imu_ok, diag.dvl_ok);
+        }
+    }, Qt::QueuedConnection);
 
     // ROS -> UVState (QueuedConnection: RosBridge живёт в другом потоке)
     connect(rosBridge, &RosBridge::poseReceived,

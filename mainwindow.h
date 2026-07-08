@@ -6,6 +6,7 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QDebug>
+#include <QMetaType>
 #include <QProcess>
 #include <QTime>
 #include <QButtonGroup>

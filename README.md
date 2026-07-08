@@ -58,6 +58,6 @@ cmake .. && make -j$(nproc)
 - remote_control/ — joystick/keyboard helpers
 - control/ — control_service (применение команд)
 - uv/ — UVState (центральная модель состояния аппарата)
-- compass/, map/, Diagnostic_bord_UI/ — дополнительные UI-модули
+- compass/, map/, diagnostic_board/ — дополнительные UI-модули
 - Gamepad/, mods/ — вспомогательные модули и режимы
 

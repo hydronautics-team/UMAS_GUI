@@ -34,7 +34,7 @@ include_directories("${PROJECT_SOURCE_DIR}/control")
 # include_directories("${PROJECT_SOURCE_DIR}/map")
 include_directories("${PROJECT_SOURCE_DIR}/tabs")
 include_directories("${PROJECT_SOURCE_DIR}/mods")
-include_directories("${PROJECT_SOURCE_DIR}/Diagnostic_bord_UI/Diagnostic_bord")
+include_directories("${PROJECT_SOURCE_DIR}/diagnostic_board")
 include_directories("${PROJECT_SOURCE_DIR}/ros2_bridge")
 include_directories("${PROJECT_SOURCE_DIR}")
 
@@ -71,9 +71,9 @@ set(PROJECT_SOURCES
         # tabs/check_imu.h tabs/check_imu.cpp tabs/check_imu.ui
         # mods/mode_automatic.h mods/mode_automatic.cpp mods/mode_automatic.ui
         # map/map_widget.h map/map_widget.cpp map/map_widget.ui map/map.html
-        Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.cpp
-        Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.h
-        Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.ui
+        diagnostic_board/diagnostic_board.cpp
+        diagnostic_board/diagnostic_board.h
+        diagnostic_board/diagnostic_board.ui
         ros2_bridge/ros2_bridge.h
         ros2_bridge/ros2_bridge.cpp
         )

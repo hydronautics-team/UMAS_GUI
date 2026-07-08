@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Diagnostic_board</class>
+ <widget class="QWidget" name="Diagnostic_board">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>400</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Diagnostic_board</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item alignment="Qt::AlignmentFlag::AlignHCenter">
+    <widget class="QLabel" name="label_7">
+     <property name="text">
+      <string>Диагностика</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     
+     <!-- ROW 0: АКБ_1 -->
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text"><string>Напряжение АКБ_1</string></property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="Line"><property name="orientation"><enum>Qt::Orientation::Vertical</enum></property></widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="label_LIPO_1">
+       <property name="font"><font><family>Ubuntu</family><pointsize>11</pointsize></font></property>
+       <property name="text"><string>0</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+      </widget>
+     </item>
+
+     <!-- ROW 1: Separator -->
+     <item row="1" column="0"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+     <item row="1" column="2"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+
+     <!-- ROW 2: АКБ_2 -->
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text"><string>Напряжение АКБ_2</string></property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="Line"><property name="orientation"><enum>Qt::Orientation::Vertical</enum></property></widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QLabel" name="label_LIPO_2">
+       <property name="font"><font><family>Ubuntu</family><pointsize>11</pointsize></font></property>
+       <property name="text"><string>0</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+      </widget>
+     </item>
+
+     <!-- ROW 3: Separator -->
+     <item row="3" column="0"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+     <item row="3" column="2"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+
+     <!-- ROW 4: Глубина -->
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text"><string>Глубина, м</string></property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="Line"><property name="orientation"><enum>Qt::Orientation::Vertical</enum></property></widget>
+     </item>
+     <item row="4" column="2">
+      <widget class="QLabel" name="label_depth">
+       <property name="font"><font><family>Ubuntu</family><pointsize>11</pointsize></font></property>
+       <property name="text"><string>0</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+      </widget>
+     </item>
+
+     <!-- ROW 5: Separator -->
+     <item row="5" column="0"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+     <item row="5" column="2"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+
+     <!-- ROW 6: Дистанция -->
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text"><string>Дистанция до дна, м</string></property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="Line"><property name="orientation"><enum>Qt::Orientation::Vertical</enum></property></widget>
+     </item>
+     <item row="6" column="2">
+      <widget class="QLabel" name="label_distance">
+       <property name="font"><font><family>Ubuntu</family><pointsize>11</pointsize></font></property>
+       <property name="text"><string>0</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+      </widget>
+     </item>
+
+     <!-- ROW 7: Separator -->
+     <item row="7" column="0"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+     <item row="7" column="2"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+
+     <!-- ROW 8: Киллсвитч -->
+     <item row="8" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text"><string>Киллсвитч</string></property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="Line"><property name="orientation"><enum>Qt::Orientation::Vertical</enum></property></widget>
+     </item>
+     <item row="8" column="2">
+      <widget class="QLabel" name="label_killswitch">
+       <property name="font"><font><family>Ubuntu</family><pointsize>11</pointsize></font></property>
+       <property name="text"><string>ВЫКЛ</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+      </widget>
+     </item>
+
+     <!-- ROW 9: Separator -->
+     <item row="9" column="0"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+     <item row="9" column="2"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+
+     <!-- ROW 10: Течь -->
+     <item row="10" column="0">
+      <widget class="QLabel" name="label_8">
+       <property name="text"><string>Течь</string></property>
+      </widget>
+     </item>
+     <item row="10" column="1">
+      <widget class="Line"><property name="orientation"><enum>Qt::Orientation::Vertical</enum></property></widget>
+     </item>
+     <item row="10" column="2">
+      <widget class="QLabel" name="label_leak">
+       <property name="font"><font><family>Ubuntu</family><pointsize>11</pointsize></font></property>
+       <property name="text"><string>СУХО</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+      </widget>
+     </item>
+
+     <!-- ROW 11: Separator -->
+     <item row="11" column="0"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+     <item row="11" column="2"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+
+     <!-- ROW 12: IMU -->
+     <item row="12" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="text"><string>IMU</string></property>
+      </widget>
+     </item>
+     <item row="12" column="1">
+      <widget class="Line"><property name="orientation"><enum>Qt::Orientation::Vertical</enum></property></widget>
+     </item>
+     <item row="12" column="2">
+      <widget class="QLabel" name="label_imu_status">
+       <property name="font"><font><family>Ubuntu</family><pointsize>11</pointsize></font></property>
+       <property name="text"><string>Штатно</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+      </widget>
+     </item>
+
+     <!-- ROW 13: Separator -->
+     <item row="13" column="0"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+     <item row="13" column="2"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+
+     <!-- ROW 14: Датчик давления -->
+     <item row="14" column="0">
+      <widget class="QLabel" name="label_12">
+       <property name="text"><string>Датчик давления</string></property>
+      </widget>
+     </item>
+     <item row="14" column="1">
+      <widget class="Line"><property name="orientation"><enum>Qt::Orientation::Vertical</enum></property></widget>
+     </item>
+     <item row="14" column="2">
+      <widget class="QLabel" name="label_pressure_status">
+       <property name="font"><font><family>Ubuntu</family><pointsize>11</pointsize></font></property>
+       <property name="text"><string>Штатно</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+      </widget>
+     </item>
+
+     <!-- ROW 15: Separator -->
+     <item row="15" column="0"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+     <item row="15" column="2"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+
+     <!-- ROW 16: DVL -->
+     <item row="16" column="0">
+      <widget class="QLabel" name="label_10">
+       <property name="text"><string>DVL</string></property>
+      </widget>
+     </item>
+     <item row="16" column="1">
+      <widget class="Line"><property name="orientation"><enum>Qt::Orientation::Vertical</enum></property></widget>
+     </item>
+     <item row="16" column="2">
+      <widget class="QLabel" name="label_dvl_status">
+       <property name="font"><font><family>Ubuntu</family><pointsize>11</pointsize></font></property>
+       <property name="text"><string>Штатно</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+      </widget>
+     </item>
+
+     <!-- ROW 17: Separator -->
+     <item row="17" column="0"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+     <item row="17" column="2"><widget class="Line"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property></widget></item>
+
+     <!-- ROW 18: Общий статус -->
+     <item row="18" column="0">
+      <widget class="QLabel" name="label_11">
+       <property name="text"><string>Общий статус</string></property>
+      </widget>
+     </item>
+     <item row="18" column="1">
+      <widget class="Line"><property name="orientation"><enum>Qt::Orientation::Vertical</enum></property></widget>
+     </item>
+     <item row="18" column="2">
+      <widget class="QLabel" name="label_system_status">
+       <property name="font"><font><family>Ubuntu</family><pointsize>11</pointsize><bold>true</bold></font></property>
+       <property name="text"><string>СИСТЕМА ИСПРАВНА</string></property>
+       <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+      </widget>
+     </item>
+
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -29,6 +29,20 @@ void RosBridge::run()
 
     twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/control/data", 10);
     lights_pub_ = node_->create_publisher<std_msgs::msg::UInt8MultiArray>("/lights/cmd", 10);
+    
+    pressure_sensor_sub_ = node_->create_subscription<std_msgs::msg::Float64>("/stingray_core/pressure_sensor/depth", 10,
+        [this](const std_msgs::msg::Float64::ConstSharedPtr& msg) {
+            qDebug() << "ROS callback! Raw depth:" << msg->data;
+            UVState::Diagnostics diagnostics;
+            diagnostics.depth = msg->data;
+
+            // ВРЕМЕННОЕ РЕШЕНИЕ: пока нет реальных данных о состоянии датчиков, считаем их исправными
+            diagnostics.imu_ok = true;
+            diagnostics.pressure_sensor_ok = true;
+            diagnostics.dvl_ok = true;
+
+            emit diagnosticsReceived(diagnostics);
+        });
 
     pose_sub_ = node_->create_subscription<geometry_msgs::msg::Pose>(
         "pose_topic", 10,
