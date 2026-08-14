@@ -63,7 +63,6 @@ set(PROJECT_SOURCES
         uv/uv_state.h
         input/i_input_source.h
         control/control_service.h
-        img.qrc
         remote_control/key_board.h remote_control/key_board.cpp
         remote_control/joy_stick.h remote_control/joy_stick.cpp
         # tabs/power_system.h tabs/power_system.cpp tabs/power_system.ui

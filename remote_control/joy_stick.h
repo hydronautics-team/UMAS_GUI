@@ -14,6 +14,8 @@ public:
     bool isAvailable() const override;
 
 private:
+    void selectAvailableJoystick();
+
     int id;
     sf::Joystick::Axis impactAxisMarch;
     sf::Joystick::Axis impactAxisDepth;
