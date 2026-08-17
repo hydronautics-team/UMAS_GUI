@@ -12,7 +12,6 @@
 
 #include <QString>
 
-// Legacy include'ы удалены.
 
 #include <QKeyEvent>
 #include <memory>
@@ -37,6 +36,8 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+class VideoPlayerWidget;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -47,6 +48,11 @@ public:
     void setConsole();
 
 private:
+ QTimer* camera_timer_;
+
+
+
+
     Gamepad *gamepad = nullptr;
     std::unique_ptr<GamepadInputSource> gamepadInput;
     // Используем enum class с фиксированным типом uint8_t
@@ -88,8 +94,14 @@ private:
     Diagnostic_board    *diagnostic_board;
     RosBridge           *rosBridge;
     UVState             *uvState;
+    VideoPlayerWidget   *videoPlayer_ = nullptr;
+    QTimer              *cameraFrameTimer_ = nullptr;
 
 private slots:
+
+
+
+
     // Единый слот для переключения режима скорости
     void setSpeedMode(SpeedMode mode);
 

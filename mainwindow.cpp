@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "video/video_player_widget.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -28,6 +29,17 @@ MainWindow::MainWindow(QWidget *parent)
             Qt::QueuedConnection);
 
     setWidget();
+
+    cameraFrameTimer_ = new QTimer(this);
+    connect(cameraFrameTimer_, &QTimer::timeout, this, [this]() {
+        if (!rosBridge || !videoPlayer_) return;
+        auto frame = rosBridge->takeLatestCameraFrame();
+        if (frame) {
+            videoPlayer_->onFrame(frame);
+        }
+    });
+    cameraFrameTimer_->start(100);
+
     setConsole();
     setTimer_updateImpact(10);
     setBottom();
@@ -65,26 +77,19 @@ MainWindow::MainWindow(QWidget *parent)
     inputGroup->addButton(ui->gamepad_btn);
     inputGroup->setExclusive(true);
 }
-
 void MainWindow::setWidget()
 {
-    // powerSystem = new PowerSystem(this);
-    // ui->horizontalLayout_for_powerSystem->addWidget(powerSystem);
-    // checkMsg = new CheckMsg(this);
-    // ui->horizontalLayout_for_checkMsg->addWidget(checkMsg);
-    // modeAutomatic = new ModeAutomatic(this);
-    // ui->verticalLayout_modeAutomatic->addWidget(modeAutomatic);
     diagnostic_board = new Diagnostic_board(this);
     ui->horizontalLayout_diagnosticBoard->addWidget(diagnostic_board);
 
-    // connect(
-    //     modeAutomatic,&ModeAutomatic::displayText_toConsole,
-    //     this, &MainWindow::displayText);
-    // connect(
-    //     modeAutomatic, &ModeAutomatic::set_stackedWidget_mode,
-    //     ui->stackedWidget_mode, &QStackedWidget::setCurrentIndex);
-}
+    videoPlayer_ = new VideoPlayerWidget(this);
 
+    if (!ui->tab_video->layout()) {
+        ui->tab_video->setLayout(new QVBoxLayout(ui->tab_video));
+    }
+
+    ui->tab_video->layout()->addWidget(videoPlayer_);
+}
 
 void MainWindow::setConsole()
 {
@@ -451,6 +456,8 @@ void MainWindow::setSpeedMode(SpeedMode mode)
 
     saveSettings();
 }
+
+
 
 void MainWindow::updateUi_Compass(float yaw)
 {

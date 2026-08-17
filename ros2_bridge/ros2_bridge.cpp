@@ -1,6 +1,9 @@
 #include "ros2_bridge.h"
 #include <QDebug>
 
+
+
+
 RosBridge::RosBridge(QObject* parent)
     : QThread(parent)
 {}
@@ -16,6 +19,26 @@ RosBridge::~RosBridge()
 bool RosBridge::isReady() const
 {
     return is_ready_.load();
+}
+
+sensor_msgs::msg::Image::ConstSharedPtr RosBridge::takeLatestCameraFrame()
+{
+    std::lock_guard<std::mutex> lock(camera_mutex_);
+    auto frame = latest_camera_frame_;
+    latest_camera_frame_.reset();
+    return frame;
+}
+
+
+void RosBridge::createCameraSubscription()
+{
+    camera_sub_ = node_->create_subscription<sensor_msgs::msg::Image>(
+        "/stingray_core/topics/camera_1",
+        rclcpp::QoS(500).reliable().keep_last(500),
+        [this](sensor_msgs::msg::Image::ConstSharedPtr msg) {
+            std::lock_guard<std::mutex> lock(camera_mutex_);
+            latest_camera_frame_ = std::move(msg);
+        });
 }
 
 void RosBridge::run()
@@ -40,6 +63,23 @@ void RosBridge::run()
             pose.z = msg->position.z;
             emit poseReceived(pose);
         });
+createCameraSubscription();
+
+    // Таймер для сброса подписки каждые 30 секунд
+    camera_reset_timer_ = node_->create_wall_timer(
+        std::chrono::seconds(30),
+        [this]() {
+            RCLCPP_WARN(node_->get_logger(), "Resetting camera subscription to prevent freeze");
+            camera_sub_.reset();
+            createCameraSubscription();  // пересоздаём
+        });
+
+
+
+
+
+
+
 
     control_flags_pub_ =
         node_->create_publisher<std_msgs::msg::UInt8>("/control/loop_flags", 10);

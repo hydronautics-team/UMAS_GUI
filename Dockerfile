@@ -39,6 +39,7 @@ RUN add-apt-repository "deb http://packages.ros.org/ros2/ubuntu $(lsb_release -c
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-humble-desktop \
+    ros-humble-rosbag2-storage-mcap \
     && rm -rf /var/lib/apt/lists/*
     
 RUN apt-get update && apt-get install -y \
