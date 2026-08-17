@@ -16,6 +16,8 @@ public:
     explicit FullscreenVideoWindow(UVState* uvState, QWidget* parent = nullptr);
     ~FullscreenVideoWindow();
 
+    void setVideoWidget(QWidget* widget);
+
 public slots:
     void drawFrame(const QPixmap& pixmap);
 
@@ -31,7 +33,8 @@ private slots:
 
 private:
     UVState* uvState_;
-    QLabel*  fullscreenVideoLabel_; // Наш единственный, главный графический холст
+    QLabel*  fullscreenVideoLabel_; // Холст для видео
+    QWidget* videoPlayer_ = nullptr; // Указатель на видео-плеер
 
     QLabel*  depthLabel_;
     QLabel*  yawLabel_;

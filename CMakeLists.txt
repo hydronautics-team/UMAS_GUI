@@ -25,6 +25,32 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(ament_cmake REQUIRED)
 
+
+# GSTREAMER (добавлено)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-app-1.0)
+
+# Если pkg-config не нашел, используем ручные пути (из вывода pkg-config)
+if(NOT GST_FOUND)
+    message(WARNING "GStreamer not found via pkg-config, using manual paths")
+    set(GST_INCLUDE_DIRS 
+        "/usr/include/gstreamer-1.0"
+        "/usr/include/x86_64-linux-gnu"
+        "/usr/include/glib-2.0"
+        "/usr/lib/x86_64-linux-gnu/glib-2.0/include"
+    )
+    set(GST_LIBRARIES 
+        gstreamer-1.0
+        gstapp-1.0
+        gobject-2.0
+        glib-2.0
+    )
+endif()
+
+include_directories(${GST_INCLUDE_DIRS})
+link_directories(${GST_LIBRARY_DIRS})
+
 # include_directories(/opt/ros/humble/include)
 
 include_directories("${PROJECT_SOURCE_DIR}/compass")
@@ -79,6 +105,8 @@ set(PROJECT_SOURCES
         ros2_bridge/ros2_bridge.cpp
         video/video_player_widget.h
         video/video_player_widget.cpp
+        video/fullscreen_video_window.cpp
+        video/fullscreen_video_window.h
         )
 
 
@@ -109,6 +137,7 @@ endif()
 ament_target_dependencies(UMAS_GUI rclcpp geometry_msgs std_msgs sensor_msgs)
 
 target_link_libraries(UMAS_GUI
+    ${GST_LIBRARIES}                           # <-- ДОБАВЛЕНО
     sfml-graphics sfml-window sfml-system
     Qt${QT_VERSION_MAJOR}::Widgets
     # Qt${QT_VERSION_MAJOR}::Charts
@@ -120,8 +149,7 @@ target_link_libraries(UMAS_GUI
     # Qt${QT_VERSION_MAJOR}::WebEngineWidgets
     # Qt${QT_VERSION_MAJOR}::Positioning
     Python3::Python
-
-    )
+)
 
 
 # target_link_libraries(UMAS_GUI PRIVATE Qt5::Core Qt5::Widgets Qt5::Location)

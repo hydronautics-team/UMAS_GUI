@@ -1,4 +1,4 @@
-# Dockerfile: Qt5 + ROS2 Humble (Ubuntu 22.04) — исправлено имя пакета serialport
+# Dockerfile: Qt5 + ROS2 Humble (Ubuntu 22.04) + GStreamer
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -23,18 +23,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN locale-gen en_US en_US.UTF-8
 
-# colcon и утилиты через pip (надёжнее в контейнере)
-RUN pip3 install --no-cache-dir colcon-common-extensions rosdep vcstool rosinstall-generator
-
+# colcon и утилиты через pip
+RUN pip3 install --no-cache-dir colcon-common-extensions rosdep vcstool rosinstall-generator || true
 RUN rosdep init || true
 
-# Добавляем ключ ROS (apt-key используется для простоты в контейнере)
+# Добавляем ключ ROS
 RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
-
-# Включаем universe (нужно для ряда Qt-пакетов)
 RUN add-apt-repository universe
-
-# Добавляем репозиторий ROS2
 RUN add-apt-repository "deb http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -48,7 +43,7 @@ RUN apt-get update && apt-get install -y \
 RUN echo "source /opt/ros/humble/setup.bash" >> /etc/bash.bashrc
 
 # ---------------------------------------------------------
-# Qt5 dev packages (исправлено имя пакета serialport)
+# Qt5 dev packages
 # ---------------------------------------------------------
 RUN apt-get update && apt-get install -y --no-install-recommends \
     qtbase5-dev \
@@ -70,6 +65,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     qml-module-qtquick-window2 \
     qml-module-qt-labs-platform \
     libqt5charts5-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+
+# GStreamer (ВСЕ ПЛАГИНЫ)
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev \
+    libgstreamer-plugins-bad1.0-dev \
+    libgstreamer-plugins-good1.0-dev \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-ugly \
+    gstreamer1.0-tools \
+    gstreamer1.0-libav \
     && rm -rf /var/lib/apt/lists/*
 
 # Workspace

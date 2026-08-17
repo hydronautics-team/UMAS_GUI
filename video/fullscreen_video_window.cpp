@@ -6,6 +6,7 @@
 FullscreenVideoWindow::FullscreenVideoWindow(UVState* uvState, QWidget* parent)
     : QWidget(parent)
     , uvState_(uvState)
+    , videoPlayer_(nullptr)
 {
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     setStyleSheet("background-color: black;");
@@ -38,11 +39,28 @@ FullscreenVideoWindow::~FullscreenVideoWindow()
     qDebug() << "Полноэкранное окно HUD уничтожено";
 }
 
+void FullscreenVideoWindow::setVideoWidget(QWidget* widget)
+{
+    if (!widget) return;
+
+    videoPlayer_ = widget;
+    videoPlayer_->setParent(fullscreenVideoLabel_);
+
+    if (fullscreenVideoLabel_) {
+        videoPlayer_->setGeometry(0, 0, fullscreenVideoLabel_->width(), fullscreenVideoLabel_->height());
+        videoPlayer_->show();
+        videoPlayer_->raise();
+    }
+}
+
 void FullscreenVideoWindow::drawFrame(const QPixmap& pixmap)
 {
     if (fullscreenVideoLabel_ && !pixmap.isNull()) {
-        // Отрисовываем пиксели в холст сглаженным масштабированием
-        fullscreenVideoLabel_->setPixmap(pixmap.scaled(fullscreenVideoLabel_->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        fullscreenVideoLabel_->setPixmap(pixmap.scaled(
+            fullscreenVideoLabel_->size(),
+            Qt::KeepAspectRatio,
+            Qt::SmoothTransformation
+        ));
     }
 }
 
@@ -68,31 +86,36 @@ void FullscreenVideoWindow::updateHudData()
 void FullscreenVideoWindow::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Escape) {
-        emit windowClosed(); 
-        this->close();       
+        emit windowClosed();
+        this->close();
     } else {
         QWidget::keyPressEvent(event);
     }
 }
 
-// ЖЕСТКИЙ ПЕРЕРАСЧЕТ ГЕОМЕТРИИ ПРИ ОТКРЫТИИ ОКНА НА ВЕСЬ МОНИТОР
 void FullscreenVideoWindow::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
     int w = event->size().width();
     int h = event->size().height();
 
-    // 1. Растягиваем сам холст видео на 100% экрана хоста
+    // Растягиваем холст видео на 100% экрана
     if (fullscreenVideoLabel_) {
         fullscreenVideoLabel_->setGeometry(0, 0, w, h);
+
+        // Растягиваем видео-плеер внутри холста
+        if (videoPlayer_) {
+            videoPlayer_->setGeometry(0, 0, w, h);
+            videoPlayer_->raise();
+        }
     }
-    
-    // 2. Выставляем точные координаты для надписей телеметрии
+
+    // Выставляем точные координаты для надписей телеметрии
     if (depthLabel_) depthLabel_->setGeometry(30, 30, 400, 40);
     if (yawLabel_)   yawLabel_->setGeometry(30, 80, 400, 40);
     if (alarmLabel_) alarmLabel_->setGeometry(30, h - 60, 600, 40);
 
-    // 3. МАГИЯ: Принудительно выводим каждый текст на передний план прямо внутри холста!
+    // Выводим надписи на передний план
     if (depthLabel_) depthLabel_->raise();
     if (yawLabel_)   yawLabel_->raise();
     if (alarmLabel_) alarmLabel_->raise();
