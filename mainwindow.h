@@ -61,7 +61,7 @@ private:
     void useGamepad();
     void setTimer_updateImpact(int periodUpdateMsec);
     void setBottom();
-    void setupButtonStyles();
+    void setupButtonStyles(bool dark);
     void setBottom_mode();
     void setTab();
     void setUpdateUI();
@@ -87,6 +87,13 @@ private slots:
     void updateUi_Compass(float yaw);
     void useKeyBoard();
     void useJoyStick();
+    void toggleTheme();
+
+private:
+    void applyTheme(bool dark);
+
+    QString darkStyle_;
+    bool isDark_ = true;
 
 signals:
     void updateCompass(float yaw);
