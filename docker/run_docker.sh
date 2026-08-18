@@ -4,13 +4,8 @@ set -e
 # -------------------------
 # Определяем путь к проекту
 # -------------------------
-# Скрипт должен работать независимо от текущей директории запуска.
-# По умолчанию считаем, что корень проекта находится на уровень выше папки docker/.
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 DEFAULT_PROJECT_ROOT="$(realpath "${SCRIPT_DIR}/..")"
-
-# Можно переопределить исходную директорию проекта:
-#   UMAS_GUI_DIR=/path/to/UMAS_GUI ./docker/run_docker.sh
 PROJECT_ROOT="${UMAS_GUI_DIR:-$DEFAULT_PROJECT_ROOT}"
 
 if [ ! -d "$PROJECT_ROOT" ]; then
@@ -21,16 +16,9 @@ fi
 # -------------------------
 # Настройки
 # -------------------------
-# CONTAINER_NAME="qt_ros2"
-# IMAGE_NAME="qt-ros2"
-
-IMAGE_NAME="${DOCKER_IMAGE:-svvyppy/umas_gui:latest}"  # можно переопределить через переменную
-CONTAINER_NAME="umas_gui_app"
-# NETWORK_NAME="ros2-net"
+IMAGE_NAME="qt-ros2"
+CONTAINER_NAME="qt_ros2"
 NETWORK_NAME="host"
-
-
-# ROS2 параметры
 ROS_DOMAIN_ID=1
 
 # -------------------------
@@ -66,6 +54,8 @@ docker run -it \
     -e ROS_DOMAIN_ID=$ROS_DOMAIN_ID \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v "${PROJECT_ROOT}:/UMAS_GUI:rw" \
+    -v /dev:/dev \
+    --device /dev/video0 \
     $IMAGE_NAME \
     /bin/bash
 
@@ -74,3 +64,4 @@ docker run -it \
 # -------------------------
 echo "Revoking root access to X server..."
 xhost -si:localuser:root
+

@@ -24,7 +24,6 @@ void RosBridge::run()
         rclcpp::init(0, nullptr);
     }
 
-    // Namespace "qt_controller" — все относительные топики получат префикс /qt_controller/
     node_ = rclcpp::Node::make_shared("qt_controller_node", "qt_controller");
 
     twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/control/data", 10);
@@ -49,7 +48,6 @@ void RosBridge::run()
 
     is_ready_ = true;
 
-    // spin_some позволяет Qt обрабатывать очередь сигналов (QueuedConnection)
     while (rclcpp::ok() && !isInterruptionRequested()) {
         rclcpp::spin_some(node_);
         QThread::msleep(1);
@@ -89,7 +87,7 @@ void RosBridge::setControlFlagInternal(uint8_t bit, bool value)
     if (!is_ready_ || !control_flags_pub_) return;
 
     if (value)
-        control_flags_ |=  (1u << bit);
+        control_flags_ |= (1u << bit);
     else
         control_flags_ &= ~(1u << bit);
 

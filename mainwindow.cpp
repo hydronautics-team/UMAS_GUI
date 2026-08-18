@@ -8,18 +8,17 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    // Центральная модель состояния ПА (телеметрия/состояние для UI)
     uvState = new UVState(this);
 
-    // Инициализация ROS Thread
     rosBridge = new RosBridge(this);
     rosBridge->start();
+
+    
 
     connect(this, &MainWindow::publishTwistRequested,
             rosBridge, &RosBridge::publishTwistInternal,
             Qt::QueuedConnection);
 
-    // ROS -> UVState (QueuedConnection: RosBridge живёт в другом потоке)
     connect(rosBridge, &RosBridge::poseReceived,
             uvState, static_cast<void (UVState::*)(const UVState::Pose&)>(&UVState::setPose),
             Qt::QueuedConnection);
@@ -35,7 +34,6 @@ MainWindow::MainWindow(QWidget *parent)
     setTab();
     setUpdateUI();
 
-    // Инициализация спинбоксов
     gainSpinBoxes = {
         ui->spinBox_gain_surge,
         ui->spinBox_gain_sway,
@@ -48,23 +46,67 @@ MainWindow::MainWindow(QWidget *parent)
     loadSettings();
     setSpinBoxValuesForCurrentMode();
 
-    // Подключаем сигналы спинбоксов напрямую к saveCurrentModeGains через лямбду
     for (auto spinBox : gainSpinBoxes) {
         connect(spinBox, QOverload<int>::of(&QSpinBox::valueChanged),
                 this, [this]() { saveCurrentModeGains(); });
     }
 
-    // Инициализируем текущий режим (по умолчанию Medium)
     setSpeedMode(SpeedMode::Medium);
-
-    
-
 
     QButtonGroup *inputGroup = new QButtonGroup(this);
     inputGroup->addButton(ui->radioButton_useJoyStick);
     inputGroup->addButton(ui->radioButton_useKeyBoard);
     inputGroup->addButton(ui->gamepad_btn);
     inputGroup->setExclusive(true);
+
+
+
+    connect(ui->full_screen, &QCheckBox::toggled, this, [this](bool checked) {
+        if (checked) {
+            if (!fullscreenWindow_ && videoPlayer_) {
+                //  полноэкранное окно
+                fullscreenWindow_ = new FullscreenVideoWindow(uvState, this);
+
+                //  плеер в полноэкранное окно
+                videoPlayer_->setParent(fullscreenWindow_);
+                fullscreenWindow_->setVideoWidget(videoPlayer_);
+                videoPlayer_->show();
+
+                //сигнал закрытия окна
+                connect(fullscreenWindow_, &FullscreenVideoWindow::windowClosed, this, [this]() {
+                    
+                    ui->full_screen->blockSignals(true);
+                    ui->full_screen->setChecked(false);
+                    ui->full_screen->blockSignals(false);
+
+                    //  плеер на место
+                    if (videoPlayer_) {
+                        videoPlayer_->setParent(ui->tab_video);
+                        ui->tab_video->layout()->addWidget(videoPlayer_);
+                        videoPlayer_->show();
+                        //videoPlayer_->updateVideoWindow();
+                    }
+
+                    fullscreenWindow_ = nullptr;
+                });
+
+                fullscreenWindow_->showFullScreen();
+            }
+        } else {
+            if (fullscreenWindow_) {
+                fullscreenWindow_->close();
+                fullscreenWindow_->deleteLater();
+                fullscreenWindow_ = nullptr;
+            }
+        }
+    });
+
+    // Запуск видео-потока напрямую через GStreamer
+    QTimer::singleShot(500, this, [this]() {
+        if (videoPlayer_) {
+            videoPlayer_->startStream("5000");
+        }
+    });
 }
 
 void MainWindow::setWidget()
@@ -78,14 +120,14 @@ void MainWindow::setWidget()
     // diagnostic_board = new Diagnostic_board(this);
     // ui->horizontalLayout_diagnosticBoard->addWidget(diagnostic_board);
 
-    // connect(
-    //     modeAutomatic,&ModeAutomatic::displayText_toConsole,
-    //     this, &MainWindow::displayText);
-    // connect(
-    //     modeAutomatic, &ModeAutomatic::set_stackedWidget_mode,
-    //     ui->stackedWidget_mode, &QStackedWidget::setCurrentIndex);
-}
+    videoPlayer_ = new VideoPlayerWidget(this);
 
+    if (!ui->tab_video->layout()) {
+        ui->tab_video->setLayout(new QVBoxLayout(ui->tab_video));
+    }
+
+    ui->tab_video->layout()->addWidget(videoPlayer_);
+}
 
 void MainWindow::setConsole()
 {
@@ -179,14 +221,12 @@ void MainWindow::useGamepad()
         return;
     }
 
-    // Отсоединяемся от других источников ввода только после успешного подключения
     activeInput = nullptr;
     joyStick.reset();
     keyBoard.reset();
     gamepadInput.reset();
     if (gamepad) { delete gamepad; gamepad = nullptr; }
     gamepad = newGamepad;
-
 
     connect(gamepad, &Gamepad::backButtonPressed,
             this, &MainWindow::useKeyBoard);
@@ -195,22 +235,17 @@ void MainWindow::useGamepad()
     gamepadInput = std::make_unique<GamepadInputSource>(gamepad, this);
     activeInput = gamepadInput.get();
 
-    // --- Переключение режимов скорости (влево/вправо): крестовина ---
     connect(gamepad, &Gamepad::dPadRightPressed, this, [this]() {
-        // Переход к предыдущему режиму
         int current = static_cast<int>(currentMode);
         int previous = (current - 1 + 3) % 3;  
         setSpeedMode(static_cast<SpeedMode>(previous));
-        
     });
     connect(gamepad, &Gamepad::dPadLeftPressed, this, [this]() {
         int current = static_cast<int>(currentMode);
         int next = (current + 1) % 3;
         setSpeedMode(static_cast<SpeedMode>(next));
-        
     });
 }
-
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
 {
@@ -228,7 +263,8 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
     QMainWindow::keyReleaseEvent(event);
 }
 
-void MainWindow::updateUi_fromControl(){
+void MainWindow::updateUi_fromControl()
+{
     if (activeInput != nullptr) {
         const auto command = activeInput->poll();
         if (command.has_value()) {
@@ -274,8 +310,6 @@ void MainWindow::setBottom()
 {
     setBottom_mode();
 
-    // Подключение кнопок скорости к единому слоту
-    // Предполагается, что в UI кнопки переименованы в pushButton_speedFast и т.д.
     if (ui->pushButton_speedFast) {
         connect(ui->pushButton_speedFast, &QPushButton::clicked,
                 this, [this]() { setSpeedMode(SpeedMode::Fast); });
@@ -293,7 +327,6 @@ void MainWindow::setBottom()
     connect(ui->pushButton_zeroYaw, &QPushButton::clicked,
             rosBridge, &RosBridge::zeroYawInternal,
             Qt::QueuedConnection);
-
 }
 
 void MainWindow::setBottom_mode()
@@ -326,19 +359,14 @@ void MainWindow::setBottom_mode()
 
     connect(ui->pushButton_modeAutomated_surge, &QPushButton::toggled,
             this, [this](bool checked){ emit controlFlagRequested(0, checked); });
-
     connect(ui->pushButton_modeAutomated_sway, &QPushButton::toggled,
             this, [this](bool checked){ emit controlFlagRequested(1, checked); });
-
     connect(ui->pushButton_modeAutomated_depth, &QPushButton::toggled,
             this, [this](bool checked){ emit controlFlagRequested(2, checked); });
-
     connect(ui->pushButton_modeAutomated_yaw, &QPushButton::toggled,
             this, [this](bool checked){ emit controlFlagRequested(3, checked); });
-
     connect(ui->pushButton_modeAutomated_pitch, &QPushButton::toggled,
             this, [this](bool checked){ emit controlFlagRequested(4, checked); });
-
     connect(ui->pushButton_modeAutomated_roll, &QPushButton::toggled,
             this, [this](bool checked){ emit controlFlagRequested(5, checked); });
 
@@ -347,13 +375,13 @@ void MainWindow::setBottom_mode()
             Qt::QueuedConnection);
 }
 
-
 void MainWindow::setTab()
 {
     ui->tabWidget->setTabText(0, "Камера");
     ui->tabWidget->setTabText(1, "БСО");
-    ui->tabWidget->setTabText(2,  "Контроль сообщений");
-    ui->tabWidget->setTabText(3,  "Режимы питания");
+    ui->tabWidget->setTabText(2, "Контроль сообщений");
+    ui->tabWidget->setTabText(3, "Режимы питания");
+    ui->tabWidget->setTabText(4, "Исполнительные устройства");
     ui->tabWidget->setCurrentIndex(0);
 }
 
@@ -361,10 +389,6 @@ void MainWindow::setUpdateUI()
 {
     connect(this, SIGNAL(updateCompass(float)),
             this, SLOT(updateUi_Compass(float)));
-    // connect(this, SIGNAL(updateSetupMsg()),
-    //         checkMsg, SLOT(updateUi_checkMsg()));
-    // connect(this, SIGNAL(updateDataMission()),
-    //         modeAutomatic, SLOT(updateUi_DataMission()));
 }
 
 void MainWindow::loadSettings()
@@ -432,23 +456,21 @@ void MainWindow::setSpinBoxValuesForCurrentMode()
     }
 }
 
-// Единый слот для переключения режима скорости
 void MainWindow::setSpeedMode(SpeedMode mode)
 {
     saveCurrentModeGains();
     currentMode = mode;
     setSpinBoxValuesForCurrentMode();
 
-    // Обновляем стили кнопок (используем новые имена)
     ui->pushButton_speedFast->setStyleSheet(
         mode == SpeedMode::Fast ? "background-color: purple; font-size: 25px" :
-                                   "background-color: white; font-size: 25px");
+                                  "background-color: white; font-size: 25px");
     ui->pushButton_speedMedium->setStyleSheet(
         mode == SpeedMode::Medium ? "background-color: purple; font-size: 25px" :
-                                     "background-color: white; font-size: 25px");
+                                    "background-color: white; font-size: 25px");
     ui->pushButton_speedSlow->setStyleSheet(
         mode == SpeedMode::Slow ? "background-color: purple; font-size: 25px" :
-                                   "background-color: white; font-size: 25px");
+                                  "background-color: white; font-size: 25px");
 
     saveSettings();
 }

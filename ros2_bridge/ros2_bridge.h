@@ -7,7 +7,8 @@
 #include <QThread>
 #include <QObject>
 #include <atomic>
-
+#include <mutex>
+#include <chrono>
 #include "uv_state.h"
 
 class RosBridge : public QThread {
@@ -18,14 +19,10 @@ public:
     ~RosBridge() override;
 
     bool isReady() const;
-
     void run() override;
 
 signals:
-    // "Сырой" сигнал (может быть полезен для отладки)
     void poseUpdated(double x, double y, double z);
-
-    // Сигналы для обновления UVState-модели.
     void poseReceived(const UVState::Pose& pose);
     void controlFlagsPublished(std::uint8_t flags);
 
