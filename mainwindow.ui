@@ -17,7 +17,7 @@
    <string notr="true">
 /* === ГЛОБАЛЬНАЯ ТЕМНАЯ ТЕМА С СИНИМИ АКЦЕНТАМИ === */
 QMainWindow, QWidget#centralwidget {
-    background-color: #0f1419;
+    background-color: #0d1b2a;
     color: #e0e6ed;
     font-family: 'Segoe UI', 'Roboto', sans-serif;
     font-size: 13px;
@@ -210,14 +210,14 @@ QLabel {
 }
 
 /* === ФРЕЙМЫ === */
-QFrame[frameShape=&quot;4&quot;], QFrame[frameShape=&quot;5&quot;] {
+QFrame[frameShape="4"], QFrame[frameShape="5"] {
     color: #2d4052;
     max-height: 1px;
 }
 
 /* === СКРОЛЛБАРЫ === */
 QScrollBar:vertical {
-    background-color: #0f1419;
+    background-color: #0d1b2a;
     width: 10px;
     margin: 0;
 }
@@ -233,7 +233,7 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     height: 0;
 }
 QScrollBar:horizontal {
-    background-color: #0f1419;
+    background-color: #0d1b2a;
     height: 10px;
 }
 QScrollBar::handle:horizontal {
@@ -247,7 +247,7 @@ QScrollBar::handle:horizontal:hover {
 
 /* === МЕНЮБАР И СТАТУСБАР === */
 QMenuBar {
-    background-color: #0f1419;
+    background-color: #0d1b2a;
     color: #e0e6ed;
     border-bottom: 1px solid #2d4052;
 }
@@ -265,7 +265,7 @@ QMenu::item:selected {
     color: #0f1419;
 }
 QStatusBar {
-    background-color: #0f1419;
+    background-color: #0d1b2a;
     color: #8a99a8;
     border-top: 1px solid #2d4052;
 }
@@ -281,7 +281,7 @@ QToolTip {
    </string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,3,2">
+   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,4,2">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_7" stretch="0,1">
       <item>
@@ -326,18 +326,30 @@ QToolTip {
       <item>
        <widget class="QFrame" name="frame_telemetry">
         <property name="styleSheet">
-         <string notr="true">background-color: #151b23; border: 1px solid #2d4052; border-radius: 6px; padding: 4px;</string>
+         <string notr="true">background: transparent; border: none; padding: 0px;</string>
         </property>
         <property name="frameShape">
-         <enum>QFrame::Shape::StyledPanel</enum>
+         <enum>QFrame::Shape::NoFrame</enum>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_telemetry">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item>
           <layout class="QVBoxLayout">
            <item>
             <widget class="QLabel" name="lbl_depth_title">
              <property name="styleSheet">
-              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 9px;</string>
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
              </property>
              <property name="text">
               <string>ГЛУБИНА</string>
@@ -356,10 +368,10 @@ QToolTip {
               </sizepolicy>
              </property>
              <property name="styleSheet">
-              <string notr="true">background-color: #00ff88; color: #0f1419; font-weight: bold; border-radius: 4px; border: none; font-size: 11px; padding: 2px 6px;</string>
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
              </property>
              <property name="text">
-              <string>0.00 м</string>
+              <string>N/A</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -373,7 +385,7 @@ QToolTip {
            <item>
             <widget class="QLabel" name="lbl_bottom_title">
              <property name="styleSheet">
-              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 9px;</string>
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
              </property>
              <property name="text">
               <string>ДО ДНА</string>
@@ -392,82 +404,10 @@ QToolTip {
               </sizepolicy>
              </property>
              <property name="styleSheet">
-              <string notr="true">background-color: #00ff88; color: #0f1419; font-weight: bold; border-radius: 4px; border: none; font-size: 11px; padding: 2px 6px;</string>
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
              </property>
              <property name="text">
-              <string>0.00 м</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout">
-           <item>
-            <widget class="QLabel" name="lbl_voltage_title">
-             <property name="styleSheet">
-              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 9px;</string>
-             </property>
-             <property name="text">
-              <string>АКБ 1</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="lbl_voltage_value">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">background-color: #00ff88; color: #0f1419; font-weight: bold; border-radius: 4px; border: none; font-size: 11px; padding: 2px 6px;</string>
-             </property>
-             <property name="text">
-              <string>0.0 В</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout">
-           <item>
-            <widget class="QLabel" name="lbl_voltage2_title">
-             <property name="styleSheet">
-              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 9px;</string>
-             </property>
-             <property name="text">
-              <string>АКБ 2</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="lbl_voltage2_value">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">background-color: #00ff88; color: #0f1419; font-weight: bold; border-radius: 4px; border: none; font-size: 11px; padding: 2px 6px;</string>
-             </property>
-             <property name="text">
-              <string>0.0 В</string>
+              <string>N/A</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -481,7 +421,7 @@ QToolTip {
            <item>
             <widget class="QLabel" name="lbl_speed_title">
              <property name="styleSheet">
-              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 9px;</string>
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
              </property>
              <property name="text">
               <string>СКОРОСТЬ</string>
@@ -500,10 +440,154 @@ QToolTip {
               </sizepolicy>
              </property>
              <property name="styleSheet">
-              <string notr="true">background-color: #00ff88; color: #0f1419; font-weight: bold; border-radius: 4px; border: none; font-size: 11px; padding: 2px 6px;</string>
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
              </property>
              <property name="text">
-              <string>0.00 м/с</string>
+              <string>N/A</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout">
+           <item>
+            <widget class="QLabel" name="lbl_temp_title">
+             <property name="styleSheet">
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
+             </property>
+             <property name="text">
+              <string>ТЕМП</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lbl_temp_value">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
+             </property>
+             <property name="text">
+              <string>N/A</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout">
+           <item>
+            <widget class="QLabel" name="lbl_leak_title">
+             <property name="styleSheet">
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
+             </property>
+             <property name="text">
+              <string>ПРОТЕЧКА</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lbl_leak_value">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
+             </property>
+             <property name="text">
+              <string>N/A</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout">
+           <item>
+            <widget class="QLabel" name="lbl_voltage_title">
+             <property name="styleSheet">
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
+             </property>
+             <property name="text">
+              <string>АКБ 1</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lbl_voltage_value">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
+             </property>
+             <property name="text">
+              <string>N/A</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout">
+           <item>
+            <widget class="QLabel" name="lbl_voltage2_title">
+             <property name="styleSheet">
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
+             </property>
+             <property name="text">
+              <string>АКБ 2</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lbl_voltage2_value">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
+             </property>
+             <property name="text">
+              <string>N/A</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -517,7 +601,7 @@ QToolTip {
            <item>
             <widget class="QLabel" name="lbl_kill_title">
              <property name="styleSheet">
-              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 9px;</string>
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
              </property>
              <property name="text">
               <string>КИЛЛСВИЧ</string>
@@ -539,10 +623,10 @@ QToolTip {
               </sizepolicy>
              </property>
              <property name="styleSheet">
-              <string notr="true">background-color: #00ff88; color: #0f1419; font-weight: bold; border-radius: 4px; border: none; font-size: 11px; padding: 2px 6px;</string>
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
              </property>
              <property name="text">
-              <string>АКТИВЕН</string>
+              <string>N/A</string>
              </property>
             </widget>
            </item>
@@ -553,7 +637,7 @@ QToolTip {
            <item>
             <widget class="QLabel" name="lbl_ping_title">
              <property name="styleSheet">
-              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 9px;</string>
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
              </property>
              <property name="text">
               <string>ПИНГ</string>
@@ -572,10 +656,10 @@ QToolTip {
               </sizepolicy>
              </property>
              <property name="styleSheet">
-              <string notr="true">background-color: #00ff88; color: #0f1419; font-weight: bold; border-radius: 4px; border: none; font-size: 11px; padding: 2px 6px;</string>
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
              </property>
              <property name="text">
-              <string>0 мс</string>
+              <string>N/A</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -734,7 +818,8 @@ QToolTip {
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="20">
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_5" stretch="3,1">
+         <!-- КОНСОЛЬ УКОРОЧЕНА: растяжение 3,1 -> 4,1 -->
+         <layout class="QVBoxLayout" name="verticalLayout_5" stretch="4,1">
           <item>
            <widget class="QTabWidget" name="tabWidget">
             <property name="currentIndex">
@@ -1004,8 +1089,8 @@ QToolTip {
              </property>
              <property name="minimumSize">
               <size>
-               <width>150</width>
-               <height>150</height>
+               <width>120</width>
+               <height>120</height>
               </size>
              </property>
             </widget>
@@ -1020,8 +1105,8 @@ QToolTip {
              </property>
              <property name="minimumSize">
               <size>
-               <width>150</width>
-               <height>150</height>
+               <width>120</width>
+               <height>120</height>
               </size>
              </property>
             </widget>
@@ -1397,28 +1482,6 @@ QToolTip {
              </layout>
             </item>
            </layout>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="Line" name="line_122">
-          <property name="orientation">
-           <enum>Qt::Orientation::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_9">
-          <item>
-           <widget class="QGroupBox" name="groupBox_diagnostics">
-            <property name="styleSheet">
-             <string notr="true">QGroupBox { margin-top: 5px; padding-top: 10px; }</string>
-            </property>
-            <property name="title">
-             <string>Диагностики</string>
-            </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_diagnosticBoard"/>
-           </widget>
           </item>
          </layout>
         </item>

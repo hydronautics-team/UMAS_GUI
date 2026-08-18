@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include <QtMath>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -74,8 +75,8 @@ void MainWindow::setWidget()
     // ui->horizontalLayout_for_checkMsg->addWidget(checkMsg);
     // modeAutomatic = new ModeAutomatic(this);
     // ui->verticalLayout_modeAutomatic->addWidget(modeAutomatic);
-    diagnostic_board = new Diagnostic_board(this);
-    ui->horizontalLayout_diagnosticBoard->addWidget(diagnostic_board);
+    // diagnostic_board = new Diagnostic_board(this);
+    // ui->horizontalLayout_diagnosticBoard->addWidget(diagnostic_board);
 
     // connect(
     //     modeAutomatic,&ModeAutomatic::displayText_toConsole,
@@ -353,7 +354,7 @@ void MainWindow::setTab()
     ui->tabWidget->setTabText(1, "БСО");
     ui->tabWidget->setTabText(2,  "Контроль сообщений");
     ui->tabWidget->setTabText(3,  "Режимы питания");
-    ui->tabWidget->setCurrentIndex(4);
+    ui->tabWidget->setCurrentIndex(0);
 }
 
 void MainWindow::setUpdateUI()
@@ -455,6 +456,55 @@ void MainWindow::setSpeedMode(SpeedMode mode)
 void MainWindow::updateUi_Compass(float yaw)
 {
     ui->compass->setYaw(yaw);
+}
+
+void MainWindow::resetTelemetryToDefault()
+{
+    isConnected = false;
+    
+    // Красный фон для индикации отсутствия связи
+    QString noConnectionStyle = "background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;";
+    
+    ui->lbl_depth_value->setStyleSheet(noConnectionStyle);
+    ui->lbl_depth_value->setText("N/A");
+    
+    ui->lbl_bottom_value->setStyleSheet(noConnectionStyle);
+    ui->lbl_bottom_value->setText("N/A");
+    
+    ui->lbl_voltage_value->setStyleSheet(noConnectionStyle);
+    ui->lbl_voltage_value->setText("N/A");
+    
+    ui->lbl_voltage2_value->setStyleSheet(noConnectionStyle);
+    ui->lbl_voltage2_value->setText("N/A");
+    
+    ui->lbl_speed_value->setStyleSheet(noConnectionStyle);
+    ui->lbl_speed_value->setText("N/A");
+    
+    ui->btn_killswitch_status->setStyleSheet(noConnectionStyle);
+    ui->btn_killswitch_status->setText("N/A");
+    
+    ui->lbl_ping_value->setStyleSheet(noConnectionStyle);
+    ui->lbl_ping_value->setText("N/A");
+}
+
+void MainWindow::updateTelemetryFromState()
+{
+    isConnected = true;
+    
+    // Зелёный фон для нормальных данных
+    QString connectedStyle = "background-color: #00ff88; color: #0f1419; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;";
+    
+    ui->lbl_depth_value->setStyleSheet(connectedStyle);
+    ui->lbl_bottom_value->setStyleSheet(connectedStyle);
+    ui->lbl_voltage_value->setStyleSheet(connectedStyle);
+    ui->lbl_voltage2_value->setStyleSheet(connectedStyle);
+    ui->lbl_speed_value->setStyleSheet(connectedStyle);
+    ui->btn_killswitch_status->setStyleSheet(connectedStyle);
+    ui->lbl_ping_value->setStyleSheet(connectedStyle);
+    
+    // Здесь обновляй реальные значения из uvState
+    // ui->lbl_depth_value->setText(QString::number(uvState->getDepth(), 'f', 2) + " м");
+    // и т.д.
 }
 
 MainWindow::~MainWindow()

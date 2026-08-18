@@ -1,7 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
-
-
+#pragma once
 
 #include <QMainWindow>
 #include <QTimer>
@@ -77,6 +74,10 @@ private:
 
     void setInterface();
 
+    void resetTelemetryToDefault();
+    void updateTelemetryFromState();
+    bool isConnected = false;
+
 
     bool status_keyboard = false;
 
@@ -136,5 +137,3 @@ protected:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 };
-
-#endif // MAINWINDOW_H
