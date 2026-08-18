@@ -1,7 +1,80 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-#include "video/video_player_widget.h"
-#include "video/fullscreen_video_window.h"
+#include <QtMath>
+#include <QPainter>
+#include <QPainterPath>
+#include <QPixmap>
+#include <cmath>
+
+static QIcon makeSunIcon()
+{
+    QPixmap pm(24, 24);
+    pm.fill(Qt::transparent);
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::Antialiasing);
+
+    const QPointF c(12, 12);
+    p.setPen(QPen(QColor("#f5a623"), 2, Qt::SolidLine, Qt::RoundCap));
+    for (int i = 0; i < 8; ++i) {              // лучи
+        const qreal a = i * M_PI / 4.0;
+        p.drawLine(QPointF(c.x() + 8  * std::cos(a), c.y() + 8  * std::sin(a)),
+                   QPointF(c.x() + 11 * std::cos(a), c.y() + 11 * std::sin(a)));
+    }
+    p.setPen(QPen(QColor("#f5a623"), 1.5));    // диск
+    p.setBrush(QColor("#ffd54f"));
+    p.drawEllipse(c, 5.5, 5.5);
+    p.end();
+    return QIcon(pm);
+}
+
+static QIcon makeMoonIcon()
+{
+    QPixmap pm(24, 24);
+    pm.fill(Qt::transparent);
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::Antialiasing);
+
+    QPainterPath moon;
+    moon.addEllipse(QRectF(3, 3, 18, 18));
+    QPainterPath cut;                          // вырезаем серп
+    cut.addEllipse(QRectF(9, 1, 16, 16));
+    p.setPen(Qt::NoPen);
+    p.setBrush(QColor("#cfd8dc"));
+    p.drawPath(moon - cut);
+    p.end();
+    return QIcon(pm);
+}
+
+static const QString LIGHT_THEME =
+"QMainWindow, QWidget#centralwidget { background-color: #f2f4f6; color: #1c2733; }"
+"QPushButton { background-color: #ffffff; border: 1px solid #c3cad2; border-radius: 4px; padding: 5px 12px; color: #1c2733; min-height: 20px; font-size: 12px; }"
+"QPushButton:hover { border: 1px solid #0088bb; color: #006699; }"
+"QPushButton:pressed { background-color: #00a0d0; color: #ffffff; }"
+"QPushButton:disabled { background-color: #e6e9ec; color: #9aa4ad; border: 1px solid #d4d9de; }"
+"QPushButton:checked { background-color: #00a0d0; color: #ffffff; font-weight: bold; }"
+"QTabWidget::pane { border: 1px solid #c3cad2; background-color: #ffffff; border-radius: 4px; }"
+"QTabBar::tab { background-color: #e4e8ec; color: #5a6672; padding: 6px 14px; border: 1px solid #c3cad2; border-bottom: none; font-size: 12px; }"
+"QTabBar::tab:selected { background-color: #00a0d0; color: #ffffff; font-weight: bold; }"
+"QTabBar::tab:hover:!selected { background-color: #d7dde3; }"
+"QLineEdit, QSpinBox, QComboBox, QDoubleSpinBox { background-color: #ffffff; border: 1px solid #c3cad2; border-radius: 3px; padding: 3px 6px; color: #1c2733; font-size: 12px; }"
+"QLineEdit:focus, QSpinBox:focus, QComboBox:focus { border: 1px solid #0088bb; }"
+"QGroupBox { border: 1px solid #c3cad2; border-radius: 5px; margin-top: 10px; font-weight: bold; color: #0077aa; background-color: #ffffff; padding-top: 14px; font-size: 12px; }"
+"QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; color: #0077aa; }"
+"QRadioButton, QCheckBox { color: #1c2733; spacing: 5px; font-size: 12px; }"
+"QTextEdit { background-color: #ffffff; color: #007a33; border: 1px solid #c3cad2; border-radius: 3px; padding: 3px; font-family: 'Consolas', 'Courier New', monospace; font-size: 11px; }"
+"Line { color: #c3cad2; max-height: 1px; }"
+"QLabel { color: #1c2733; background: transparent; font-size: 12px; }"
+"QScrollBar:vertical { background: #eef1f4; width: 10px; }"
+"QScrollBar::handle:vertical { background: #c3cad2; min-height: 20px; border-radius: 5px; }"
+"QScrollBar::handle:vertical:hover { background: #0088bb; }"
+"QScrollBar:horizontal { background: #eef1f4; height: 10px; }"
+"QScrollBar::handle:horizontal { background: #c3cad2; min-width: 20px; border-radius: 5px; }"
+"QMenuBar { background-color: #f2f4f6; color: #1c2733; border-bottom: 1px solid #c3cad2; }"
+"QMenuBar::item:selected { background-color: #00a0d0; color: #ffffff; }"
+"QMenu { background-color: #ffffff; border: 1px solid #c3cad2; color: #1c2733; }"
+"QMenu::item:selected { background-color: #00a0d0; color: #ffffff; }"
+"QStatusBar { background-color: #f2f4f6; color: #5a6672; border-top: 1px solid #c3cad2; }"
+"QToolTip { background-color: #ffffff; color: #1c2733; border: 1px solid #0088bb; padding: 3px; border-radius: 3px; }";
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -32,6 +105,19 @@ MainWindow::MainWindow(QWidget *parent)
     setConsole();
     setTimer_updateImpact(10);
     setBottom();
+
+    darkStyle_ = styleSheet();
+
+    ui->btn_theme_toggle->setText(QString());
+    ui->btn_theme_toggle->setIconSize(QSize(22, 22));
+    applyTheme(true);
+    ui->btn_theme_toggle->setIcon(makeMoonIcon());
+
+    connect(ui->btn_theme_toggle, &QPushButton::clicked,
+            this, &MainWindow::toggleTheme);
+
+    setupButtonStyles(true);
+
     setTab();
     setUpdateUI();
 
@@ -112,8 +198,14 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::setWidget()
 {
-    diagnostic_board = new Diagnostic_board(this);
-    ui->horizontalLayout_diagnosticBoard->addWidget(diagnostic_board);
+    // powerSystem = new PowerSystem(this);
+    // ui->horizontalLayout_for_powerSystem->addWidget(powerSystem);
+    // checkMsg = new CheckMsg(this);
+    // ui->horizontalLayout_for_checkMsg->addWidget(checkMsg);
+    // modeAutomatic = new ModeAutomatic(this);
+    // ui->verticalLayout_modeAutomatic->addWidget(modeAutomatic);
+    // diagnostic_board = new Diagnostic_board(this);
+    // ui->horizontalLayout_diagnosticBoard->addWidget(diagnostic_board);
 
     videoPlayer_ = new VideoPlayerWidget(this);
 
@@ -319,9 +411,17 @@ void MainWindow::setBottom()
         connect(ui->pushButton_speedSlow, &QPushButton::clicked,
                 this, [this]() { setSpeedMode(SpeedMode::Slow); });
     }
+
+    QButtonGroup *speedGroup = new QButtonGroup(this);
+    speedGroup->addButton(ui->pushButton_speedFast);
+    speedGroup->addButton(ui->pushButton_speedMedium);
+    speedGroup->addButton(ui->pushButton_speedSlow);
+    speedGroup->setExclusive(true);
+
     connect(ui->pushButton_zeroYaw, &QPushButton::clicked,
             rosBridge, &RosBridge::zeroYawInternal,
             Qt::QueuedConnection);
+
 }
 
 void MainWindow::setBottom_mode()
@@ -376,7 +476,8 @@ void MainWindow::setTab()
     ui->tabWidget->setTabText(1, "БСО");
     ui->tabWidget->setTabText(2, "Контроль сообщений");
     ui->tabWidget->setTabText(3, "Режимы питания");
-    ui->tabWidget->setCurrentIndex(4);
+    ui->tabWidget->setTabText(4, "Исполнительные устройства");
+    ui->tabWidget->setCurrentIndex(0);
 }
 
 void MainWindow::setUpdateUI()
@@ -456,15 +557,13 @@ void MainWindow::setSpeedMode(SpeedMode mode)
     currentMode = mode;
     setSpinBoxValuesForCurrentMode();
 
-    ui->pushButton_speedFast->setStyleSheet(
-        mode == SpeedMode::Fast ? "background-color: purple; font-size: 25px" :
-                                  "background-color: white; font-size: 25px");
-    ui->pushButton_speedMedium->setStyleSheet(
-        mode == SpeedMode::Medium ? "background-color: purple; font-size: 25px" :
-                                    "background-color: white; font-size: 25px");
-    ui->pushButton_speedSlow->setStyleSheet(
-        mode == SpeedMode::Slow ? "background-color: purple; font-size: 25px" :
-                                  "background-color: white; font-size: 25px");
+    // Тема сама покрасит :checked в зелёный #00ff88
+    ui->pushButton_speedFast->setChecked(mode == SpeedMode::Fast);
+    ui->pushButton_speedMedium->setChecked(mode == SpeedMode::Medium);
+    ui->pushButton_speedSlow->setChecked(mode == SpeedMode::Slow);
+
+    saveSettings();
+
 
     saveSettings();
 }
@@ -472,6 +571,126 @@ void MainWindow::setSpeedMode(SpeedMode mode)
 void MainWindow::updateUi_Compass(float yaw)
 {
     ui->compass->setYaw(yaw);
+}
+
+void MainWindow::resetTelemetryToDefault()
+{
+    isConnected = false;
+    
+    // Красный фон для индикации отсутствия связи
+    QString noConnectionStyle = "background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;";
+    
+    ui->lbl_depth_value->setStyleSheet(noConnectionStyle);
+    ui->lbl_depth_value->setText("N/A");
+    
+    ui->lbl_bottom_value->setStyleSheet(noConnectionStyle);
+    ui->lbl_bottom_value->setText("N/A");
+    
+    ui->lbl_voltage_value->setStyleSheet(noConnectionStyle);
+    ui->lbl_voltage_value->setText("N/A");
+    
+    ui->lbl_voltage2_value->setStyleSheet(noConnectionStyle);
+    ui->lbl_voltage2_value->setText("N/A");
+    
+    ui->lbl_speed_value->setStyleSheet(noConnectionStyle);
+    ui->lbl_speed_value->setText("N/A");
+    
+    ui->btn_killswitch_status->setStyleSheet(noConnectionStyle);
+    ui->btn_killswitch_status->setText("N/A");
+    
+    ui->lbl_ping_value->setStyleSheet(noConnectionStyle);
+    ui->lbl_ping_value->setText("N/A");
+}
+
+void MainWindow::updateTelemetryFromState()
+{
+    isConnected = true;
+    
+    // Зелёный фон для нормальных данных
+    QString connectedStyle = "background-color: #00ff88; color: #0f1419; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;";
+    
+    ui->lbl_depth_value->setStyleSheet(connectedStyle);
+    ui->lbl_bottom_value->setStyleSheet(connectedStyle);
+    ui->lbl_voltage_value->setStyleSheet(connectedStyle);
+    ui->lbl_voltage2_value->setStyleSheet(connectedStyle);
+    ui->lbl_speed_value->setStyleSheet(connectedStyle);
+    ui->btn_killswitch_status->setStyleSheet(connectedStyle);
+    ui->lbl_ping_value->setStyleSheet(connectedStyle);
+    
+    // Здесь обновляй реальные значения из uvState
+    // ui->lbl_depth_value->setText(QString::number(uvState->getDepth(), 'f', 2) + " м");
+    // и т.д.
+}
+
+void MainWindow::toggleTheme()
+{
+    isDark_ = !isDark_;
+    applyTheme(isDark_);
+}
+
+void MainWindow::applyTheme(bool dark)
+{
+    setStyleSheet(dark ? darkStyle_ : LIGHT_THEME);
+
+    ui->stackedWidget_mode->setStyleSheet(dark
+        ? "background-color: #151b23; border: 1px solid #2d4052; border-radius: 6px;"
+        : "background-color: #ffffff; border: 1px solid #c3cad2; border-radius: 6px;");
+
+    const QString titleStyle = dark
+        ? "color: #00bcd4; font-weight: bold; font-size: 15px;"
+        : "color: #0077aa; font-weight: bold; font-size: 15px;";
+    for (QLabel *l : {ui->lbl_depth_title, ui->lbl_bottom_title, ui->lbl_speed_title,
+                      ui->lbl_temp_title,  ui->lbl_leak_title,   ui->lbl_voltage_title,
+                      ui->lbl_voltage2_title, ui->lbl_kill_title, ui->lbl_ping_title})
+        l->setStyleSheet(titleStyle);
+
+    ui->lbl_heading->setStyleSheet(dark
+        ? "font-size: 14px; font-weight: bold; color: #00bcd4;"
+        : "font-size: 14px; font-weight: bold; color: #0077aa;");
+
+    setupButtonStyles(dark);
+
+    ui->btn_theme_toggle->setStyleSheet(dark
+        ? "QPushButton { background-color: #1e2a38; border: 2px solid #2d4052; border-radius: 8px; }"
+          "QPushButton:hover { border-color: #00bcd4; }"
+          "QPushButton:pressed { background-color: #2d4052; }"
+        : "QPushButton { background-color: #ffffff; border: 2px solid #c3cad2; border-radius: 8px; }"
+          "QPushButton:hover { border-color: #0088bb; }"
+          "QPushButton:pressed { background-color: #e4e8ec; }");
+
+    ui->btn_theme_toggle->setIcon(dark ? makeMoonIcon() : makeSunIcon());
+}
+
+void MainWindow::setupButtonStyles(bool dark)
+{
+    const QString speedStyle = dark
+        ? "QPushButton { background-color: #1e2a38; border: 1px solid #2d4052; border-radius: 4px;"
+          " color: #e0e6ed; min-height: 28px; font-size: 13px; }"
+          "QPushButton:hover { border: 1px solid #00ff88; color: #ffffff; }"
+          "QPushButton:checked { background-color: #00ff88; color: #0f1419;"
+          " border: 1px solid #00ff88; font-weight: bold; }"
+        : "QPushButton { background-color: #ffffff; border: 1px solid #c3cad2; border-radius: 4px;"
+          " color: #1c2733; min-height: 28px; font-size: 13px; }"
+          "QPushButton:hover { border: 1px solid #00994d; color: #006633; }"
+          "QPushButton:checked { background-color: #00c86e; color: #05331f;"
+          " border: 1px solid #00c86e; font-weight: bold; }";
+    for (auto *b : {ui->pushButton_speedFast, ui->pushButton_speedMedium, ui->pushButton_speedSlow})
+        b->setStyleSheet(speedStyle);
+
+    const QString modeStyle = dark
+        ? "QPushButton { background-color: #1e2a38; border: 1px solid #2d4052; border-radius: 4px;"
+          " color: #e0e6ed; min-height: 24px; }"
+          "QPushButton:hover { border: 1px solid #00bcd4; color: #ffffff; }"
+          "QPushButton:checked { background-color: #00bcd4; color: #0f1419; font-weight: bold; }"
+        : "QPushButton { background-color: #ffffff; border: 1px solid #c3cad2; border-radius: 4px;"
+          " color: #1c2733; min-height: 24px; }"
+          "QPushButton:hover { border: 1px solid #0088bb; color: #006699; }"
+          "QPushButton:checked { background-color: #00a0d0; color: #ffffff; font-weight: bold; }";
+    for (auto *b : {ui->pushButton_modeManual, ui->pushButton_modeAutomated, ui->pushButton_modeAutomatic,
+                    ui->pushButton_modeAutomated_surge, ui->pushButton_modeAutomated_sway,
+                    ui->pushButton_modeAutomated_depth, ui->pushButton_modeAutomated_yaw,
+                    ui->pushButton_modeAutomated_pitch, ui->pushButton_modeAutomated_roll})
+        b->setStyleSheet(modeStyle);
 }
 
 MainWindow::~MainWindow()

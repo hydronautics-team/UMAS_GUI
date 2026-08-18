@@ -84,6 +84,8 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        attitudeindicator.h
+        attitudeindicator.cpp
         compass/compass.cpp
         compass/compass.h
         compass/compass.ui

@@ -1,5 +1,5 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
+
 
 #include <QMainWindow>
 #include <QTimer>
@@ -21,6 +21,8 @@
 #include "diagnostic_board.h"
 #include "ros2_bridge.h"
 #include "uv_state.h"
+#include "video/video_player_widget.h"
+#include "video/fullscreen_video_window.h"
 #include "Gamepad/gamepad.h"
 
 QT_BEGIN_NAMESPACE
@@ -59,11 +61,17 @@ private:
     void useGamepad();
     void setTimer_updateImpact(int periodUpdateMsec);
     void setBottom();
+    void setupButtonStyles(bool dark);
     void setBottom_mode();
     void setTab();
     void setUpdateUI();
     void setWidget();
     void setInterface();
+
+    void resetTelemetryToDefault();
+    void updateTelemetryFromState();
+    bool isConnected = false;
+
 
     bool status_keyboard = false;
 
@@ -79,6 +87,13 @@ private slots:
     void updateUi_Compass(float yaw);
     void useKeyBoard();
     void useJoyStick();
+    void toggleTheme();
+
+private:
+    void applyTheme(bool dark);
+
+    QString darkStyle_;
+    bool isDark_ = true;
 
 signals:
     void updateCompass(float yaw);
@@ -101,5 +116,3 @@ protected:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 };
-
-#endif // MAINWINDOW_H
