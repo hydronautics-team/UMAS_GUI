@@ -23,7 +23,6 @@ QMainWindow, QWidget#centralwidget {
     font-size: 13px;
 }
 
-/* === КНОПКИ === */
 QPushButton {
     background-color: #1e2a38;
     border: 1px solid #2d4052;
@@ -54,7 +53,6 @@ QPushButton:checked {
     font-weight: bold;
 }
 
-/* Специальный стиль для кнопок режимов скорости - ЗЕЛЕНЫЙ при выборе */
 QPushButton#pushButton_speedFast:checked,
 QPushButton#pushButton_speedMedium:checked,
 QPushButton#pushButton_speedSlow:checked {
@@ -70,7 +68,6 @@ QPushButton#pushButton_speedSlow:hover {
     border: 1px solid #00ff88;
 }
 
-/* Специальный стиль для кнопок режимов управления */
 QPushButton#pushButton_modeManual:checked,
 QPushButton#pushButton_modeAutomated:checked,
 QPushButton#pushButton_modeAutomatic:checked {
@@ -79,7 +76,6 @@ QPushButton#pushButton_modeAutomatic:checked {
     font-weight: bold;
 }
 
-/* Специальный стиль для кнопок каналов автоматизации */
 QPushButton#pushButton_modeAutomated_surge:checked,
 QPushButton#pushButton_modeAutomated_sway:checked,
 QPushButton#pushButton_modeAutomated_depth:checked,
@@ -91,7 +87,6 @@ QPushButton#pushButton_modeAutomated_roll:checked {
     font-weight: bold;
 }
 
-/* === ВКЛАДКИ === */
 QTabWidget::pane {
     border: 1px solid #2d4052;
     background-color: #151b23;
@@ -118,7 +113,6 @@ QTabBar::tab:hover:!selected {
     color: #ffffff;
 }
 
-/* === ПОЛЯ ВВОДА === */
 QLineEdit, QSpinBox, QComboBox, QDoubleSpinBox {
     background-color: #151b23;
     border: 1px solid #2d4052;
@@ -144,7 +138,6 @@ QComboBox QAbstractItemView {
     selection-color: #0f1419;
 }
 
-/* === ГРУППОВЫЕ БЛОКИ === */
 QGroupBox {
     border: 1px solid #2d4052;
     border-radius: 5px;
@@ -162,7 +155,6 @@ QGroupBox::title {
     color: #00bcd4;
 }
 
-/* === РАДИОКНОПКИ И ЧЕКБОКСЫ === */
 QRadioButton, QCheckBox {
     color: #e0e6ed;
     spacing: 5px;
@@ -173,7 +165,6 @@ QRadioButton::indicator, QCheckBox::indicator {
     height: 14px;
 }
 
-/* === ТЕКСТОВЫЕ ОБЛАСТИ === */
 QTextEdit {
     background-color: #0a0e13;
     color: #4ade80;
@@ -184,7 +175,6 @@ QTextEdit {
     font-size: 11px;
 }
 
-/* === LCD ДИСПЛЕИ (компактные) === */
 QLCDNumber {
     background-color: #0a0e13;
     color: #00ff88;
@@ -196,26 +186,22 @@ QLCDNumber {
     max-height: 32px;
 }
 
-/* === РАЗДЕЛИТЕЛИ === */
 Line {
     color: #2d4052;
     max-height: 1px;
 }
 
-/* === МЕТКИ === */
 QLabel {
     color: #e0e6ed;
     background: transparent;
     font-size: 12px;
 }
 
-/* === ФРЕЙМЫ === */
 QFrame[frameShape="4"], QFrame[frameShape="5"] {
     color: #2d4052;
     max-height: 1px;
 }
 
-/* === СКРОЛЛБАРЫ === */
 QScrollBar:vertical {
     background-color: #0d1b2a;
     width: 10px;
@@ -245,7 +231,6 @@ QScrollBar::handle:horizontal:hover {
     background-color: #00bcd4;
 }
 
-/* === МЕНЮБАР И СТАТУСБАР === */
 QMenuBar {
     background-color: #0d1b2a;
     color: #e0e6ed;
@@ -270,7 +255,6 @@ QStatusBar {
     border-top: 1px solid #2d4052;
 }
 
-/* === ТУЛТИПЫ === */
 QToolTip {
     background-color: #1e2a38;
     color: #e0e6ed;
@@ -278,94 +262,257 @@ QToolTip {
     padding: 3px;
     border-radius: 3px;
 }
+
+/* === КНОПКИ СКОРОСТИ: размер без инлайн-стилей === */
+QPushButton#pushButton_speedFast,
+QPushButton#pushButton_speedMedium,
+QPushButton#pushButton_speedSlow {
+    min-height: 28px;
+    font-size: 13px;
+}
+
    </string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,4,2">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,30">
+     <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0,1">
+      <!-- ПАНЕЛЬ ТЕЛЕМЕТРИИ (возвращена) -->
+      <item>
+       <widget class="QFrame" name="frame_telemetry">
+        <property name="styleSheet">
+         <string notr="true">background: transparent; border: none; padding: 0px;</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Shape::NoFrame</enum>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_telemetry">
+         <property name="leftMargin"><number>0</number></property>
+         <property name="topMargin"><number>0</number></property>
+         <property name="rightMargin"><number>0</number></property>
+         <property name="bottomMargin"><number>0</number></property>
+         <item>
+          <layout class="QVBoxLayout">
+           <item>
+            <widget class="QLabel" name="lbl_depth_title">
+             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
+             <property name="text"><string>ГЛУБИНА</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lbl_depth_value">
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
+             <property name="text"><string>N/A</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout">
+           <item>
+            <widget class="QLabel" name="lbl_bottom_title">
+             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
+             <property name="text"><string>ДО ДНА</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lbl_bottom_value">
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
+             <property name="text"><string>N/A</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout">
+           <item>
+            <widget class="QLabel" name="lbl_speed_title">
+             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
+             <property name="text"><string>СКОРОСТЬ</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lbl_speed_value">
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
+             <property name="text"><string>N/A</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout">
+           <item>
+            <widget class="QLabel" name="lbl_temp_title">
+             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
+             <property name="text"><string>ТЕМП</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lbl_temp_value">
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
+             <property name="text"><string>N/A</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout">
+           <item>
+            <widget class="QLabel" name="lbl_leak_title">
+             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
+             <property name="text"><string>ПРОТЕЧКА</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lbl_leak_value">
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
+             <property name="text"><string>N/A</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout">
+           <item>
+            <widget class="QLabel" name="lbl_voltage_title">
+             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
+             <property name="text"><string>АКБ 1</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lbl_voltage_value">
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
+             <property name="text"><string>N/A</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout">
+           <item>
+            <widget class="QLabel" name="lbl_voltage2_title">
+             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
+             <property name="text"><string>АКБ 2</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lbl_voltage2_value">
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
+             <property name="text"><string>N/A</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout">
+           <item>
+            <widget class="QLabel" name="lbl_kill_title">
+             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
+             <property name="text"><string>КИЛЛСВИЧ</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_killswitch_status">
+             <property name="enabled"><bool>false</bool></property>
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
+             <property name="text"><string>N/A</string></property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout">
+           <item>
+            <widget class="QLabel" name="lbl_ping_title">
+             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
+             <property name="text"><string>ПИНГ</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lbl_ping_value">
+             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
+             <property name="text"><string>N/A</string></property>
+             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <!-- ЧЕКБОКСЫ (от коллеги) -->
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0,0,0,0">
         <item>
          <widget class="QCheckBox" name="checkBox">
-          <property name="text">
-           <string>CheckBox</string>
-          </property>
+          <property name="text"><string>CheckBox</string></property>
          </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="checkBox_2">
-          <property name="text">
-           <string>CheckBox</string>
-          </property>
+          <property name="text"><string>CheckBox</string></property>
          </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="checkBox_3">
-          <property name="text">
-           <string>CheckBox</string>
-          </property>
+          <property name="text"><string>CheckBox</string></property>
          </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="full_screen">
-          <property name="text">
-           <string>Полный экран</string>
-          </property>
+          <property name="text"><string>Полный экран</string></property>
          </widget>
         </item>
         <item>
          <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
+          <property name="orientation"><enum>Qt::Horizontal</enum></property>
+          <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
          </spacer>
         </item>
        </layout>
       </item>
+      <!-- ОСНОВНОЙ БЛОК (кнопка агента + вкладки + консоль) -->
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,20">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_7" stretch="1,20">
           <item>
            <widget class="QPushButton" name="pushButton_selectAgent1">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>50</width>
-              <height>50</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>1</string>
-            </property>
+            <property name="enabled"><bool>true</bool></property>
+            <property name="sizePolicy"><sizepolicy hsizetype="Preferred" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+            <property name="minimumSize"><size><width>50</width><height>50</height></size></property>
+            <property name="text"><string>1</string></property>
            </widget>
           </item>
           <item>
            <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
+            <property name="orientation"><enum>Qt::Vertical</enum></property>
+            <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
            </spacer>
           </item>
          </layout>
@@ -374,19 +521,13 @@ QToolTip {
          <layout class="QVBoxLayout" name="verticalLayout_5" stretch="3,1">
           <item>
            <widget class="QTabWidget" name="tabWidget">
-            <property name="currentIndex">
-             <number>0</number>
-            </property>
+            <property name="currentIndex"><number>0</number></property>
             <widget class="QWidget" name="tab_video">
-             <attribute name="title">
-              <string>Карта</string>
-             </attribute>
+             <attribute name="title"><string>Камера</string></attribute>
              <layout class="QVBoxLayout" name="verticalLayout_2"/>
             </widget>
             <widget class="QWidget" name="tab_imuData">
-             <attribute name="title">
-              <string>IMU Данные</string>
-             </attribute>
+             <attribute name="title"><string>IMU Данные</string></attribute>
              <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="0">
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_for_checkImu"/>
@@ -394,9 +535,7 @@ QToolTip {
              </layout>
             </widget>
             <widget class="QWidget" name="tab_setupMsg">
-             <attribute name="title">
-              <string>Контроль сообщений</string>
-             </attribute>
+             <attribute name="title"><string>Контроль сообщений</string></attribute>
              <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="0">
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_for_checkMsg"/>
@@ -404,9 +543,7 @@ QToolTip {
              </layout>
             </widget>
             <widget class="QWidget" name="tab_powerMode">
-             <attribute name="title">
-              <string>Режимы питания</string>
-             </attribute>
+             <attribute name="title"><string>Режимы питания</string></attribute>
              <layout class="QGridLayout" name="gridLayout_5">
               <item row="0" column="0">
                <layout class="QHBoxLayout" name="horizontalLayout_for_powerSystem"/>
@@ -414,88 +551,28 @@ QToolTip {
              </layout>
             </widget>
             <widget class="QWidget" name="tab_actuators">
-             <attribute name="title">
-              <string>Исполнительные устройства</string>
-             </attribute>
+             <attribute name="title"><string>Исполнительные устройства</string></attribute>
              <layout class="QVBoxLayout" name="verticalLayout_actuators">
               <item>
                <widget class="QGroupBox" name="groupBox_actuators">
-                <property name="title">
-                 <string>Статус исполнительных устройств</string>
-                </property>
+                <property name="title"><string>Статус исполнительных устройств</string></property>
                 <layout class="QGridLayout" name="gridLayout_actuators">
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="lbl_light_icon">
-                   <property name="text">
-                    <string>💡 Свет</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QFrame" name="led_light_cmd">
-                   <property name="styleSheet">
-                    <string notr="true">background-color: #4a5568; border-radius: 7px; min-width: 14px; max-width: 14px; min-height: 14px; max-height: 14px;</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="2">
-                  <widget class="QLabel" name="lbl_light_status">
-                   <property name="text">
-                    <string>Выкл</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="lbl_manip_icon">
-                   <property name="text">
-                    <string>🦾 Клешня</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QFrame" name="led_manip_cmd">
-                   <property name="styleSheet">
-                    <string notr="true">background-color: #4a5568; border-radius: 7px; min-width: 14px; max-width: 14px; min-height: 14px; max-height: 14px;</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="2">
-                  <widget class="QLabel" name="lbl_manip_status">
-                   <property name="text">
-                    <string>Открыта</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="lbl_camera_icon">
-                   <property name="text">
-                    <string>📹 Камера</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QFrame" name="led_camera_cmd">
-                   <property name="styleSheet">
-                    <string notr="true">background-color: #4a5568; border-radius: 7px; min-width: 14px; max-width: 14px; min-height: 14px; max-height: 14px;</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="2">
-                  <widget class="QLabel" name="lbl_camera_status">
-                   <property name="text">
-                    <string>Выкл</string>
-                   </property>
-                  </widget>
-                 </item>
+                 <item row="0" column="0"><widget class="QLabel" name="lbl_light_icon"><property name="text"><string>💡 Свет</string></property></widget></item>
+                 <item row="0" column="1"><widget class="QFrame" name="led_light_cmd"><property name="styleSheet"><string notr="true">background-color: #4a5568; border-radius: 7px; min-width: 14px; max-width: 14px; min-height: 14px; max-height: 14px;</string></property></widget></item>
+                 <item row="0" column="2"><widget class="QLabel" name="lbl_light_status"><property name="text"><string>Выкл</string></property></widget></item>
+                 <item row="1" column="0"><widget class="QLabel" name="lbl_manip_icon"><property name="text"><string>🦾 Клешня</string></property></widget></item>
+                 <item row="1" column="1"><widget class="QFrame" name="led_manip_cmd"><property name="styleSheet"><string notr="true">background-color: #4a5568; border-radius: 7px; min-width: 14px; max-width: 14px; min-height: 14px; max-height: 14px;</string></property></widget></item>
+                 <item row="1" column="2"><widget class="QLabel" name="lbl_manip_status"><property name="text"><string>Открыта</string></property></widget></item>
+                 <item row="2" column="0"><widget class="QLabel" name="lbl_camera_icon"><property name="text"><string>📹 Камера</string></property></widget></item>
+                 <item row="2" column="1"><widget class="QFrame" name="led_camera_cmd"><property name="styleSheet"><string notr="true">background-color: #4a5568; border-radius: 7px; min-width: 14px; max-width: 14px; min-height: 14px; max-height: 14px;</string></property></widget></item>
+                 <item row="2" column="2"><widget class="QLabel" name="lbl_camera_status"><property name="text"><string>Выкл</string></property></widget></item>
                 </layout>
                </widget>
               </item>
              </layout>
             </widget>
             <widget class="QWidget" name="test">
-             <attribute name="title">
-              <string>Отладка</string>
-             </attribute>
+             <attribute name="title"><string>Отладка</string></attribute>
              <layout class="QVBoxLayout" name="verticalLayout_10">
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_mapWidget"/>
@@ -508,98 +585,41 @@ QToolTip {
            <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="5,1">
             <item>
              <widget class="QTextEdit" name="textEdit_console">
-              <property name="readOnly">
-               <bool>true</bool>
-              </property>
-              <property name="overwriteMode">
-               <bool>false</bool>
-              </property>
+              <property name="readOnly"><bool>true</bool></property>
+              <property name="overwriteMode"><bool>false</bool></property>
              </widget>
             </item>
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_12">
               <item>
                <widget class="QLabel" name="label_6">
-                <property name="styleSheet">
-                 <string notr="true">color: #00bcd4; font-weight: bold; font-size: 11px;</string>
-                </property>
-                <property name="text">
-                 <string>Выставка репера</string>
-                </property>
+                <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 11px;</string></property>
+                <property name="text"><string>Выставка репера</string></property>
                </widget>
               </item>
               <item>
                <widget class="QPushButton" name="pushButton_sendReper_map_onoff">
-                <property name="text">
-                 <string>Тыкнуть по карте</string>
-                </property>
-                <property name="checkable">
-                 <bool>true</bool>
-                </property>
+                <property name="text"><string>Тыкнуть по карте</string></property>
+                <property name="checkable"><bool>true</bool></property>
                </widget>
               </item>
               <item>
                <layout class="QFormLayout" name="formLayout">
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_8">
-                  <property name="styleSheet">
-                   <string notr="true">font-size: 10px;</string>
-                  </property>
-                  <property name="text">
-                   <string>Широта:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="label_9">
-                  <property name="styleSheet">
-                   <string notr="true">font-size: 10px;</string>
-                  </property>
-                  <property name="text">
-                   <string>Долгота:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QLineEdit" name="lineEdit_reper_latitude">
-                  <property name="styleSheet">
-                   <string notr="true">font-size: 10px;</string>
-                  </property>
-                  <property name="text">
-                   <string>55.71752739610301</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QLineEdit" name="lineEdit_reper_longitude">
-                  <property name="styleSheet">
-                   <string notr="true">font-size: 10px;</string>
-                  </property>
-                  <property name="text">
-                   <string>37.84747427460488</string>
-                  </property>
-                 </widget>
-                </item>
+                <item row="0" column="0"><widget class="QLabel" name="label_8"><property name="styleSheet"><string notr="true">font-size: 10px;</string></property><property name="text"><string>Широта:</string></property></widget></item>
+                <item row="1" column="0"><widget class="QLabel" name="label_9"><property name="styleSheet"><string notr="true">font-size: 10px;</string></property><property name="text"><string>Долгота:</string></property></widget></item>
+                <item row="0" column="1"><widget class="QLineEdit" name="lineEdit_reper_latitude"><property name="styleSheet"><string notr="true">font-size: 10px;</string></property><property name="text"><string>55.71752739610301</string></property></widget></item>
+                <item row="1" column="1"><widget class="QLineEdit" name="lineEdit_reper_longitude"><property name="styleSheet"><string notr="true">font-size: 10px;</string></property><property name="text"><string>37.84747427460488</string></property></widget></item>
                </layout>
               </item>
               <item>
                <widget class="QPushButton" name="pushButton_sendReper">
-                <property name="text">
-                 <string>Установить репер</string>
-                </property>
+                <property name="text"><string>Установить репер</string></property>
                </widget>
               </item>
               <item>
                <spacer name="verticalSpacer_4">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Vertical</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>40</height>
-                 </size>
-                </property>
+                <property name="orientation"><enum>Qt::Vertical</enum></property>
+                <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
                </spacer>
               </item>
              </layout>
@@ -614,98 +634,66 @@ QToolTip {
     </item>
     <item>
      <widget class="QStackedWidget" name="stackedWidget_mode">
+      <property name="minimumSize">
+       <size>
+        <width>480</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>560</width>
+        <height>16777215</height>
+       </size>
+      </property>
       <property name="styleSheet">
        <string notr="true">background-color: #151b23; border: 1px solid #2d4052; border-radius: 6px;</string>
       </property>
-      <property name="currentIndex">
-       <number>0</number>
-      </property>
+      <property name="styleSheet"><string notr="true">background-color: #151b23; border: 1px solid #2d4052; border-radius: 6px;</string></property>
+      <property name="currentIndex"><number>0</number></property>
       <widget class="QWidget" name="page_main">
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <widget class="QGroupBox" name="groupBox_info">
-          <property name="styleSheet">
-           <string notr="true">QGroupBox { margin-top: 5px; padding-top: 10px; }</string>
-          </property>
-          <property name="title">
-           <string>Информация</string>
-          </property>
+          <property name="styleSheet"><string notr="true">QGroupBox { margin-top: 5px; padding-top: 10px; }</string></property>
+          <property name="title"><string>Информация</string></property>
           <layout class="QHBoxLayout" name="horizontalLayout_info">
            <item>
             <widget class="Compass" name="compass" native="true">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-               <horstretch>1</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>120</width>
-               <height>120</height>
-              </size>
-             </property>
+             <property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Expanding"><horstretch>1</horstretch><verstretch>0</verstretch></sizepolicy></property>
+             <property name="minimumSize"><size><width>120</width><height>120</height></size></property>
             </widget>
            </item>
            <item>
             <widget class="AttitudeIndicator" name="attitudeIndicator" native="true">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-               <horstretch>1</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>120</width>
-               <height>120</height>
-              </size>
-             </property>
+             <property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Expanding"><horstretch>1</horstretch><verstretch>0</verstretch></sizepolicy></property>
+             <property name="minimumSize"><size><width>120</width><height>120</height></size></property>
             </widget>
            </item>
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_orientation">
              <item>
               <widget class="QLabel" name="lbl_heading">
-               <property name="styleSheet">
-                <string notr="true">font-size: 14px; font-weight: bold; color: #00bcd4;</string>
-               </property>
-               <property name="text">
-                <string>HDG: 000°</string>
-               </property>
+               <property name="styleSheet"><string notr="true">font-size: 14px; font-weight: bold; color: #00bcd4;</string></property>
+               <property name="text"><string>HDG: 000°</string></property>
               </widget>
              </item>
              <item>
               <widget class="QLabel" name="lbl_pitch">
-               <property name="styleSheet">
-                <string notr="true">font-size: 12px;</string>
-               </property>
-               <property name="text">
-                <string>PITCH: 0.0°</string>
-               </property>
+               <property name="styleSheet"><string notr="true">font-size: 12px;</string></property>
+               <property name="text"><string>PITCH: 0.0°</string></property>
               </widget>
              </item>
              <item>
               <widget class="QLabel" name="lbl_roll">
-               <property name="styleSheet">
-                <string notr="true">font-size: 12px;</string>
-               </property>
-               <property name="text">
-                <string>ROLL: 0.0°</string>
-               </property>
+               <property name="styleSheet"><string notr="true">font-size: 12px;</string></property>
+               <property name="text"><string>ROLL: 0.0°</string></property>
               </widget>
              </item>
              <item>
               <spacer name="verticalSpacer_orientation">
-               <property name="orientation">
-                <enum>Qt::Orientation::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
+               <property name="orientation"><enum>Qt::Vertical</enum></property>
+               <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
               </spacer>
              </item>
             </layout>
@@ -715,63 +703,41 @@ QToolTip {
         </item>
         <item>
          <widget class="Line" name="line_separator1">
-          <property name="orientation">
-           <enum>Qt::Orientation::Horizontal</enum>
-          </property>
+          <property name="orientation"><enum>Qt::Horizontal</enum></property>
          </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_speed">
           <item>
            <widget class="QLabel" name="lbl_speed_mode_title">
-            <property name="styleSheet">
-             <string notr="true">font-weight: bold; color: #00bcd4; font-size: 11px;</string>
-            </property>
-            <property name="text">
-             <string>СКОРОСТЬ:</string>
-            </property>
+            <property name="styleSheet"><string notr="true">font-weight: bold; color: #00bcd4; font-size: 11px;</string></property>
+            <property name="text"><string>СКОРОСТЬ:</string></property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="pushButton_speedFast">
-            <property name="text">
-             <string>Быстрый</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
+            <property name="text"><string>Быстрый</string></property>
+            <property name="checkable"><bool>true</bool></property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="pushButton_speedMedium">
-            <property name="text">
-             <string>Средний</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
+            <property name="text"><string>Средний</string></property>
+            <property name="checkable"><bool>true</bool></property>
+            <property name="checked"><bool>true</bool></property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="pushButton_speedSlow">
-            <property name="text">
-             <string>Слабый</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
+            <property name="text"><string>Слабый</string></property>
+            <property name="checkable"><bool>true</bool></property>
            </widget>
           </item>
          </layout>
         </item>
         <item>
          <widget class="Line" name="line_separator2">
-          <property name="orientation">
-           <enum>Qt::Orientation::Horizontal</enum>
-          </property>
+          <property name="orientation"><enum>Qt::Horizontal</enum></property>
          </widget>
         </item>
         <item>
@@ -782,41 +748,27 @@ QToolTip {
              <layout class="QHBoxLayout" name="horizontalLayout_control_source">
               <item>
                <widget class="QRadioButton" name="radioButton_useJoyStick">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="text">
-                 <string>Джойстик</string>
-                </property>
-                <property name="checkable">
-                 <bool>true</bool>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
+                <property name="enabled"><bool>true</bool></property>
+                <property name="text"><string>Джойстик</string></property>
+                <property name="checkable"><bool>true</bool></property>
+                <property name="checked"><bool>true</bool></property>
                </widget>
               </item>
               <item>
                <widget class="QRadioButton" name="gamepad_btn">
-                <property name="text">
-                 <string>Gamepad</string>
-                </property>
+                <property name="text"><string>Gamepad</string></property>
                </widget>
               </item>
               <item>
                <widget class="QRadioButton" name="radioButton_useKeyBoard">
-                <property name="text">
-                 <string>Клавиатура</string>
-                </property>
+                <property name="text"><string>Клавиатура</string></property>
                </widget>
               </item>
              </layout>
             </item>
             <item>
              <widget class="QPushButton" name="pushButton_zeroYaw">
-              <property name="text">
-               <string>Выставка курса</string>
-              </property>
+              <property name="text"><string>Выставка курса</string></property>
              </widget>
             </item>
            </layout>
@@ -825,212 +777,32 @@ QToolTip {
            <layout class="QVBoxLayout" name="verticalLayout_11">
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout">
-              <item>
-               <widget class="QLabel" name="label_4">
-                <property name="styleSheet">
-                 <string notr="true">font-size: 11px;</string>
-                </property>
-                <property name="text">
-                 <string>Марш</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSpinBox" name="spinBox_gain_surge">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="value">
-                 <number>1</number>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_controlMarch">
-                <property name="styleSheet">
-                 <string notr="true">font-size: 11px;</string>
-                </property>
-                <property name="text">
-                 <string>0</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_7">
-                <property name="styleSheet">
-                 <string notr="true">font-size: 11px;</string>
-                </property>
-                <property name="text">
-                 <string>Курс</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSpinBox" name="spinBox_gain_yaw">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="value">
-                 <number>1</number>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_controlYaw">
-                <property name="styleSheet">
-                 <string notr="true">font-size: 11px;</string>
-                </property>
-                <property name="text">
-                 <string>0</string>
-                </property>
-               </widget>
-              </item>
+              <item><widget class="QLabel" name="label_4"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>Марш</string></property></widget></item>
+              <item><widget class="QSpinBox" name="spinBox_gain_surge"><property name="sizePolicy"><sizepolicy hsizetype="Maximum" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="value"><number>1</number></property></widget></item>
+              <item><widget class="QLabel" name="label_controlMarch"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>0</string></property></widget></item>
+              <item><widget class="QLabel" name="label_7"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>Курс</string></property></widget></item>
+              <item><widget class="QSpinBox" name="spinBox_gain_yaw"><property name="sizePolicy"><sizepolicy hsizetype="Maximum" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="value"><number>1</number></property></widget></item>
+              <item><widget class="QLabel" name="label_controlYaw"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>0</string></property></widget></item>
              </layout>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_8">
-              <item>
-               <widget class="QLabel" name="label_10">
-                <property name="styleSheet">
-                 <string notr="true">font-size: 11px;</string>
-                </property>
-                <property name="text">
-                 <string>Лаг</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSpinBox" name="spinBox_gain_sway">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="value">
-                 <number>1</number>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_controlLag">
-                <property name="styleSheet">
-                 <string notr="true">font-size: 11px;</string>
-                </property>
-                <property name="text">
-                 <string>0</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_11">
-                <property name="styleSheet">
-                 <string notr="true">font-size: 11px;</string>
-                </property>
-                <property name="text">
-                 <string>Дифферент</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSpinBox" name="spinBox_gain_pitch">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="value">
-                 <number>1</number>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_controlDif">
-                <property name="styleSheet">
-                 <string notr="true">font-size: 11px;</string>
-                </property>
-                <property name="text">
-                 <string>0</string>
-                </property>
-               </widget>
-              </item>
+              <item><widget class="QLabel" name="label_10"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>Лаг</string></property></widget></item>
+              <item><widget class="QSpinBox" name="spinBox_gain_sway"><property name="sizePolicy"><sizepolicy hsizetype="Maximum" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="value"><number>1</number></property></widget></item>
+              <item><widget class="QLabel" name="label_controlLag"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>0</string></property></widget></item>
+              <item><widget class="QLabel" name="label_11"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>Дифферент</string></property></widget></item>
+              <item><widget class="QSpinBox" name="spinBox_gain_pitch"><property name="sizePolicy"><sizepolicy hsizetype="Maximum" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="value"><number>1</number></property></widget></item>
+              <item><widget class="QLabel" name="label_controlDif"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>0</string></property></widget></item>
              </layout>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_9">
-              <item>
-               <widget class="QLabel" name="label_12">
-                <property name="styleSheet">
-                 <string notr="true">font-size: 11px;</string>
-                </property>
-                <property name="text">
-                 <string>Глубина</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSpinBox" name="spinBox_gain_depth">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="value">
-                 <number>1</number>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_controlDepth">
-                <property name="styleSheet">
-                 <string notr="true">font-size: 11px;</string>
-                </property>
-                <property name="text">
-                 <string>0</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_13">
-                <property name="styleSheet">
-                 <string notr="true">font-size: 11px;</string>
-                </property>
-                <property name="text">
-                 <string>Крен</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSpinBox" name="spinBox_gain_roll">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="value">
-                 <number>1</number>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_controlKren">
-                <property name="styleSheet">
-                 <string notr="true">font-size: 11px;</string>
-                </property>
-                <property name="text">
-                 <string>0</string>
-                </property>
-               </widget>
-              </item>
+              <item><widget class="QLabel" name="label_12"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>Глубина</string></property></widget></item>
+              <item><widget class="QSpinBox" name="spinBox_gain_depth"><property name="sizePolicy"><sizepolicy hsizetype="Maximum" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="value"><number>1</number></property></widget></item>
+              <item><widget class="QLabel" name="label_controlDepth"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>0</string></property></widget></item>
+              <item><widget class="QLabel" name="label_13"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>Крен</string></property></widget></item>
+              <item><widget class="QSpinBox" name="spinBox_gain_roll"><property name="sizePolicy"><sizepolicy hsizetype="Maximum" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="value"><number>1</number></property></widget></item>
+              <item><widget class="QLabel" name="label_controlKren"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>0</string></property></widget></item>
              </layout>
             </item>
            </layout>
@@ -1039,162 +811,48 @@ QToolTip {
         </item>
         <item>
          <widget class="Line" name="line_separator3">
-          <property name="orientation">
-           <enum>Qt::Orientation::Horizontal</enum>
-          </property>
+          <property name="orientation"><enum>Qt::Horizontal</enum></property>
          </widget>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_9">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_diagnosticBoard"/>
+          </item>
+         </layout>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
           <item>
            <widget class="QPushButton" name="pushButton_modeManual">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Ручной</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
+            <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+            <property name="text"><string>Ручной</string></property>
+            <property name="checkable"><bool>true</bool></property>
+            <property name="checked"><bool>true</bool></property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="pushButton_modeAutomated">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Автоматизированный</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
+            <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+            <property name="text"><string>Автоматизированный</string></property>
+            <property name="checkable"><bool>true</bool></property>
            </widget>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_11">
-            <item>
-             <widget class="QPushButton" name="pushButton_modeAutomated_surge">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Марш</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="pushButton_modeAutomated_sway">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Лаг</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="pushButton_modeAutomated_depth">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Глубина</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="pushButton_modeAutomated_yaw">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Курс</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="pushButton_modeAutomated_pitch">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Дифферент</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="pushButton_modeAutomated_roll">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Крен</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
+            <item><widget class="QPushButton" name="pushButton_modeAutomated_surge"><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text"><string>Марш</string></property><property name="checkable"><bool>true</bool></property></widget></item>
+            <item><widget class="QPushButton" name="pushButton_modeAutomated_sway"><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text"><string>Лаг</string></property><property name="checkable"><bool>true</bool></property></widget></item>
+            <item><widget class="QPushButton" name="pushButton_modeAutomated_depth"><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text"><string>Глубина</string></property><property name="checkable"><bool>true</bool></property></widget></item>
+            <item><widget class="QPushButton" name="pushButton_modeAutomated_yaw"><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text"><string>Курс</string></property><property name="checkable"><bool>true</bool></property></widget></item>
+            <item><widget class="QPushButton" name="pushButton_modeAutomated_pitch"><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text"><string>Дифферент</string></property><property name="checkable"><bool>true</bool></property></widget></item>
+            <item><widget class="QPushButton" name="pushButton_modeAutomated_roll"><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text"><string>Крен</string></property><property name="checkable"><bool>true</bool></property></widget></item>
            </layout>
           </item>
           <item>
            <widget class="QPushButton" name="pushButton_modeAutomatic">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Автоматический</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
+            <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+            <property name="text"><string>Автоматический</string></property>
+            <property name="checkable"><bool>true</bool></property>
            </widget>
           </item>
          </layout>

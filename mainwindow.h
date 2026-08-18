@@ -61,6 +61,7 @@ private:
     void useGamepad();
     void setTimer_updateImpact(int periodUpdateMsec);
     void setBottom();
+    void setupButtonStyles();
     void setBottom_mode();
     void setTab();
     void setUpdateUI();

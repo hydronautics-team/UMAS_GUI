@@ -31,6 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
     setConsole();
     setTimer_updateImpact(10);
     setBottom();
+    setupButtonStyles();
     setTab();
     setUpdateUI();
 
@@ -324,9 +325,17 @@ void MainWindow::setBottom()
         connect(ui->pushButton_speedSlow, &QPushButton::clicked,
                 this, [this]() { setSpeedMode(SpeedMode::Slow); });
     }
+
+    QButtonGroup *speedGroup = new QButtonGroup(this);
+    speedGroup->addButton(ui->pushButton_speedFast);
+    speedGroup->addButton(ui->pushButton_speedMedium);
+    speedGroup->addButton(ui->pushButton_speedSlow);
+    speedGroup->setExclusive(true);
+
     connect(ui->pushButton_zeroYaw, &QPushButton::clicked,
             rosBridge, &RosBridge::zeroYawInternal,
             Qt::QueuedConnection);
+
 }
 
 void MainWindow::setBottom_mode()
@@ -462,15 +471,13 @@ void MainWindow::setSpeedMode(SpeedMode mode)
     currentMode = mode;
     setSpinBoxValuesForCurrentMode();
 
-    ui->pushButton_speedFast->setStyleSheet(
-        mode == SpeedMode::Fast ? "background-color: purple; font-size: 25px" :
-                                  "background-color: white; font-size: 25px");
-    ui->pushButton_speedMedium->setStyleSheet(
-        mode == SpeedMode::Medium ? "background-color: purple; font-size: 25px" :
-                                    "background-color: white; font-size: 25px");
-    ui->pushButton_speedSlow->setStyleSheet(
-        mode == SpeedMode::Slow ? "background-color: purple; font-size: 25px" :
-                                  "background-color: white; font-size: 25px");
+    // Тема сама покрасит :checked в зелёный #00ff88
+    ui->pushButton_speedFast->setChecked(mode == SpeedMode::Fast);
+    ui->pushButton_speedMedium->setChecked(mode == SpeedMode::Medium);
+    ui->pushButton_speedSlow->setChecked(mode == SpeedMode::Slow);
+
+    saveSettings();
+
 
     saveSettings();
 }
@@ -527,6 +534,34 @@ void MainWindow::updateTelemetryFromState()
     // Здесь обновляй реальные значения из uvState
     // ui->lbl_depth_value->setText(QString::number(uvState->getDepth(), 'f', 2) + " м");
     // и т.д.
+}
+
+void MainWindow::setupButtonStyles()
+{
+    // Кнопки скоростей: стиль на виджете — :checked работает надёжно
+    const QString speedStyle =
+        "QPushButton { background-color: #1e2a38; border: 1px solid #2d4052; border-radius: 4px;"
+        " color: #e0e6ed; min-height: 28px; font-size: 13px; }"
+        "QPushButton:hover { border: 1px solid #00ff88; color: #ffffff; }"
+        "QPushButton:checked { background-color: #00ff88; color: #0f1419;"
+        " border: 1px solid #00ff88; font-weight: bold; }";
+    for (auto *b : {ui->pushButton_speedFast, ui->pushButton_speedMedium, ui->pushButton_speedSlow})
+        b->setStyleSheet(speedStyle);
+
+    // Кнопки режимов управления
+    const QString modeStyle =
+        "QPushButton { background-color: #1e2a38; border: 1px solid #2d4052; border-radius: 4px;"
+        " color: #e0e6ed; min-height: 24px; }"
+        "QPushButton:hover { border: 1px solid #00bcd4; color: #ffffff; }"
+        "QPushButton:checked { background-color: #00bcd4; color: #0f1419; font-weight: bold; }";
+    for (auto *b : {ui->pushButton_modeManual, ui->pushButton_modeAutomated, ui->pushButton_modeAutomatic})
+        b->setStyleSheet(modeStyle);
+
+    // Кнопки каналов автоматизации
+    for (auto *b : {ui->pushButton_modeAutomated_surge, ui->pushButton_modeAutomated_sway,
+                    ui->pushButton_modeAutomated_depth, ui->pushButton_modeAutomated_yaw,
+                    ui->pushButton_modeAutomated_pitch, ui->pushButton_modeAutomated_roll})
+        b->setStyleSheet(modeStyle);
 }
 
 MainWindow::~MainWindow()
