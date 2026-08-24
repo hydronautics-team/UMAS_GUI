@@ -40,24 +40,36 @@ void RosBridge::run()
             emit poseReceived(pose);
         });
 
+    depth_sub_ = node_->create_subscription<std_msgs::msg::Float32>(
+        "/stingray_core/pressure_sensor/depth", rclcpp::SensorDataQoS(),
+        [this](std_msgs::msg::Float32::SharedPtr msg) { emit depthReceived(msg->data); });
 
-    // === ТЕЛЕМЕТРИЯ (топики поменяй под своего агента) ===
     bottom_sub_ = node_->create_subscription<std_msgs::msg::Float32>(
         "/sensors/altitude", 10,
         [this](std_msgs::msg::Float32::SharedPtr msg) { emit bottomReceived(msg->data); });
 
-    temp_sub_ = node_->create_subscription<std_msgs::msg::Float32>(
-        "/sensors/temperature", 10,
-        [this](std_msgs::msg::Float32::SharedPtr msg) { emit temperatureReceived(msg->data); });
+    // temp_sub_ = node_->create_subscription<std_msgs::msg::Float32>(
+    //     "/sensors/temperature", 10,
+    //     [this](std_msgs::msg::Float32::SharedPtr msg) { emit temperatureReceived(msg->data); });
 
-    leak_sub_ = node_->create_subscription<std_msgs::msg::Bool>(
-        "/sensors/leak", 10,
-        [this](std_msgs::msg::Bool::SharedPtr msg) { emit leakReceived(msg->data); });
+    // leak_sub_ = node_->create_subscription<std_msgs::msg::Bool>(
+    //     "/sensors/leak", 10,
+    //     [this](std_msgs::msg::Bool::SharedPtr msg) { emit leakReceived(msg->data); });
 
     battery_sub_ = node_->create_subscription<sensor_msgs::msg::BatteryState>(
     "/power/battery/state",
     rclcpp::SensorDataQoS(),
     [this](const sensor_msgs::msg::BatteryState::SharedPtr msg) {
+        // Counting ping
+        auto now = node_->now();
+        auto publish_time = msg->header.stamp;
+        
+        rclcpp::Duration latency = now - publish_time;
+        int64_t latency_ns = latency.nanoseconds();
+        int pingMs = static_cast<int>(latency_ns / 1000000);
+        
+        emit pingReceived(pingMs);
+        
         const double percentage = msg->percentage;
         if (msg->location == "1") {
             emit battery1Received(percentage);
@@ -68,23 +80,8 @@ void RosBridge::run()
     });
 
     kill_switch_sub_ = node_->create_subscription<std_msgs::msg::Bool>(
-        "/stingray_core/safety/kill_switch", 10,
+        "/safety/kill_switch", 10,
         [this](std_msgs::msg::Bool::SharedPtr msg) { emit killswitchReceived(msg->data); });
-
-    heartbeat_sub_ = node_->create_subscription<std_msgs::msg::Empty>(
-        "/system/heartbeat", 10,
-        [this](std_msgs::msg::Empty::SharedPtr) {
-            const auto now = std::chrono::steady_clock::now();
-            int ms = 0;
-            if (lastHeartbeat_.time_since_epoch().count() != 0) {
-                ms = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(
-                        now - lastHeartbeat_).count());
-            }
-            lastHeartbeat_ = now;
-            emit heartbeatReceived(ms);
-        });
-
-    
 
     control_flags_pub_ =
         node_->create_publisher<std_msgs::msg::UInt8>("/control/loop_flags", 10);
