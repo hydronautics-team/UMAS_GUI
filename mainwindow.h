@@ -95,6 +95,18 @@ private:
     QString darkStyle_;
     bool isDark_ = true;
 
+    QTimer *telemetryWatchdog_ = nullptr;
+    std::chrono::steady_clock::time_point lastPoseTime_{};
+    double lastPoseX_ = 0, lastPoseY_ = 0;
+
+    void updatePlaque(QLabel *label, const QString &text, bool alarm = false);
+    void updateKillswitch(bool active);
+    void updateSpeedFromPose(double x, double y);
+    void kickWatchdog();
+
+    static const QString kPlaqueOk;
+    static const QString kPlaqueErr;
+
 signals:
     void updateCompass(float yaw);
     void publishTwistRequested(double x, double y, double z,

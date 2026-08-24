@@ -5,6 +5,13 @@
 #include <QPainterPath>
 #include <QPixmap>
 #include <cmath>
+#include <chrono>
+#include <cmath>
+
+const QString MainWindow::kPlaqueOk  = "background-color: #00ff88; color: #0f1419;"
+    " font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;";
+const QString MainWindow::kPlaqueErr = "background-color: #ff4444; color: #ffffff;"
+    " font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;";
 
 static QIcon makeSunIcon()
 {
@@ -100,6 +107,49 @@ MainWindow::MainWindow(QWidget *parent)
     connect(rosBridge, &RosBridge::controlFlagsPublished,
             uvState, &UVState::setControlFlags,
             Qt::QueuedConnection);
+
+        // === Телеметрия из ROS -> плашки ===
+    connect(rosBridge, &RosBridge::poseUpdated, this, [this](double x, double y, double z) {
+        updatePlaque(ui->lbl_depth_value, QString::number(z, 'f', 2) + " м");
+        updateSpeedFromPose(x, y);
+        //kickWatchdog(); //TODO: закомментить, пока не будут реализованы все топики телеметрии, иначе будет постоянно сбрасываться телеметрия в N/A
+    }, Qt::QueuedConnection);
+
+    connect(rosBridge, &RosBridge::bottomReceived, this, [this](double m) {
+        updatePlaque(ui->lbl_bottom_value, QString::number(m, 'f', 2) + " м", m < 0.5);
+        //kickWatchdog(); //TODO: закомментить, пока не будут реализованы все топики телеметрии, иначе будет постоянно сбрасываться телеметрия в N/A
+    }, Qt::QueuedConnection);
+
+    connect(rosBridge, &RosBridge::temperatureReceived, this, [this](double t) {
+        updatePlaque(ui->lbl_temp_value, QString::number(t, 'f', 0) + "°C", t > 60.0);
+    }, Qt::QueuedConnection);
+
+    connect(rosBridge, &RosBridge::leakReceived, this, [this](bool leak) {
+        updatePlaque(ui->lbl_leak_value, leak ? "ЕСТЬ!" : "OK", leak);
+    }, Qt::QueuedConnection);
+
+    connect(rosBridge, &RosBridge::battery1Received, this, [this](double p) {
+        updatePlaque(ui->lbl_voltage_value, QString::number(p, 'f', 0) + " %", p < 20.0);
+    }, Qt::QueuedConnection);
+
+    connect(rosBridge, &RosBridge::battery2Received, this, [this](double p) {
+        updatePlaque(ui->lbl_voltage2_value, QString::number(p, 'f', 0) + " %", p < 20.0);
+    }, Qt::QueuedConnection);
+
+    connect(rosBridge, &RosBridge::killswitchReceived, this, [this](bool active) {
+        updateKillswitch(active);
+    }, Qt::QueuedConnection);
+
+    connect(rosBridge, &RosBridge::heartbeatReceived, this, [this](int ms) {
+        updatePlaque(ui->lbl_ping_value, QString::number(ms) + " мс");
+        //kickWatchdog(); //TODO: закомментить, пока не будут реализованы все топики телеметрии, иначе будет постоянно сбрасываться телеметрия в N/A
+    }, Qt::QueuedConnection);
+
+    // Watchdog: нет данных 3 с → сброс в N/A
+    // telemetryWatchdog_ = new QTimer(this);
+    // telemetryWatchdog_->setInterval(3000);
+    // connect(telemetryWatchdog_, &QTimer::timeout, this, &MainWindow::resetTelemetryToDefault);
+    // telemetryWatchdog_->start();
 
     setWidget();
     setConsole();
@@ -573,53 +623,51 @@ void MainWindow::updateUi_Compass(float yaw)
     ui->compass->setYaw(yaw);
 }
 
+void MainWindow::updatePlaque(QLabel *label, const QString &text, bool alarm)
+{
+    label->setStyleSheet(alarm ? kPlaqueErr : kPlaqueOk);
+    label->setText(text);
+}
+
+void MainWindow::updateKillswitch(bool active)
+{
+    // active = true → красный (опасность), false → зелёный (норма)
+    ui->btn_killswitch_status->setStyleSheet(active ? kPlaqueErr : kPlaqueOk);
+    ui->btn_killswitch_status->setText(active ? "НАЖАТ" : "НЕ НАЖАТ");
+}
+
+void MainWindow::updateSpeedFromPose(double x, double y)
+{
+    const auto now = std::chrono::steady_clock::now();
+    if (lastPoseTime_.time_since_epoch().count() != 0) {
+        const double dt = std::chrono::duration<double>(now - lastPoseTime_).count();
+        if (dt > 1e-6) {
+            const double dx = x - lastPoseX_;
+            const double dy = y - lastPoseY_;
+            const double v = std::sqrt(dx*dx + dy*dy) / dt;
+            updatePlaque(ui->lbl_speed_value, QString::number(v, 'f', 2) + " м/с");
+        }
+    }
+    lastPoseX_ = x; lastPoseY_ = y; lastPoseTime_ = now;
+}
+
+void MainWindow::kickWatchdog()
+{
+    telemetryWatchdog_->start();  // перезапуск — «я ещё жив»
+}
+
 void MainWindow::resetTelemetryToDefault()
 {
     isConnected = false;
-    
-    // Красный фон для индикации отсутствия связи
-    QString noConnectionStyle = "background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;";
-    
-    ui->lbl_depth_value->setStyleSheet(noConnectionStyle);
-    ui->lbl_depth_value->setText("N/A");
-    
-    ui->lbl_bottom_value->setStyleSheet(noConnectionStyle);
-    ui->lbl_bottom_value->setText("N/A");
-    
-    ui->lbl_voltage_value->setStyleSheet(noConnectionStyle);
-    ui->lbl_voltage_value->setText("N/A");
-    
-    ui->lbl_voltage2_value->setStyleSheet(noConnectionStyle);
-    ui->lbl_voltage2_value->setText("N/A");
-    
-    ui->lbl_speed_value->setStyleSheet(noConnectionStyle);
-    ui->lbl_speed_value->setText("N/A");
-    
-    ui->btn_killswitch_status->setStyleSheet(noConnectionStyle);
-    ui->btn_killswitch_status->setText("N/A");
-    
-    ui->lbl_ping_value->setStyleSheet(noConnectionStyle);
-    ui->lbl_ping_value->setText("N/A");
-}
-
-void MainWindow::updateTelemetryFromState()
-{
-    isConnected = true;
-    
-    // Зелёный фон для нормальных данных
-    QString connectedStyle = "background-color: #00ff88; color: #0f1419; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;";
-    
-    ui->lbl_depth_value->setStyleSheet(connectedStyle);
-    ui->lbl_bottom_value->setStyleSheet(connectedStyle);
-    ui->lbl_voltage_value->setStyleSheet(connectedStyle);
-    ui->lbl_voltage2_value->setStyleSheet(connectedStyle);
-    ui->lbl_speed_value->setStyleSheet(connectedStyle);
-    ui->btn_killswitch_status->setStyleSheet(connectedStyle);
-    ui->lbl_ping_value->setStyleSheet(connectedStyle);
-    
-    // Здесь обновляй реальные значения из uvState
-    // ui->lbl_depth_value->setText(QString::number(uvState->getDepth(), 'f', 2) + " м");
-    // и т.д.
+    for (QLabel *l : {ui->lbl_depth_value, ui->lbl_bottom_value, ui->lbl_speed_value,
+                      ui->lbl_temp_value,  ui->lbl_leak_value,   ui->lbl_voltage_value,
+                      ui->lbl_voltage2_value, ui->lbl_ping_value}) {
+        l->setStyleSheet(kPlaqueErr);
+        l->setText("N/A");
+    }
+    updateKillswitch(false);
+    lastPoseTime_ = {};
+    displayText("Таймаут телеметрии: сброс плашек");
 }
 
 void MainWindow::toggleTheme()

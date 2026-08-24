@@ -40,6 +40,52 @@ void RosBridge::run()
             emit poseReceived(pose);
         });
 
+
+    // === ТЕЛЕМЕТРИЯ (топики поменяй под своего агента) ===
+    bottom_sub_ = node_->create_subscription<std_msgs::msg::Float32>(
+        "/sensors/altitude", 10,
+        [this](std_msgs::msg::Float32::SharedPtr msg) { emit bottomReceived(msg->data); });
+
+    temp_sub_ = node_->create_subscription<std_msgs::msg::Float32>(
+        "/sensors/temperature", 10,
+        [this](std_msgs::msg::Float32::SharedPtr msg) { emit temperatureReceived(msg->data); });
+
+    leak_sub_ = node_->create_subscription<std_msgs::msg::Bool>(
+        "/sensors/leak", 10,
+        [this](std_msgs::msg::Bool::SharedPtr msg) { emit leakReceived(msg->data); });
+
+    battery_sub_ = node_->create_subscription<sensor_msgs::msg::BatteryState>(
+    "/power/battery/state",
+    rclcpp::SensorDataQoS(),
+    [this](const sensor_msgs::msg::BatteryState::SharedPtr msg) {
+        const double percentage = msg->percentage;
+        if (msg->location == "1") {
+            emit battery1Received(percentage);
+        }
+        else if (msg->location == "2") {
+            emit battery2Received(percentage);
+        }
+    });
+
+    kill_switch_sub_ = node_->create_subscription<std_msgs::msg::Bool>(
+        "/stingray_core/safety/kill_switch", 10,
+        [this](std_msgs::msg::Bool::SharedPtr msg) { emit killswitchReceived(msg->data); });
+
+    heartbeat_sub_ = node_->create_subscription<std_msgs::msg::Empty>(
+        "/system/heartbeat", 10,
+        [this](std_msgs::msg::Empty::SharedPtr) {
+            const auto now = std::chrono::steady_clock::now();
+            int ms = 0;
+            if (lastHeartbeat_.time_since_epoch().count() != 0) {
+                ms = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(
+                        now - lastHeartbeat_).count());
+            }
+            lastHeartbeat_ = now;
+            emit heartbeatReceived(ms);
+        });
+
+    
+
     control_flags_pub_ =
         node_->create_publisher<std_msgs::msg::UInt8>("/control/loop_flags", 10);
 
