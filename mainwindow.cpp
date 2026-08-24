@@ -109,24 +109,23 @@ MainWindow::MainWindow(QWidget *parent)
             Qt::QueuedConnection);
 
         // === Телеметрия из ROS -> плашки ===
-    connect(rosBridge, &RosBridge::poseUpdated, this, [this](double x, double y, double z) {
-        updatePlaque(ui->lbl_depth_value, QString::number(z, 'f', 2) + " м");
-        updateSpeedFromPose(x, y);
+    connect(rosBridge, &RosBridge::depthReceived, this, [this](double depth) {
+        updatePlaque(ui->lbl_depth_value, QString::number(depth, 'f', 2) + " м");
         //kickWatchdog(); //TODO: закомментить, пока не будут реализованы все топики телеметрии, иначе будет постоянно сбрасываться телеметрия в N/A
     }, Qt::QueuedConnection);
 
-    connect(rosBridge, &RosBridge::bottomReceived, this, [this](double m) {
-        updatePlaque(ui->lbl_bottom_value, QString::number(m, 'f', 2) + " м", m < 0.5);
+    connect(rosBridge, &RosBridge::bottomReceived, this, [this](double bottom) {
+        updatePlaque(ui->lbl_bottom_value, QString::number(bottom, 'f', 2) + " м", bottom < 0.5);
         //kickWatchdog(); //TODO: закомментить, пока не будут реализованы все топики телеметрии, иначе будет постоянно сбрасываться телеметрия в N/A
     }, Qt::QueuedConnection);
 
-    connect(rosBridge, &RosBridge::temperatureReceived, this, [this](double t) {
-        updatePlaque(ui->lbl_temp_value, QString::number(t, 'f', 0) + "°C", t > 60.0);
-    }, Qt::QueuedConnection);
+    // connect(rosBridge, &RosBridge::temperatureReceived, this, [this](double t) {
+    //     updatePlaque(ui->lbl_temp_value, QString::number(t, 'f', 0) + "°C", t > 60.0);
+    // }, Qt::QueuedConnection);
 
-    connect(rosBridge, &RosBridge::leakReceived, this, [this](bool leak) {
-        updatePlaque(ui->lbl_leak_value, leak ? "ЕСТЬ!" : "OK", leak);
-    }, Qt::QueuedConnection);
+    // connect(rosBridge, &RosBridge::leakReceived, this, [this](bool leak) {
+    //     updatePlaque(ui->lbl_leak_value, leak ? "ЕСТЬ!" : "OK", leak);
+    // }, Qt::QueuedConnection);
 
     connect(rosBridge, &RosBridge::battery1Received, this, [this](double p) {
         updatePlaque(ui->lbl_voltage_value, QString::number(p, 'f', 0) + " %", p < 20.0);
@@ -140,10 +139,8 @@ MainWindow::MainWindow(QWidget *parent)
         updateKillswitch(active);
     }, Qt::QueuedConnection);
 
-    connect(rosBridge, &RosBridge::heartbeatReceived, this, [this](int ms) {
-        updatePlaque(ui->lbl_ping_value, QString::number(ms) + " мс");
-        //kickWatchdog(); //TODO: закомментить, пока не будут реализованы все топики телеметрии, иначе будет постоянно сбрасываться телеметрия в N/A
-    }, Qt::QueuedConnection);
+    connect(rosBridge, &RosBridge::pingReceived, this, &MainWindow::updatePingDisplay);
+
 
     // Watchdog: нет данных 3 с → сброс в N/A
     // telemetryWatchdog_ = new QTimer(this);
@@ -237,6 +234,9 @@ MainWindow::MainWindow(QWidget *parent)
             }
         }
     });
+
+    ui->lbl_ping_value->setStyleSheet(kPlaqueErr);
+    ui->lbl_ping_value->setText("N/A");
 
     // Запуск видео-потока напрямую через GStreamer
     QTimer::singleShot(500, this, [this]() {
@@ -654,6 +654,40 @@ void MainWindow::updateSpeedFromPose(double x, double y)
 void MainWindow::kickWatchdog()
 {
     telemetryWatchdog_->start();  // перезапуск — «я ещё жив»
+}
+
+void MainWindow::updatePingDisplay(int pingMs)
+{
+    if (pingMs < 0 || pingMs > 30000) {  // > 30 секунд — считаем таймаутом
+        updatePlaque(ui->lbl_ping_value, "— мс", true);
+        return;
+    }
+    
+    // Скользящее среднее для сглаживания
+    m_pingHistory.append(pingMs);
+    if (m_pingHistory.size() > 5) m_pingHistory.removeFirst();
+    
+    int avgPing = 0;
+    for (int p : m_pingHistory) avgPing += p;
+    avgPing /= m_pingHistory.size();
+    
+    bool isWarning = avgPing >= 200;   // >= 200 мс — предупреждение
+    bool isError = avgPing >= 1000;    // >= 1000 мс — ошибка
+    
+    updatePlaque(ui->lbl_ping_value, 
+                 QString::number(avgPing) + " мс", 
+                 isError);
+    
+    if (isError) {
+        ui->lbl_ping_value->setStyleSheet(kPlaqueErr);
+    } else if (isWarning) {
+        ui->lbl_ping_value->setStyleSheet(
+            "background-color: #ffaa00; color: #0f1419;"
+            " font-weight: bold; border-radius: 6px; border: none;"
+            " font-size: 15px; padding: 4px 10px;");
+    } else {
+        ui->lbl_ping_value->setStyleSheet(kPlaqueOk);
+    }
 }
 
 void MainWindow::resetTelemetryToDefault()

@@ -103,9 +103,12 @@ private:
     void updateKillswitch(bool active);
     void updateSpeedFromPose(double x, double y);
     void kickWatchdog();
+    void updatePingDisplay(int pingMs);
 
     static const QString kPlaqueOk;
     static const QString kPlaqueErr;
+
+    QList<int> m_pingHistory;
 
 signals:
     void updateCompass(float yaw);
