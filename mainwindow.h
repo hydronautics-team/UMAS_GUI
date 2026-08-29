@@ -12,6 +12,8 @@
 #include <memory>
 #include <QSettings>
 #include <QSpinBox>
+#include <QPushButton>
+#include <QMessageBox>
 
 #include "joy_stick.h"
 #include "key_board.h"
@@ -88,12 +90,19 @@ private slots:
     void useKeyBoard();
     void useJoyStick();
     void toggleTheme();
+    void confirmClose();
+
+protected:
+    void resizeEvent(QResizeEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
 
 private:
     void applyTheme(bool dark);
 
     QString darkStyle_;
     bool isDark_ = true;
+    QPushButton *btnClose_ = nullptr;
+    void positionCloseButton();
 
 signals:
     void updateCompass(float yaw);

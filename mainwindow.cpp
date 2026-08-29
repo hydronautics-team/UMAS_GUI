@@ -6,6 +6,32 @@
 #include <QPixmap>
 #include <cmath>
 
+static QIcon makeCloseIcon()
+{
+    QPixmap pm(24, 24);
+    pm.fill(Qt::transparent);
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setPen(QPen(QColor("#c3cad2"), 2.5, Qt::SolidLine, Qt::RoundCap));
+    p.drawLine(QPointF(6, 6),  QPointF(18, 18));
+    p.drawLine(QPointF(18, 6), QPointF(6, 18));
+    p.end();
+    return QIcon(pm);
+}
+
+static QIcon makeCloseIconHover()
+{
+    QPixmap pm(24, 24);
+    pm.fill(Qt::transparent);
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setPen(QPen(QColor("#ffffff"), 2.5, Qt::SolidLine, Qt::RoundCap));
+    p.drawLine(QPointF(6, 6),  QPointF(18, 18));
+    p.drawLine(QPointF(18, 6), QPointF(6, 18));
+    p.end();
+    return QIcon(pm);
+}
+
 static QIcon makeSunIcon()
 {
     QPixmap pm(24, 24);
@@ -194,6 +220,22 @@ MainWindow::MainWindow(QWidget *parent)
             videoPlayer_->startStream("5000");
         }
     });
+
+    // === Кнопка закрытия (floating, правый верхний угол) ===
+    btnClose_ = new QPushButton(this);
+    btnClose_->setFixedSize(36, 36);
+    btnClose_->setIconSize(QSize(20, 20));
+    btnClose_->setIcon(makeCloseIcon());
+    btnClose_->setToolTip("Закрыть приложение");
+    btnClose_->setCursor(Qt::PointingHandCursor);
+    btnClose_->setStyleSheet(
+        "QPushButton { background-color: transparent; border: none; border-radius: 6px; }"
+        "QPushButton:hover { background-color: #e74c3c; }"
+        "QPushButton:pressed { background-color: #c0392b; }");
+    btnClose_->raise();
+    positionCloseButton();
+
+    connect(btnClose_, &QPushButton::clicked, this, &MainWindow::confirmClose);
 }
 
 void MainWindow::setWidget()
@@ -628,6 +670,48 @@ void MainWindow::toggleTheme()
     applyTheme(isDark_);
 }
 
+void MainWindow::positionCloseButton()
+{
+    if (!btnClose_) return;
+    const int pad = 10;
+    btnClose_->move(width() - btnClose_->width() - pad, pad);
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    QMainWindow::resizeEvent(event);
+    positionCloseButton();
+}
+
+void MainWindow::confirmClose()
+{
+    // Если есть активная работа (геймпад, джойстик, поток ROS) — спросим
+    const auto answer = QMessageBox::question(
+        this,
+        QStringLiteral("Закрыть UMAS GUI"),
+        QStringLiteral("Закрыть приложение?"),
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::No);
+
+    if (answer == QMessageBox::Yes) {
+        close();
+    }
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    // Аккуратная остановка: убиваем поток ROS, затем закрываемся
+    if (rosBridge && rosBridge->isRunning()) {
+        rosBridge->requestInterruption();
+        rosBridge->quit();
+        rosBridge->wait(1500);
+    }
+    if (updateTimer) {
+        updateTimer->stop();
+    }
+    event->accept();
+}
+
 void MainWindow::applyTheme(bool dark)
 {
     setStyleSheet(dark ? darkStyle_ : LIGHT_THEME);
@@ -659,6 +743,19 @@ void MainWindow::applyTheme(bool dark)
           "QPushButton:pressed { background-color: #e4e8ec; }");
 
     ui->btn_theme_toggle->setIcon(dark ? makeMoonIcon() : makeSunIcon());
+
+    // Кнопка закрытия: в светлой теме делаем крестик темнее
+    if (btnClose_) {
+        QPixmap pm(24, 24);
+        pm.fill(Qt::transparent);
+        QPainter p(&pm);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.setPen(QPen(QColor(dark ? "#c3cad2" : "#5a6672"), 2.5, Qt::SolidLine, Qt::RoundCap));
+        p.drawLine(QPointF(6, 6),  QPointF(18, 18));
+        p.drawLine(QPointF(18, 6), QPointF(6, 18));
+        p.end();
+        btnClose_->setIcon(QIcon(pm));
+    }
 }
 
 void MainWindow::setupButtonStyles(bool dark)
