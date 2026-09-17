@@ -1,0 +1,37 @@
+# ROS 2 / Colcon build artifacts
+build/
+install/
+log/
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Colcon
+.colcon/
+.colcon_install_cache/
+
+# QtCreator
+*.user
+*.user.*
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.qtcreator
+
+# Qt build
+qtbuild/
+*.o
+*.qmlc
+
+# General
+__pycache__/
+*.pyc
+*.log
+*.tmp
+.vscode/
+.idea/
+.DS_Store
