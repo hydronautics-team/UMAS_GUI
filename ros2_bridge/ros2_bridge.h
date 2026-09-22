@@ -3,6 +3,7 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <std_msgs/msg/u_int8.hpp>
+#include <std_msgs/msg/int32.hpp>
 #include <std_msgs/msg/bool.hpp>
 #include <QThread>
 #include <QObject>
@@ -31,6 +32,8 @@ public slots:
                               double angular_x, double angular_y, double angular_z);
     void zeroYawInternal();
     void setControlFlagInternal(uint8_t bit, bool value);
+    void publishLightsMode(unsigned mode);
+    void publishLightsBrightness(unsigned value);
 
 private:
     rclcpp::Node::SharedPtr node_;
@@ -38,6 +41,8 @@ private:
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr pose_sub_;
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr control_flags_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr zero_yaw_pub_;
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr lights_mode_pub_;
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr lights_brightness_pub_;
 
     std::atomic<bool> is_ready_{false};
     uint8_t control_flags_ = 0;

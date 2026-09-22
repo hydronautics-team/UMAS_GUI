@@ -46,6 +46,9 @@ void RosBridge::run()
     zero_yaw_pub_ =
         node_->create_publisher<std_msgs::msg::Bool>("/imu/zero_yaw", 10);
 
+    lights_mode_pub_      = node_->create_publisher<std_msgs::msg::Int32>("/lights/mode", 10);
+    lights_brightness_pub_ = node_->create_publisher<std_msgs::msg::Int32>("/lights/brightness", 10);
+
     is_ready_ = true;
 
     while (rclcpp::ok() && !isInterruptionRequested()) {
@@ -98,4 +101,21 @@ void RosBridge::setControlFlagInternal(uint8_t bit, bool value)
     emit controlFlagsPublished(control_flags_);
 
     qDebug() << "Published control mode flags:" << static_cast<int>(control_flags_);
+}
+
+void RosBridge::publishLightsMode(unsigned mode)
+{
+    if (!is_ready_ || !lights_mode_pub_) return;
+    std_msgs::msg::Int32 msg;
+    msg.data = static_cast<int32_t>(mode);
+    lights_mode_pub_->publish(msg);
+    qDebug() << "Published light mode:" << mode;
+}
+
+void RosBridge::publishLightsBrightness(unsigned value)
+{
+    if (!is_ready_ || !lights_brightness_pub_) return;
+    std_msgs::msg::Int32 msg;
+    msg.data = static_cast<int32_t>(value);
+    lights_brightness_pub_->publish(msg);
 }

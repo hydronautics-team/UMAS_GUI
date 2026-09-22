@@ -271,6 +271,29 @@ QPushButton#pushButton_speedSlow {
     font-size: 13px;
 }
 
+/* === СЛАЙДЕР ЯРКОСТИ === */
+QSlider::groove:horizontal {
+    background: #1e2a38;
+    height: 6px;
+    border-radius: 3px;
+}
+QSlider::sub-page:horizontal {
+    background: #00bcd4;
+    border-radius: 3px;
+}
+QSlider::handle:horizontal {
+    background: #00bcd4;
+    width: 14px;
+    margin: -5px 0;
+    border-radius: 7px;
+}
+QSlider:disabled::sub-page:horizontal {
+    background: #2d4052;
+}
+QSlider:disabled::handle:horizontal {
+    background: #4a5568;
+}
+
    </string>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -572,22 +595,80 @@ QPushButton#pushButton_speedSlow {
               </item>
              </layout>
             </widget>
-            <widget class="QWidget" name="tab_actuators">
-             <attribute name="title"><string>Исполнительные устройства</string></attribute>
+                        <widget class="QWidget" name="tab_actuators">
+             <attribute name="title">
+              <string>Исполнительные устройства</string>
+             </attribute>
              <layout class="QVBoxLayout" name="verticalLayout_actuators">
               <item>
                <widget class="QGroupBox" name="groupBox_actuators">
-                <property name="title"><string>Статус исполнительных устройств</string></property>
+                <property name="title">
+                 <string>Статус исполнительных устройств</string>
+                </property>
                 <layout class="QGridLayout" name="gridLayout_actuators">
-                 <item row="0" column="0"><widget class="QLabel" name="lbl_light_icon"><property name="text"><string>💡 Свет</string></property></widget></item>
-                 <item row="0" column="1"><widget class="QFrame" name="led_light_cmd"><property name="styleSheet"><string notr="true">background-color: #4a5568; border-radius: 7px; min-width: 14px; max-width: 14px; min-height: 14px; max-height: 14px;</string></property></widget></item>
-                 <item row="0" column="2"><widget class="QLabel" name="lbl_light_status"><property name="text"><string>Выкл</string></property></widget></item>
-                 <item row="1" column="0"><widget class="QLabel" name="lbl_manip_icon"><property name="text"><string>🦾 Клешня</string></property></widget></item>
-                 <item row="1" column="1"><widget class="QFrame" name="led_manip_cmd"><property name="styleSheet"><string notr="true">background-color: #4a5568; border-radius: 7px; min-width: 14px; max-width: 14px; min-height: 14px; max-height: 14px;</string></property></widget></item>
-                 <item row="1" column="2"><widget class="QLabel" name="lbl_manip_status"><property name="text"><string>Открыта</string></property></widget></item>
-                 <item row="2" column="0"><widget class="QLabel" name="lbl_camera_icon"><property name="text"><string>📹 Камера</string></property></widget></item>
-                 <item row="2" column="1"><widget class="QFrame" name="led_camera_cmd"><property name="styleSheet"><string notr="true">background-color: #4a5568; border-radius: 7px; min-width: 14px; max-width: 14px; min-height: 14px; max-height: 14px;</string></property></widget></item>
-                 <item row="2" column="2"><widget class="QLabel" name="lbl_camera_status"><property name="text"><string>Выкл</string></property></widget></item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="lbl_light_icon">
+                   <property name="text">
+                    <string>💡 Свет</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QFrame" name="led_light_cmd">
+                   <property name="styleSheet">
+                    <string notr="true">background-color: #4a5568; border-radius: 7px; min-width: 14px; max-width: 14px; min-height: 14px; max-height: 14px;</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="lbl_light_status">
+                   <property name="text">
+                    <string>Выкл</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="lbl_manip_icon">
+                   <property name="text">
+                    <string>🦾 Клешня</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QFrame" name="led_manip_cmd">
+                   <property name="styleSheet">
+                    <string notr="true">background-color: #4a5568; border-radius: 7px; min-width: 14px; max-width: 14px; min-height: 14px; max-height: 14px;</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="2">
+                  <widget class="QLabel" name="lbl_manip_status">
+                   <property name="text">
+                    <string>Открыта</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="lbl_camera_icon">
+                   <property name="text">
+                    <string>📹 Камера</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QFrame" name="led_camera_cmd">
+                   <property name="styleSheet">
+                    <string notr="true">background-color: #4a5568; border-radius: 7px; min-width: 14px; max-width: 14px; min-height: 14px; max-height: 14px;</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="2">
+                  <widget class="QLabel" name="lbl_camera_status">
+                   <property name="text">
+                    <string>Выкл</string>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
                </widget>
               </item>
@@ -754,6 +835,123 @@ QPushButton#pushButton_speedSlow {
             <property name="text"><string>Слабый</string></property>
             <property name="checkable"><bool>true</bool></property>
            </widget>
+          </item>
+         </layout>
+        </item>
+                <item>
+         <widget class="Line" name="line_separator_light">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_light">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_light_modes">
+            <item>
+             <widget class="QLabel" name="lbl_light_modes">
+              <property name="styleSheet">
+               <string notr="true">font-weight: bold; color: #00bcd4; font-size: 11px;</string>
+              </property>
+              <property name="text">
+               <string>СВЕТ:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_light_off">
+              <property name="text">
+               <string>Выкл</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_light_mode1">
+              <property name="text">
+               <string>Р1</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_light_mode2">
+              <property name="text">
+               <string>Р2</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_light_mode3">
+              <property name="text">
+               <string>Р3</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_brightness">
+            <item>
+             <widget class="QLabel" name="lbl_brightness">
+              <property name="styleSheet">
+               <string notr="true">font-size: 11px;</string>
+              </property>
+              <property name="text">
+               <string>Яркость:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="slider_brightness">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>500</number>
+              </property>
+              <property name="value">
+               <number>50</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="lbl_brightness_value">
+              <property name="styleSheet">
+               <string notr="true">font-size: 11px;</string>
+              </property>
+              <property name="text">
+               <string>50</string>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>40</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
