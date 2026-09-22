@@ -74,7 +74,12 @@ static const QString LIGHT_THEME =
 "QMenu { background-color: #ffffff; border: 1px solid #c3cad2; color: #1c2733; }"
 "QMenu::item:selected { background-color: #00a0d0; color: #ffffff; }"
 "QStatusBar { background-color: #f2f4f6; color: #5a6672; border-top: 1px solid #c3cad2; }"
-"QToolTip { background-color: #ffffff; color: #1c2733; border: 1px solid #0088bb; padding: 3px; border-radius: 3px; }";
+"QToolTip { background-color: #ffffff; color: #1c2733; border: 1px solid #0088bb; padding: 3px; border-radius: 3px; }"
+"QSlider::groove:horizontal { background: #e4e8ec; height: 6px; border-radius: 3px; }"
+"QSlider::sub-page:horizontal { background: #00a0d0; border-radius: 3px; }"
+"QSlider::handle:horizontal { background: #00a0d0; width: 14px; margin: -5px 0; border-radius: 7px; }"
+"QSlider:disabled::sub-page:horizontal { background: #c3cad2; }"
+"QSlider:disabled::handle:horizontal { background: #9aa4ad; }";
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -119,6 +124,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupButtonStyles(true);
 
     setTab();
+    setupActuators();
     setUpdateUI();
 
     gainSpinBoxes = {
@@ -480,6 +486,51 @@ void MainWindow::setTab()
     ui->tabWidget->setCurrentIndex(0);
 }
 
+void MainWindow::setupActuators()
+{
+    // === Кнопки режимов света ===
+    QButtonGroup *lightModeGroup = new QButtonGroup(this);
+    lightModeGroup->addButton(ui->btn_light_off, 0);
+    lightModeGroup->addButton(ui->btn_light_mode1, 1);
+    lightModeGroup->addButton(ui->btn_light_mode2, 2);
+    lightModeGroup->addButton(ui->btn_light_mode3, 3);
+    lightModeGroup->setExclusive(true);
+
+    connect(lightModeGroup, &QButtonGroup::idClicked, this, [this](int id) {
+        onLightModeChanged(static_cast<unsigned>(id));
+    });
+
+    // === Слайдер яркости ===
+    connect(ui->slider_brightness, &QSlider::valueChanged,
+            this, &MainWindow::onBrightnessChanged);
+
+    // Блокируем слайдер, пока свет выключен (режим 0)
+    ui->slider_brightness->setEnabled(false);
+}
+
+void MainWindow::onLightModeChanged(unsigned mode)
+{
+    rosBridge->publishLightsMode(mode);
+    // Слайдер активен только когда включён хотя бы один режим (mode > 0)
+    ui->slider_brightness->setEnabled(mode > 0);
+    
+    QString modeText;
+    switch (mode) {
+        case 0: modeText = "Свет выключен"; break;
+        case 1: modeText = "Свет: Режим 1"; break;
+        case 2: modeText = "Свет: Режим 2"; break;
+        case 3: modeText = "Свет: Режим 3"; break;
+        default: modeText = "Свет: Неизвестный режим"; break;
+    }
+    displayText(modeText);
+}
+
+void MainWindow::onBrightnessChanged(int value)
+{
+    ui->lbl_brightness_value->setText(QString::number(value));
+    rosBridge->publishLightsBrightness(static_cast<unsigned>(value));
+}
+
 void MainWindow::setUpdateUI()
 {
     connect(this, SIGNAL(updateCompass(float)),
@@ -691,6 +742,9 @@ void MainWindow::setupButtonStyles(bool dark)
                     ui->pushButton_modeAutomated_depth, ui->pushButton_modeAutomated_yaw,
                     ui->pushButton_modeAutomated_pitch, ui->pushButton_modeAutomated_roll})
         b->setStyleSheet(modeStyle);
+    for (auto *b : {ui->btn_light_off, ui->btn_light_mode1,
+                ui->btn_light_mode2, ui->btn_light_mode3})
+        b->setStyleSheet(speedStyle);
 }
 
 MainWindow::~MainWindow()

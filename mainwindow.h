@@ -88,9 +88,12 @@ private slots:
     void useKeyBoard();
     void useJoyStick();
     void toggleTheme();
+    void onLightModeChanged(unsigned mode);
+    void onBrightnessChanged(int value);
 
 private:
     void applyTheme(bool dark);
+    void setupActuators();
 
     QString darkStyle_;
     bool isDark_ = true;
