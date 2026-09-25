@@ -1,6 +1,11 @@
 #pragma once
 
 
+
+
+// sitl mission planer WSL 
+
+
 #include <QMainWindow>
 #include <QTimer>
 #include <QDebug>
@@ -89,6 +94,7 @@ private:
     static constexpr float TRIGGER_THRESHOLD = 50.0f;
 
     void setTurnCheckbox(const QString& state);
+    void setGripCheckbox(const QString& state);
 private slots:
     void setSpeedMode(SpeedMode mode);
     void displayText(QString str);

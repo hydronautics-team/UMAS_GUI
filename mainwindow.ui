@@ -579,14 +579,14 @@ QPushButton#pushButton_speedSlow {
         <item>
          <widget class="QCheckBox" name="checkbox_left">
           <property name="text">
-           <string>Влево</string>
+           <string>Сжать</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="checkbox_right">
           <property name="text">
-           <string>Вправо</string>
+           <string>Разжвать</string>
           </property>
          </widget>
         </item>
@@ -617,14 +617,14 @@ QPushButton#pushButton_speedSlow {
         <item>
          <widget class="QCheckBox" name="checkbox_close">
           <property name="text">
-           <string>Сжать</string>
+           <string>Влево</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="checkbox_open">
           <property name="text">
-           <string>Разжать</string>
+           <string>Вправо</string>
           </property>
          </widget>
         </item>
@@ -1128,11 +1128,8 @@ QPushButton#pushButton_speedSlow {
                 <property name="text">
                  <string>Джойстик</string>
                 </property>
-                <property name="checkable">
-                 <bool>true</bool>
-                </property>
                 <property name="checked">
-                 <bool>true</bool>
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
@@ -1147,6 +1144,9 @@ QPushButton#pushButton_speedSlow {
                <widget class="QRadioButton" name="radioButton_useKeyBoard">
                 <property name="text">
                  <string>Клавиатура</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -1565,7 +1565,7 @@ QPushButton#pushButton_speedSlow {
      <x>0</x>
      <y>0</y>
      <width>1328</width>
-     <height>24</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>

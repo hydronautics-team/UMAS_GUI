@@ -13,8 +13,6 @@ MainWindow::MainWindow(QWidget *parent)
     rosBridge = new RosBridge(this);
     rosBridge->start();
 
-    
-
     connect(this, &MainWindow::publishTwistRequested,
             rosBridge, &RosBridge::publishTwistInternal,
             Qt::QueuedConnection);
@@ -57,11 +55,11 @@ MainWindow::MainWindow(QWidget *parent)
     QButtonGroup *inputGroup = new QButtonGroup(this);
     inputGroup->addButton(ui->radioButton_useKeyBoard);
     inputGroup->addButton(ui->radioButton_useJoyStick);
-    ui->radioButton_useKeyBoard->setChecked(true);
     inputGroup->addButton(ui->gamepad_btn);
     inputGroup->setExclusive(true);
 
-
+    // По умолчанию — клавиатура
+    ui->radioButton_useKeyBoard->setChecked(true);
 
     connect(ui->full_screen, &QCheckBox::toggled, this, [this](bool checked) {
         if (checked) {
@@ -74,9 +72,8 @@ MainWindow::MainWindow(QWidget *parent)
                 fullscreenWindow_->setVideoWidget(videoPlayer_);
                 videoPlayer_->show();
 
-                //сигнал закрытия окна
+                // сигнал закрытия окна
                 connect(fullscreenWindow_, &FullscreenVideoWindow::windowClosed, this, [this]() {
-                    
                     ui->full_screen->blockSignals(true);
                     ui->full_screen->setChecked(false);
                     ui->full_screen->blockSignals(false);
@@ -111,6 +108,15 @@ MainWindow::MainWindow(QWidget *parent)
     });
 }
 
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+// ============================================================
+// Настройка UI
+// ============================================================
+
 void MainWindow::setWidget()
 {
     // powerSystem = new PowerSystem(this);
@@ -144,175 +150,50 @@ void MainWindow::displayText(QString str)
     ui->textEdit_console->append(currentTime + " " + str);
 }
 
-void MainWindow::setTimer_updateImpact(int periodUpdateMsec)
+void MainWindow::setTab()
 {
-    joyStick = std::make_unique<JoyStick>();
-    keyBoard = std::make_unique<KeyBoard>();
-    activeInput = joyStick.get();
-
-    connect(ui->radioButton_useJoyStick, &QRadioButton::clicked,
-            this, &MainWindow::useJoyStick);
-    connect(ui->radioButton_useKeyBoard, &QRadioButton::clicked,
-            this, &MainWindow::useKeyBoard);
-    connect(ui->gamepad_btn, &QRadioButton::clicked,
-            this, &MainWindow::useGamepad);
-
-    updateTimer = new QTimer(this);
-    connect(
-        updateTimer, SIGNAL(timeout()),
-        this, SLOT(updateUi_fromControl()));
-    updateTimer->start(periodUpdateMsec);
-    displayText("Таймер обновления джойстика запущен");
+    ui->tabWidget->setTabText(0, "Камера");
+    ui->tabWidget->setTabText(1, "БСО");
+    ui->tabWidget->setTabText(2, "Контроль сообщений");
+    ui->tabWidget->setTabText(3, "Режимы питания");
+    ui->tabWidget->setTabText(4, "Исполнительные устройства");
+    ui->tabWidget->setCurrentIndex(0);
 }
 
-void MainWindow::useKeyBoard()
+void MainWindow::setUpdateUI()
 {
-    activeInput = nullptr;
-    gamepadInput.reset();
-    if (gamepad) { delete gamepad; gamepad = nullptr; }
-
-    if (!keyBoard) {
-        keyBoard = std::make_unique<KeyBoard>();
-    }
-
-    ui->radioButton_useKeyBoard->setChecked(true);
-    status_keyboard = true;
-    activeInput = keyBoard.get();
-    displayText("Используемые клавиши(должна быть английская раскладка):\n"
-                "Клавиша O - вперед по маршу\n"
-                "Клавиша L - назад по маршу\n"
-                "Клавиша W - вниз по дифференту\n"
-                "Клавиша S - вверх по дифференту\n"
-                "Клавиша A - влево по курсу\n"
-                "Клавиша D - вправо по курсу\n"
-                "Клавиша C - вниз по глубине\n"
-                "Клавиша V - вверх по глубине\n"
-                "Клавиша Q - влево по крену\n"
-                "Клавиша E - вправо по крену\n"
-                "Клавиша K - влево по лагу\n"
-                "Клавиша ; - вправо по лагу\n");
+    connect(this, SIGNAL(updateCompass(float)),
+            this, SLOT(updateUi_Compass(float)));
 }
 
-void MainWindow::useJoyStick()
+void MainWindow::setupButtonStyles()
 {
-    activeInput = nullptr;
-    gamepadInput.reset();
-    if (gamepad) { delete gamepad; gamepad = nullptr; }
+    const QString speedStyle =
+        "QPushButton { background-color: #1e2a38; border: 1px solid #2d4052; border-radius: 4px;"
+        " color: #e0e6ed; min-height: 28px; font-size: 13px; }"
+        "QPushButton:hover { border: 1px solid #00ff88; color: #ffffff; }"
+        "QPushButton:checked { background-color: #00ff88; color: #0f1419;"
+        " border: 1px solid #00ff88; font-weight: bold; }";
+    for (auto *b : {ui->pushButton_speedFast, ui->pushButton_speedMedium, ui->pushButton_speedSlow})
+        b->setStyleSheet(speedStyle);
 
-    if (!joyStick) {
-        joyStick = std::make_unique<JoyStick>();
-    }
+    const QString modeStyle =
+        "QPushButton { background-color: #1e2a38; border: 1px solid #2d4052; border-radius: 4px;"
+        " color: #e0e6ed; min-height: 24px; }"
+        "QPushButton:hover { border: 1px solid #00bcd4; color: #ffffff; }"
+        "QPushButton:checked { background-color: #00bcd4; color: #0f1419; font-weight: bold; }";
+    for (auto *b : {ui->pushButton_modeManual, ui->pushButton_modeAutomated, ui->pushButton_modeAutomatic})
+        b->setStyleSheet(modeStyle);
 
-    if (!joyStick->isAvailable()) {
-        displayText("Джойстик не обнаружен. Переключение на клавиатуру.");
-        useKeyBoard();
-        return;
-    }
-
-    activeInput = joyStick.get();
+    for (auto *b : {ui->pushButton_modeAutomated_surge, ui->pushButton_modeAutomated_sway,
+                    ui->pushButton_modeAutomated_depth, ui->pushButton_modeAutomated_yaw,
+                    ui->pushButton_modeAutomated_pitch, ui->pushButton_modeAutomated_roll})
+        b->setStyleSheet(modeStyle);
 }
 
-void MainWindow::useGamepad()
-{
-    Gamepad* newGamepad = new Gamepad(0, this);
-    if (!newGamepad->isConnected()) {
-        displayText("Геймпад не обнаружен! Проверьте подключение.");
-        delete newGamepad;
-        newGamepad = nullptr;
-        useKeyBoard();
-        return;
-    }
-
-    activeInput = nullptr;
-    joyStick.reset();
-    keyBoard.reset();
-    gamepadInput.reset();
-    if (gamepad) { delete gamepad; gamepad = nullptr; }
-    gamepad = newGamepad;
-
-    connect(gamepad, &Gamepad::backButtonPressed,
-            this, &MainWindow::useKeyBoard);
-
-    displayText("Геймпад подключен. Режим управления с геймпада активирован.");
-    gamepadInput = std::make_unique<GamepadInputSource>(gamepad, this);
-    activeInput = gamepadInput.get();
-
-    connect(gamepad, &Gamepad::dPadRightPressed, this, [this]() {
-        int current = static_cast<int>(currentMode);
-        int previous = (current - 1 + 3) % 3;  
-        setSpeedMode(static_cast<SpeedMode>(previous));
-    });
-    connect(gamepad, &Gamepad::dPadLeftPressed, this, [this]() {
-        int current = static_cast<int>(currentMode);
-        int next = (current + 1) % 3;
-        setSpeedMode(static_cast<SpeedMode>(next));
-    });
-
-
-        connect(gamepad, &Gamepad::leftTriggerMoved,
-            this, &MainWindow::onLeftTriggerMoved);
-    connect(gamepad, &Gamepad::rightTriggerMoved,
-            this, &MainWindow::onRightTriggerMoved);
-}
-
-void MainWindow::keyPressEvent(QKeyEvent *event)
-{
-    if (activeInput == keyBoard.get() && keyBoard) {
-        keyBoard->keyPressEvent(event);
-    }
-    QMainWindow::keyPressEvent(event);
-}
-
-void MainWindow::keyReleaseEvent(QKeyEvent *event)
-{
-    if (activeInput == keyBoard.get() && keyBoard) {
-        keyBoard->keyReleaseEvent(event);
-    }
-    QMainWindow::keyReleaseEvent(event);
-}
-
-void MainWindow::updateUi_fromControl()
-{
-    if (activeInput != nullptr) {
-        const auto command = activeInput->poll();
-        if (command.has_value()) {
-            controlService.apply(command.value());
-        }
-    }
-
-    const auto scaled = applyGains(controlService.snapshot());
-    updateControlLabels(scaled);
-
-    emit publishTwistRequested(
-        scaled.march,
-        scaled.lag,
-        scaled.depth,
-        scaled.roll,
-        scaled.pitch,
-        scaled.yaw);
-}
-
-umas::input::ControlCommand MainWindow::applyGains(const umas::input::ControlCommand& raw) const
-{
-    umas::input::ControlCommand scaled = raw;
-    scaled.yaw *= ui->spinBox_gain_yaw->value();
-    scaled.march *= ui->spinBox_gain_surge->value();
-    scaled.pitch *= ui->spinBox_gain_pitch->value();
-    scaled.lag *= ui->spinBox_gain_sway->value();
-    scaled.depth *= ui->spinBox_gain_depth->value();
-    scaled.roll *= ui->spinBox_gain_roll->value();
-    return scaled;
-}
-
-void MainWindow::updateControlLabels(const umas::input::ControlCommand& scaled)
-{
-    ui->label_controlYaw->setNum(scaled.yaw);
-    ui->label_controlMarch->setNum(scaled.march);
-    ui->label_controlDif->setNum(scaled.pitch);
-    ui->label_controlLag->setNum(scaled.lag);
-    ui->label_controlDepth->setNum(scaled.depth);
-    ui->label_controlKren->setNum(scaled.roll);
-}
+// ============================================================
+// Нижняя панель: режимы и скорости
+// ============================================================
 
 void MainWindow::setBottom()
 {
@@ -342,7 +223,6 @@ void MainWindow::setBottom()
     connect(ui->pushButton_zeroYaw, &QPushButton::clicked,
             rosBridge, &RosBridge::zeroYawInternal,
             Qt::QueuedConnection);
-
 }
 
 void MainWindow::setBottom_mode()
@@ -391,20 +271,240 @@ void MainWindow::setBottom_mode()
             Qt::QueuedConnection);
 }
 
-void MainWindow::setTab()
+// ============================================================
+// Ввод: клавиатура / джойстик / геймпад
+// ============================================================
+
+void MainWindow::setTimer_updateImpact(int periodUpdateMsec)
 {
-    ui->tabWidget->setTabText(0, "Камера");
-    ui->tabWidget->setTabText(1, "БСО");
-    ui->tabWidget->setTabText(2, "Контроль сообщений");
-    ui->tabWidget->setTabText(3, "Режимы питания");
-    ui->tabWidget->setTabText(4, "Исполнительные устройства");
-    ui->tabWidget->setCurrentIndex(0);
+    joyStick = std::make_unique<JoyStick>();
+    keyBoard = std::make_unique<KeyBoard>();
+
+    connect(ui->radioButton_useKeyBoard, &QRadioButton::toggled,
+            this, [this](bool checked){ if (checked) useKeyBoard(); });
+    connect(ui->radioButton_useJoyStick, &QRadioButton::toggled,
+            this, [this](bool checked){ if (checked) useJoyStick(); });
+    connect(ui->gamepad_btn, &QRadioButton::toggled,
+            this, [this](bool checked){ if (checked) useGamepad(); });
+
+    updateTimer = new QTimer(this);
+    connect(updateTimer, SIGNAL(timeout()),
+            this, SLOT(updateUi_fromControl()));
+
+    // Синхронизация activeInput с состоянием радиокнопок
+    if (ui->radioButton_useKeyBoard->isChecked()) {
+        useKeyBoard();
+    } else if (ui->radioButton_useJoyStick->isChecked()) {
+        useJoyStick();
+    } else if (ui->gamepad_btn->isChecked()) {
+        useGamepad();
+    }
+
+    updateTimer->start(periodUpdateMsec);
+    displayText("Таймер обновления джойстика запущен");
 }
 
-void MainWindow::setUpdateUI()
+void MainWindow::useKeyBoard()
 {
-    connect(this, SIGNAL(updateCompass(float)),
-            this, SLOT(updateUi_Compass(float)));
+    activeInput = nullptr;
+    gamepadInput.reset();
+    if (gamepad) { delete gamepad; gamepad = nullptr; }
+
+    if (!keyBoard) {
+        keyBoard = std::make_unique<KeyBoard>();
+    }
+
+    ui->radioButton_useKeyBoard->setChecked(true);
+    status_keyboard = true;
+    activeInput = keyBoard.get();
+    displayText("Используемые клавиши(должна быть английская раскладка):\n"
+                "Клавиша O - вперед по маршу\n"
+                "Клавиша L - назад по маршу\n"
+                "Клавиша W - вниз по дифференту\n"
+                "Клавиша S - вверх по дифференту\n"
+                "Клавиша A - влево по курсу\n"
+                "Клавиша D - вправо по курсу\n"
+                "Клавиша C - вниз по глубине\n"
+                "Клавиша V - вверх по глубине\n"
+                "Клавиша Q - влево по крену\n"
+                "Клавиша E - вправо по крену\n"
+                "Клавиша K - влево по лагу\n"
+                "Клавиша ; - вправо по лагу\n");
+}
+
+void MainWindow::useJoyStick()
+{
+    activeInput = nullptr;
+    gamepadInput.reset();
+    if (gamepad) { delete gamepad; gamepad = nullptr; }
+
+    if (!joyStick) {
+        joyStick = std::make_unique<JoyStick>();
+    }
+
+    if (!joyStick->isAvailable()) {
+        displayText("Джойстик не обнаружен. Переключение на клавиатуру.");
+        useKeyBoard();
+        return;
+    }
+
+    ui->radioButton_useJoyStick->setChecked(true);
+    activeInput = joyStick.get();
+}
+
+void MainWindow::useGamepad()
+{
+    Gamepad* newGamepad = new Gamepad(0, this);
+    if (!newGamepad->isConnected()) {
+        displayText("Геймпад не обнаружен! Проверьте подключение.");
+        delete newGamepad;
+        newGamepad = nullptr;
+        useKeyBoard();
+        return;
+    }
+
+    activeInput = nullptr;
+    joyStick.reset();
+    keyBoard.reset();
+    gamepadInput.reset();
+    if (gamepad) { delete gamepad; gamepad = nullptr; }
+    gamepad = newGamepad;
+
+    connect(gamepad, &Gamepad::backButtonPressed,
+            this, &MainWindow::useKeyBoard);
+
+    displayText("Геймпад подключен. Режим управления с геймпада активирован.");
+    gamepadInput = std::make_unique<GamepadInputSource>(gamepad, this);
+    activeInput = gamepadInput.get();
+
+    // D-Pad: переключение режима скорости
+    connect(gamepad, &Gamepad::dPadRightPressed, this, [this]() {
+        int current = static_cast<int>(currentMode);
+        int previous = (current - 1 + 3) % 3;
+        setSpeedMode(static_cast<SpeedMode>(previous));
+    });
+    connect(gamepad, &Gamepad::dPadLeftPressed, this, [this]() {
+        int current = static_cast<int>(currentMode);
+        int next = (current + 1) % 3;
+        setSpeedMode(static_cast<SpeedMode>(next));
+    });
+
+    // L1 (number 4) — поворот влево (раньше было на L2)
+    connect(gamepad, &Gamepad::L1Pressed, this, [this]() {
+        onLeftTriggerMoved(100.0f);
+    });
+    connect(gamepad, &Gamepad::L1Released, this, [this]() {
+        onLeftTriggerMoved(0.0f);
+    });
+
+    // R1 (number 5) — поворот вправо (раньше было на R2)
+    connect(gamepad, &Gamepad::R1Pressed, this, [this]() {
+        onRightTriggerMoved(100.0f);
+    });
+    connect(gamepad, &Gamepad::R1Released, this, [this]() {
+        onRightTriggerMoved(0.0f);
+    });
+
+    // Y — «Разжать»
+    connect(gamepad, &Gamepad::buttonYPressed,  this, [this]() {
+        setGripCheckbox("open");
+    });
+    connect(gamepad, &Gamepad::buttonYReleased, this, [this]() {
+        setGripCheckbox("stop");
+    });
+
+    // A — «Сжать»
+    connect(gamepad, &Gamepad::buttonAPressed,  this, [this]() {
+        setGripCheckbox("close");
+    });
+    connect(gamepad, &Gamepad::buttonAReleased, this, [this]() {
+        setGripCheckbox("stop");
+    });
+}
+
+// ============================================================
+// Обработка клавиатуры
+// ============================================================
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    if (activeInput == keyBoard.get() && keyBoard) {
+        keyBoard->keyPressEvent(event);
+    }
+    QMainWindow::keyPressEvent(event);
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event)
+{
+    if (activeInput == keyBoard.get() && keyBoard) {
+        keyBoard->keyReleaseEvent(event);
+    }
+    QMainWindow::keyReleaseEvent(event);
+}
+
+// ============================================================
+// Обновление управления
+// ============================================================
+
+void MainWindow::updateUi_fromControl()
+{
+    if (activeInput != nullptr) {
+        const auto command = activeInput->poll();
+        if (command.has_value()) {
+            controlService.apply(command.value());
+        }
+    }
+
+    const auto scaled = applyGains(controlService.snapshot());
+    updateControlLabels(scaled);
+
+    emit publishTwistRequested(
+        scaled.march,
+        scaled.lag,
+        scaled.depth,
+        scaled.roll,
+        scaled.pitch,
+        scaled.yaw);
+}
+
+umas::input::ControlCommand MainWindow::applyGains(const umas::input::ControlCommand& raw) const
+{
+    umas::input::ControlCommand scaled = raw;
+    scaled.yaw   *= ui->spinBox_gain_yaw->value();
+    scaled.march *= ui->spinBox_gain_surge->value();
+    scaled.pitch *= ui->spinBox_gain_pitch->value();
+    scaled.lag   *= ui->spinBox_gain_sway->value();
+    scaled.depth *= ui->spinBox_gain_depth->value();
+    scaled.roll  *= ui->spinBox_gain_roll->value();
+    return scaled;
+}
+
+void MainWindow::updateControlLabels(const umas::input::ControlCommand& scaled)
+{
+    ui->label_controlYaw->setNum(scaled.yaw);
+    ui->label_controlMarch->setNum(scaled.march);
+    ui->label_controlDif->setNum(scaled.pitch);
+    ui->label_controlLag->setNum(scaled.lag);
+    ui->label_controlDepth->setNum(scaled.depth);
+    ui->label_controlKren->setNum(scaled.roll);
+}
+
+// ============================================================
+// Скоростные режимы и настройки
+// ============================================================
+
+void MainWindow::setSpeedMode(SpeedMode mode)
+{
+    saveCurrentModeGains();
+    currentMode = mode;
+    setSpinBoxValuesForCurrentMode();
+
+    // Тема сама покрасит :checked в зелёный #00ff88
+    ui->pushButton_speedFast->setChecked(mode == SpeedMode::Fast);
+    ui->pushButton_speedMedium->setChecked(mode == SpeedMode::Medium);
+    ui->pushButton_speedSlow->setChecked(mode == SpeedMode::Slow);
+
+    saveSettings();
 }
 
 void MainWindow::loadSettings()
@@ -472,22 +572,9 @@ void MainWindow::setSpinBoxValuesForCurrentMode()
     }
 }
 
-void MainWindow::setSpeedMode(SpeedMode mode)
-{
-    saveCurrentModeGains();
-    currentMode = mode;
-    setSpinBoxValuesForCurrentMode();
-
-    // Тема сама покрасит :checked в зелёный #00ff88
-    ui->pushButton_speedFast->setChecked(mode == SpeedMode::Fast);
-    ui->pushButton_speedMedium->setChecked(mode == SpeedMode::Medium);
-    ui->pushButton_speedSlow->setChecked(mode == SpeedMode::Slow);
-
-    saveSettings();
-
-
-    saveSettings();
-}
+// ============================================================
+// Телеметрия / компас
+// ============================================================
 
 void MainWindow::updateUi_Compass(float yaw)
 {
@@ -497,28 +584,28 @@ void MainWindow::updateUi_Compass(float yaw)
 void MainWindow::resetTelemetryToDefault()
 {
     isConnected = false;
-    
+
     // Красный фон для индикации отсутствия связи
     QString noConnectionStyle = "background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;";
-    
+
     ui->lbl_depth_value->setStyleSheet(noConnectionStyle);
     ui->lbl_depth_value->setText("N/A");
-    
+
     ui->lbl_bottom_value->setStyleSheet(noConnectionStyle);
     ui->lbl_bottom_value->setText("N/A");
-    
+
     ui->lbl_voltage_value->setStyleSheet(noConnectionStyle);
     ui->lbl_voltage_value->setText("N/A");
-    
+
     ui->lbl_voltage2_value->setStyleSheet(noConnectionStyle);
     ui->lbl_voltage2_value->setText("N/A");
-    
+
     ui->lbl_speed_value->setStyleSheet(noConnectionStyle);
     ui->lbl_speed_value->setText("N/A");
-    
+
     ui->btn_killswitch_status->setStyleSheet(noConnectionStyle);
     ui->btn_killswitch_status->setText("N/A");
-    
+
     ui->lbl_ping_value->setStyleSheet(noConnectionStyle);
     ui->lbl_ping_value->setText("N/A");
 }
@@ -526,10 +613,10 @@ void MainWindow::resetTelemetryToDefault()
 void MainWindow::updateTelemetryFromState()
 {
     isConnected = true;
-    
+
     // Зелёный фон для нормальных данных
     QString connectedStyle = "background-color: #00ff88; color: #0f1419; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;";
-    
+
     ui->lbl_depth_value->setStyleSheet(connectedStyle);
     ui->lbl_bottom_value->setStyleSheet(connectedStyle);
     ui->lbl_voltage_value->setStyleSheet(connectedStyle);
@@ -537,44 +624,14 @@ void MainWindow::updateTelemetryFromState()
     ui->lbl_speed_value->setStyleSheet(connectedStyle);
     ui->btn_killswitch_status->setStyleSheet(connectedStyle);
     ui->lbl_ping_value->setStyleSheet(connectedStyle);
-    
+
     // Здесь обновляй реальные значения из uvState
     // ui->lbl_depth_value->setText(QString::number(uvState->getDepth(), 'f', 2) + " м");
     // и т.д.
 }
 
-void MainWindow::setupButtonStyles()
-{
-    // Кнопки скоростей: стиль на виджете — :checked работает надёжно
-    const QString speedStyle =
-        "QPushButton { background-color: #1e2a38; border: 1px solid #2d4052; border-radius: 4px;"
-        " color: #e0e6ed; min-height: 28px; font-size: 13px; }"
-        "QPushButton:hover { border: 1px solid #00ff88; color: #ffffff; }"
-        "QPushButton:checked { background-color: #00ff88; color: #0f1419;"
-        " border: 1px solid #00ff88; font-weight: bold; }";
-    for (auto *b : {ui->pushButton_speedFast, ui->pushButton_speedMedium, ui->pushButton_speedSlow})
-        b->setStyleSheet(speedStyle);
-
-    // Кнопки режимов управления
-    const QString modeStyle =
-        "QPushButton { background-color: #1e2a38; border: 1px solid #2d4052; border-radius: 4px;"
-        " color: #e0e6ed; min-height: 24px; }"
-        "QPushButton:hover { border: 1px solid #00bcd4; color: #ffffff; }"
-        "QPushButton:checked { background-color: #00bcd4; color: #0f1419; font-weight: bold; }";
-    for (auto *b : {ui->pushButton_modeManual, ui->pushButton_modeAutomated, ui->pushButton_modeAutomatic})
-        b->setStyleSheet(modeStyle);
-
-    // Кнопки каналов автоматизации
-    for (auto *b : {ui->pushButton_modeAutomated_surge, ui->pushButton_modeAutomated_sway,
-                    ui->pushButton_modeAutomated_depth, ui->pushButton_modeAutomated_yaw,
-                    ui->pushButton_modeAutomated_pitch, ui->pushButton_modeAutomated_roll})
-        b->setStyleSheet(modeStyle);
-}
-
-
-
 // ============================================================
-// L2/R2 → чекбоксы поворота
+// Поворот (курс) — L2/R2 → L1/R1
 // ============================================================
 
 void MainWindow::onLeftTriggerMoved(float v)
@@ -583,11 +640,7 @@ void MainWindow::onLeftTriggerMoved(float v)
     if (pressed == m_l2Pressed) return;
     m_l2Pressed = pressed;
 
-    if (pressed) {
-        setTurnCheckbox("left");
-    } else {
-        setTurnCheckbox("stop");
-    }
+    setTurnCheckbox(pressed ? "left" : "stop");
 }
 
 void MainWindow::onRightTriggerMoved(float v)
@@ -596,11 +649,7 @@ void MainWindow::onRightTriggerMoved(float v)
     if (pressed == m_r2Pressed) return;
     m_r2Pressed = pressed;
 
-    if (pressed) {
-        setTurnCheckbox("right");
-    } else {
-        setTurnCheckbox("stop");
-    }
+    setTurnCheckbox(pressed ? "right" : "stop");
 }
 
 void MainWindow::setTurnCheckbox(const QString& state)
@@ -616,9 +665,8 @@ void MainWindow::setTurnCheckbox(const QString& state)
     rosBridge->setTurnState(state);
 }
 
-
-
-
+// ============================================================
+// Чекбоксы поворота
 // ============================================================
 
 void MainWindow::on_checkbox_left_clicked(bool checked)
@@ -636,39 +684,34 @@ void MainWindow::on_checkbox_rotate_stop_clicked(bool checked)
     setTurnCheckbox(checked ? "stop" : "none");
 }
 
+// ============================================================
+// Манипулятор (клешня)
+// ============================================================
+
+void MainWindow::setGripCheckbox(const QString& state)
+{
+    QSignalBlocker b1(ui->checkbox_open);
+    QSignalBlocker b2(ui->checkbox_close);
+    QSignalBlocker b3(ui->checkbox_stop);
+
+    ui->checkbox_open->setChecked(state == "open");
+    ui->checkbox_close->setChecked(state == "close");
+    ui->checkbox_stop->setChecked(state == "stop");
+
+    rosBridge->setGripState(state);
+}
+
 void MainWindow::on_checkbox_open_clicked(bool checked)
 {
-    if (checked) {
-        ui->checkbox_close->setChecked(false);
-        ui->checkbox_stop->setChecked(false);
-        rosBridge->setGripState("open");
-    } else {
-        rosBridge->setGripState("stop");
-    }
+    setGripCheckbox(checked ? "open" : "stop");
 }
 
 void MainWindow::on_checkbox_close_clicked(bool checked)
 {
-    if (checked) {
-        ui->checkbox_open->setChecked(false);
-        ui->checkbox_stop->setChecked(false);
-        rosBridge->setGripState("close");
-    } else {
-        rosBridge->setGripState("stop");
-    }
+    setGripCheckbox(checked ? "close" : "stop");
 }
 
 void MainWindow::on_checkbox_stop_clicked(bool checked)
 {
-    if (checked) {
-        ui->checkbox_open->setChecked(false);
-        ui->checkbox_close->setChecked(false);
-        rosBridge->setGripState("stop");
-        rosBridge->setTurnState("stop");
-    }
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
+    setGripCheckbox(checked ? "stop" : "none");
 }

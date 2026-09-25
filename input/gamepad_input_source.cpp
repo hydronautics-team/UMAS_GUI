@@ -47,11 +47,26 @@ GamepadInputSource::GamepadInputSource(Gamepad* gamepad, QObject* parent)
     connect(gamepad_, &Gamepad::buttonBPressed,  this, [this]() { roll_ =  10.f; markDirty(); });
     connect(gamepad_, &Gamepad::buttonBReleased, this, [this]() { roll_ =  0.f;  markDirty(); });
 
-    // Глубина: L1/R1
-    connect(gamepad_, &Gamepad::L1Pressed,  this, [this]() { depth_ =  10.f; markDirty(); });
-    connect(gamepad_, &Gamepad::L1Released, this, [this]() { depth_ =  0.f;  markDirty(); });
-    connect(gamepad_, &Gamepad::R1Pressed,  this, [this]() { depth_ = -10.f; markDirty(); });
-    connect(gamepad_, &Gamepad::R1Released, this, [this]() { depth_ =  0.f;  markDirty(); });
+
+
+    // Глубина: L2/R2 (триггеры)
+connect(gamepad_, &Gamepad::leftTriggerMoved, this, [this](float v) {
+    if (v > 50.0f) {
+        depth_ = 10.f;   // L2 нажата — вниз
+    } else {
+        depth_ = 0.f;    // отпущена — стоп
+    }
+    markDirty();
+});
+connect(gamepad_, &Gamepad::rightTriggerMoved, this, [this](float v) {
+    if (v > 50.0f) {
+        depth_ = -10.f;  // R2 нажата — вверх
+    } else {
+        depth_ = 0.f;    // отпущена — стоп
+    }
+    markDirty();
+});
+ 
 }
 
 void GamepadInputSource::markDirty()
