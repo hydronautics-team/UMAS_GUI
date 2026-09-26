@@ -72,6 +72,11 @@ signals:
     void R3Pressed();
     void R3Released();
 
+    void button11Pressed();
+    void button11Released();
+    void button12Pressed();
+    void button12Released();
+
 
 
 
@@ -109,12 +114,14 @@ private:
         ButtonBack = 6,
         ButtonStart = 7,
         ButtonL3 = 9,              // нажатие левого стика
-        ButtonR3 = 10               // нажатие правого стика
+        ButtonR3 = 10,             // нажатие правого стика
+        Button11 = 11,             // новое
+        Button12 = 12              // новое
     };
 
     // Текущие состояния
     float m_axisValues[8];          // значения осей в диапазоне -100..100 (для триггеров 0..100)
-    bool m_buttonStates[11];         // состояния кнопок
+    bool m_buttonStates[13];         // состояния кнопок
 
     // Для калибровки триггеров
     float m_triggerLeftZero;

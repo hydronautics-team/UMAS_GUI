@@ -92,8 +92,6 @@ MainWindow::MainWindow(QWidget *parent)
     rosBridge = new RosBridge(this);
     rosBridge->start();
 
-    
-
     connect(this, &MainWindow::publishTwistRequested,
             rosBridge, &RosBridge::publishTwistInternal,
             Qt::QueuedConnection);
@@ -125,6 +123,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     setTab();
     setupActuators();
+
+        brightnessTimer_ = new QTimer(this);
+    brightnessTimer_->setInterval(100);  // каждые 100 мс
+    connect(brightnessTimer_, &QTimer::timeout, this, [this]() {
+        if (brightnessStep_ == 0) return;
+        int current = ui->slider_brightness->value();
+        int newValue = qBound(0, current + brightnessStep_, 500);
+        ui->slider_brightness->setValue(newValue);
+    });
+
     setUpdateUI();
 
     gainSpinBoxes = {
@@ -151,8 +159,7 @@ MainWindow::MainWindow(QWidget *parent)
     inputGroup->addButton(ui->radioButton_useKeyBoard);
     inputGroup->addButton(ui->gamepad_btn);
     inputGroup->setExclusive(true);
-
-
+   
 
     connect(ui->full_screen, &QCheckBox::toggled, this, [this](bool checked) {
         if (checked) {
@@ -167,7 +174,7 @@ MainWindow::MainWindow(QWidget *parent)
 
                 //сигнал закрытия окна
                 connect(fullscreenWindow_, &FullscreenVideoWindow::windowClosed, this, [this]() {
-                    
+
                     ui->full_screen->blockSignals(true);
                     ui->full_screen->setChecked(false);
                     ui->full_screen->blockSignals(false);
@@ -239,7 +246,13 @@ void MainWindow::setTimer_updateImpact(int periodUpdateMsec)
 {
     joyStick = std::make_unique<JoyStick>();
     keyBoard = std::make_unique<KeyBoard>();
-    activeInput = joyStick.get();
+    if (ui->radioButton_useKeyBoard->isChecked()) {
+    useKeyBoard();
+} else if (ui->radioButton_useJoyStick->isChecked()) {
+    useJoyStick();
+} else if (ui->gamepad_btn->isChecked()) {
+    useGamepad();
+}
 
     connect(ui->radioButton_useJoyStick, &QRadioButton::clicked,
             this, &MainWindow::useJoyStick);
@@ -321,22 +334,99 @@ void MainWindow::useGamepad()
     if (gamepad) { delete gamepad; gamepad = nullptr; }
     gamepad = newGamepad;
 
-    connect(gamepad, &Gamepad::backButtonPressed,
-            this, &MainWindow::useKeyBoard);
+    // connect(gamepad, &Gamepad::backButtonPressed,
+    //         this, &MainWindow::useKeyBoard);
 
     displayText("Геймпад подключен. Режим управления с геймпада активирован.");
     gamepadInput = std::make_unique<GamepadInputSource>(gamepad, this);
     activeInput = gamepadInput.get();
 
+        // D-Pad вправо — увеличить яркость (пока зажата)
     connect(gamepad, &Gamepad::dPadRightPressed, this, [this]() {
-        int current = static_cast<int>(currentMode);
-        int previous = (current - 1 + 3) % 3;  
-        setSpeedMode(static_cast<SpeedMode>(previous));
+        brightnessStep_ = +20;
+        brightnessTimer_->start();
+        // Сразу применить один шаг
+        int current = ui->slider_brightness->value();
+        ui->slider_brightness->setValue(qMin(current + 20, 500));
     });
+    connect(gamepad, &Gamepad::dPadRightReleased, this, [this]() {
+        brightnessStep_ = 0;
+        brightnessTimer_->stop();
+    });
+
+    // D-Pad влево — уменьшить яркость (пока зажата)
     connect(gamepad, &Gamepad::dPadLeftPressed, this, [this]() {
+        brightnessStep_ = -20;
+        brightnessTimer_->start();
+        int current = ui->slider_brightness->value();
+        ui->slider_brightness->setValue(qMax(current - 20, 0));
+    });
+    connect(gamepad, &Gamepad::dPadLeftReleased, this, [this]() {
+        brightnessStep_ = 0;
+        brightnessTimer_->stop();
+    });
+
+    // L1 (number 4) — поворот влево (раньше было на L2)
+    connect(gamepad, &Gamepad::L1Pressed, this, [this]() {
+        onLeftTriggerMoved(100.0f);
+    });
+    connect(gamepad, &Gamepad::L1Released, this, [this]() {
+        onLeftTriggerMoved(0.0f);
+    });
+
+    // R1 (number 5) — поворот вправо (раньше было на R2)
+    connect(gamepad, &Gamepad::R1Pressed, this, [this]() {
+        onRightTriggerMoved(100.0f);
+    });
+    connect(gamepad, &Gamepad::R1Released, this, [this]() {
+        onRightTriggerMoved(0.0f);
+    });
+
+    // Y — «Разжать»
+    connect(gamepad, &Gamepad::buttonYPressed,  this, [this]() {
+        setGripState("open");
+    });
+    connect(gamepad, &Gamepad::buttonYReleased, this, [this]() {
+        setGripState("stop");
+    });
+
+    // A — «Сжать»
+    connect(gamepad, &Gamepad::buttonAPressed,  this, [this]() {
+        setGripState("close");
+    });
+    connect(gamepad, &Gamepad::buttonAReleased, this, [this]() {
+        setGripState("stop");
+    });
+
+        // Кнопка 11 — toggle: замкнуть/разомкнуть 3 контура
+    connect(gamepad, &Gamepad::button11Pressed, this, [this]() {
+        bool currentlyClosed = ui->pushButton_modeAutomated_yaw->isChecked()
+                            && ui->pushButton_modeAutomated_pitch->isChecked()
+                            && ui->pushButton_modeAutomated_roll->isChecked();
+
+        if (currentlyClosed) {
+            // Размыкаем
+            ui->pushButton_modeAutomated_yaw->setChecked(false);
+            ui->pushButton_modeAutomated_pitch->setChecked(false);
+            ui->pushButton_modeAutomated_roll->setChecked(false);
+            displayText("Геймпад: контуры Курс/Крен/Дифферент разомкнуты");
+        } else {
+            // Замыкаем (включаем автоматизированный режим если нужно)
+            ui->pushButton_modeAutomated->setChecked(true);
+            ui->pushButton_modeAutomated_yaw->setChecked(true);
+            ui->pushButton_modeAutomated_pitch->setChecked(true);
+            ui->pushButton_modeAutomated_roll->setChecked(true);
+            displayText("Геймпад: контуры Курс/Крен/Дифферент замкнуты");
+        }
+    });
+
+    // Кнопка 12 — круговая смена режима скоростей
+    connect(gamepad, &Gamepad::button12Pressed, this, [this]() {
         int current = static_cast<int>(currentMode);
         int next = (current + 1) % 3;
         setSpeedMode(static_cast<SpeedMode>(next));
+        displayText(QString("Геймпад: режим скорости → %1")
+                    .arg(next == 0 ? "Слабый" : next == 1 ? "Средний" : "Быстрый"));
     });
 }
 
@@ -504,8 +594,25 @@ void MainWindow::setupActuators()
     connect(ui->slider_brightness, &QSlider::valueChanged,
             this, &MainWindow::onBrightnessChanged);
 
-    // Блокируем слайдер, пока свет выключен (режим 0)
     ui->slider_brightness->setEnabled(false);
+
+    // === Кнопки манипулятора ===
+    connect(ui->btn_manip_compress, &QPushButton::clicked, this, [this]() {
+        setGripState("close");
+    });
+    connect(ui->btn_manip_release, &QPushButton::clicked, this, [this]() {
+        setGripState("open");
+    });
+    connect(ui->btn_manip_rotate_cw, &QPushButton::clicked, this, [this]() {
+        setTurnState("right");
+    });
+    connect(ui->btn_manip_rotate_ccw, &QPushButton::clicked, this, [this]() {
+        setTurnState("left");
+    });
+    connect(ui->btn_manip_stop, &QPushButton::clicked, this, [this]() {
+        setTurnState("stop");
+        setGripState("stop");
+    });
 }
 
 void MainWindow::onLightModeChanged(unsigned mode)
@@ -745,6 +852,44 @@ void MainWindow::setupButtonStyles(bool dark)
     for (auto *b : {ui->btn_light_off, ui->btn_light_mode1,
                 ui->btn_light_mode2, ui->btn_light_mode3})
         b->setStyleSheet(speedStyle);
+}
+
+// ============================================================
+// Поворот (курс) — L1/R1
+// ============================================================
+
+void MainWindow::onLeftTriggerMoved(float v)
+{
+    const bool pressed = (v > TRIGGER_THRESHOLD);
+    if (pressed == m_l1Pressed) return;
+    m_l1Pressed = pressed;
+
+    setTurnState(pressed ? "left" : "stop");
+}
+
+void MainWindow::onRightTriggerMoved(float v)
+{
+    const bool pressed = (v > TRIGGER_THRESHOLD);
+    if (pressed == m_r1Pressed) return;
+    m_r1Pressed = pressed;
+
+    setTurnState(pressed ? "right" : "stop");
+}
+
+void MainWindow::setTurnState(const QString& state)
+{
+    rosBridge->setTurnState(state);
+    displayText(QString("Поворот: %1").arg(state));
+}
+
+// ============================================================
+// Манипулятор (клешня) — кнопки в UI
+// ============================================================
+
+void MainWindow::setGripState(const QString& state)
+{
+    rosBridge->setGripState(state);
+    displayText(QString("Манипулятор: %1").arg(state));
 }
 
 MainWindow::~MainWindow()

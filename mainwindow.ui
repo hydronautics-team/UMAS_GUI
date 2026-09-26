@@ -512,32 +512,104 @@ QSlider:disabled::handle:horizontal {
       </item>
       <!-- ЧЕКБОКСЫ (от коллеги) -->
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0,0,0,0">
+       <layout class="QHBoxLayout" name="horizontalLayout_manipulator">
         <item>
-         <widget class="QCheckBox" name="checkBox">
-          <property name="text"><string>CheckBox</string></property>
+         <widget class="QLabel" name="lbl_manip_title">
+          <property name="styleSheet">
+           <string notr="true">font-weight: bold; color: #00bcd4; font-size: 11px;</string>
+          </property>
+          <property name="text">
+           <string>МАНИПУЛЯТОР:</string>
+          </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox_2">
-          <property name="text"><string>CheckBox</string></property>
+         <widget class="QPushButton" name="btn_manip_compress">
+          <property name="text">
+           <string>Сжать</string>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>30</height>
+           </size>
+          </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox_3">
-          <property name="text"><string>CheckBox</string></property>
+         <widget class="QPushButton" name="btn_manip_release">
+          <property name="text">
+           <string>Разжать</string>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>30</height>
+           </size>
+          </property>
          </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btn_manip_rotate_cw">
+          <property name="text">
+           <string>↻ Вправо</string>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>30</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btn_manip_rotate_ccw">
+          <property name="text">
+           <string>↺ Влево</string>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>30</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btn_manip_stop">
+          <property name="text">
+           <string>⏹ Стоп</string>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>80</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QPushButton { background-color: #ff4444; color: white; font-weight: bold; }</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_manip">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
         <item>
          <widget class="QCheckBox" name="full_screen">
-          <property name="text"><string>Полный экран</string></property>
+          <property name="text">
+           <string>Полный экран</string>
+          </property>
          </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer">
-          <property name="orientation"><enum>Qt::Horizontal</enum></property>
-          <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
-         </spacer>
         </item>
        </layout>
       </item>
@@ -752,7 +824,6 @@ QSlider:disabled::handle:horizontal {
       <property name="styleSheet">
        <string notr="true">background-color: #151b23; border: 1px solid #2d4052; border-radius: 6px;</string>
       </property>
-      <property name="styleSheet"><string notr="true">background-color: #151b23; border: 1px solid #2d4052; border-radius: 6px;</string></property>
       <property name="currentIndex"><number>0</number></property>
       <widget class="QWidget" name="page_main">
        <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -919,7 +990,7 @@ QSlider:disabled::handle:horizontal {
             <item>
              <widget class="QSlider" name="slider_brightness">
               <property name="orientation">
-               <enum>Qt::Orientation::Horizontal</enum>
+               <enum>Qt::Horizontal</enum>
               </property>
               <property name="minimum">
                <number>0</number>
@@ -929,6 +1000,12 @@ QSlider:disabled::handle:horizontal {
               </property>
               <property name="value">
                <number>50</number>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>150</width>
+                <height>0</height>
+               </size>
               </property>
              </widget>
             </item>
@@ -971,7 +1048,7 @@ QSlider:disabled::handle:horizontal {
                 <property name="enabled"><bool>true</bool></property>
                 <property name="text"><string>Джойстик</string></property>
                 <property name="checkable"><bool>true</bool></property>
-                <property name="checked"><bool>true</bool></property>
+                <property name="checked"><bool>false</bool></property>
                </widget>
               </item>
               <item>
@@ -982,6 +1059,7 @@ QSlider:disabled::handle:horizontal {
               <item>
                <widget class="QRadioButton" name="radioButton_useKeyBoard">
                 <property name="text"><string>Клавиатура</string></property>
+                <property name="checked"><bool>true</bool></property>
                </widget>
               </item>
              </layout>
