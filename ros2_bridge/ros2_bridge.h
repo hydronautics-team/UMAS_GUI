@@ -21,6 +21,10 @@ public:
 
     bool isReady() const;
     void run() override;
+    void publishPwmInternal(int pwm_value);
+
+    void setTurnState(const QString& state);
+    void setGripState(const QString& state);
 
 signals:
     void poseUpdated(double x, double y, double z);
@@ -32,10 +36,13 @@ public slots:
                               double angular_x, double angular_y, double angular_z);
     void zeroYawInternal();
     void setControlFlagInternal(uint8_t bit, bool value);
+    void updateManipulatorPwm();
     void publishLightsMode(unsigned mode);
     void publishLightsBrightness(unsigned value);
 
 private:
+    // Базовые элементы ROS 2 ноды
+
     rclcpp::Node::SharedPtr node_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr twist_pub_;
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr pose_sub_;
@@ -44,6 +51,18 @@ private:
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr lights_mode_pub_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr lights_brightness_pub_;
 
-    std::atomic<bool> is_ready_{false};
+    // Элементы управления манипулятором
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr manipulator_pwm_pub_;
+    rclcpp::TimerBase::SharedPtr manipulator_timer_;
+
+    // Переменные состояний и флагов
+    std::atomic<bool> is_ready_{false};  // Одна общая переменная готовности (Thread-safe)
     uint8_t control_flags_ = 0;
+    int current_pwm_ = 0;
+
+    int last_sent_command_ = -1;
+    QString target_state_ = "stop";
+    QString turn_state_ = "none";
+    QString grip_state_ = "stop";
+
 };

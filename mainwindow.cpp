@@ -92,8 +92,6 @@ MainWindow::MainWindow(QWidget *parent)
     rosBridge = new RosBridge(this);
     rosBridge->start();
 
-    
-
     connect(this, &MainWindow::publishTwistRequested,
             rosBridge, &RosBridge::publishTwistInternal,
             Qt::QueuedConnection);
@@ -151,8 +149,7 @@ MainWindow::MainWindow(QWidget *parent)
     inputGroup->addButton(ui->radioButton_useKeyBoard);
     inputGroup->addButton(ui->gamepad_btn);
     inputGroup->setExclusive(true);
-
-
+   
 
     connect(ui->full_screen, &QCheckBox::toggled, this, [this](bool checked) {
         if (checked) {
@@ -167,7 +164,7 @@ MainWindow::MainWindow(QWidget *parent)
 
                 //сигнал закрытия окна
                 connect(fullscreenWindow_, &FullscreenVideoWindow::windowClosed, this, [this]() {
-                    
+
                     ui->full_screen->blockSignals(true);
                     ui->full_screen->setChecked(false);
                     ui->full_screen->blockSignals(false);
@@ -239,7 +236,13 @@ void MainWindow::setTimer_updateImpact(int periodUpdateMsec)
 {
     joyStick = std::make_unique<JoyStick>();
     keyBoard = std::make_unique<KeyBoard>();
-    activeInput = joyStick.get();
+    if (ui->radioButton_useKeyBoard->isChecked()) {
+    useKeyBoard();
+} else if (ui->radioButton_useJoyStick->isChecked()) {
+    useJoyStick();
+} else if (ui->gamepad_btn->isChecked()) {
+    useGamepad();
+}
 
     connect(ui->radioButton_useJoyStick, &QRadioButton::clicked,
             this, &MainWindow::useJoyStick);
@@ -330,13 +333,45 @@ void MainWindow::useGamepad()
 
     connect(gamepad, &Gamepad::dPadRightPressed, this, [this]() {
         int current = static_cast<int>(currentMode);
-        int previous = (current - 1 + 3) % 3;  
+        int previous = (current - 1 + 3) % 3;
         setSpeedMode(static_cast<SpeedMode>(previous));
     });
     connect(gamepad, &Gamepad::dPadLeftPressed, this, [this]() {
         int current = static_cast<int>(currentMode);
         int next = (current + 1) % 3;
         setSpeedMode(static_cast<SpeedMode>(next));
+    });
+
+    // L1 (number 4) — поворот влево (раньше было на L2)
+    connect(gamepad, &Gamepad::L1Pressed, this, [this]() {
+        onLeftTriggerMoved(100.0f);
+    });
+    connect(gamepad, &Gamepad::L1Released, this, [this]() {
+        onLeftTriggerMoved(0.0f);
+    });
+
+    // R1 (number 5) — поворот вправо (раньше было на R2)
+    connect(gamepad, &Gamepad::R1Pressed, this, [this]() {
+        onRightTriggerMoved(100.0f);
+    });
+    connect(gamepad, &Gamepad::R1Released, this, [this]() {
+        onRightTriggerMoved(0.0f);
+    });
+
+    // Y — «Разжать»
+    connect(gamepad, &Gamepad::buttonYPressed,  this, [this]() {
+        setGripCheckbox("open");
+    });
+    connect(gamepad, &Gamepad::buttonYReleased, this, [this]() {
+        setGripCheckbox("stop");
+    });
+
+    // A — «Сжать»
+    connect(gamepad, &Gamepad::buttonAPressed,  this, [this]() {
+        setGripCheckbox("close");
+    });
+    connect(gamepad, &Gamepad::buttonAReleased, this, [this]() {
+        setGripCheckbox("stop");
     });
 }
 
@@ -745,6 +780,92 @@ void MainWindow::setupButtonStyles(bool dark)
     for (auto *b : {ui->btn_light_off, ui->btn_light_mode1,
                 ui->btn_light_mode2, ui->btn_light_mode3})
         b->setStyleSheet(speedStyle);
+}
+
+// ============================================================
+// Поворот (курс) — L2/R2 → L1/R1
+// ============================================================
+
+void MainWindow::onLeftTriggerMoved(float v)
+{
+    const bool pressed = (v > TRIGGER_THRESHOLD);
+    if (pressed == m_l2Pressed) return;
+    m_l2Pressed = pressed;
+
+    setTurnCheckbox(pressed ? "left" : "stop");
+}
+
+void MainWindow::onRightTriggerMoved(float v)
+{
+    const bool pressed = (v > TRIGGER_THRESHOLD);
+    if (pressed == m_r2Pressed) return;
+    m_r2Pressed = pressed;
+
+    setTurnCheckbox(pressed ? "right" : "stop");
+}
+
+void MainWindow::setTurnCheckbox(const QString& state)
+{
+    QSignalBlocker b1(ui->checkbox_left);
+    QSignalBlocker b2(ui->checkbox_right);
+    QSignalBlocker b3(ui->checkbox_rotate_stop);
+
+    ui->checkbox_left->setChecked(state == "left");
+    ui->checkbox_right->setChecked(state == "right");
+    ui->checkbox_rotate_stop->setChecked(state == "stop");
+
+    rosBridge->setTurnState(state);
+}
+
+// ============================================================
+// Чекбоксы поворота
+// ============================================================
+
+void MainWindow::on_checkbox_left_clicked(bool checked)
+{
+    setTurnCheckbox(checked ? "left" : "stop");
+}
+
+void MainWindow::on_checkbox_right_clicked(bool checked)
+{
+    setTurnCheckbox(checked ? "right" : "stop");
+}
+
+void MainWindow::on_checkbox_rotate_stop_clicked(bool checked)
+{
+    setTurnCheckbox(checked ? "stop" : "none");
+}
+
+// ============================================================
+// Манипулятор (клешня)
+// ============================================================
+
+void MainWindow::setGripCheckbox(const QString& state)
+{
+    QSignalBlocker b1(ui->checkbox_open);
+    QSignalBlocker b2(ui->checkbox_close);
+    QSignalBlocker b3(ui->checkbox_stop);
+
+    ui->checkbox_open->setChecked(state == "open");
+    ui->checkbox_close->setChecked(state == "close");
+    ui->checkbox_stop->setChecked(state == "stop");
+
+    rosBridge->setGripState(state);
+}
+
+void MainWindow::on_checkbox_open_clicked(bool checked)
+{
+    setGripCheckbox(checked ? "open" : "stop");
+}
+
+void MainWindow::on_checkbox_close_clicked(bool checked)
+{
+    setGripCheckbox(checked ? "close" : "stop");
+}
+
+void MainWindow::on_checkbox_stop_clicked(bool checked)
+{
+    setGripCheckbox(checked ? "stop" : "none");
 }
 
 MainWindow::~MainWindow()

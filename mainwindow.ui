@@ -197,7 +197,7 @@ QLabel {
     font-size: 12px;
 }
 
-QFrame[frameShape="4"], QFrame[frameShape="5"] {
+QFrame[frameShape=&quot;4&quot;], QFrame[frameShape=&quot;5&quot;] {
     color: #2d4052;
     max-height: 1px;
 }
@@ -297,29 +297,36 @@ QSlider:disabled::handle:horizontal {
    </string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,4,2">
+   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,4">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0,1">
-      <!-- ПАНЕЛЬ ТЕЛЕМЕТРИИ (возвращена) -->
+     <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0,0,1">
       <item>
        <widget class="QFrame" name="frame_telemetry">
         <property name="styleSheet">
          <string notr="true">background: transparent; border: none; padding: 0px;</string>
         </property>
         <property name="frameShape">
-         <enum>QFrame::Shape::NoFrame</enum>
+         <enum>QFrame::NoFrame</enum>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_telemetry">
-         <property name="leftMargin"><number>0</number></property>
-         <property name="topMargin"><number>0</number></property>
-         <property name="rightMargin"><number>0</number></property>
-         <property name="bottomMargin"><number>0</number></property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
          <item>
           <widget class="QPushButton" name="btn_theme_toggle">
            <property name="minimumSize">
             <size>
              <width>40</width>
-             <height>40</height>
+             <height>20</height>
             </size>
            </property>
            <property name="maximumSize">
@@ -340,17 +347,28 @@ QSlider:disabled::handle:horizontal {
           <layout class="QVBoxLayout">
            <item>
             <widget class="QLabel" name="lbl_depth_title">
-             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
-             <property name="text"><string>ГЛУБИНА</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="styleSheet">
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
+             </property>
+             <property name="text">
+              <string>ГЛУБИНА</string>
+             </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="lbl_depth_value">
-             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
-             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
-             <property name="text"><string>N/A</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
+             </property>
+             <property name="text">
+              <string>N/A</string>
+             </property>
             </widget>
            </item>
           </layout>
@@ -359,17 +377,28 @@ QSlider:disabled::handle:horizontal {
           <layout class="QVBoxLayout">
            <item>
             <widget class="QLabel" name="lbl_bottom_title">
-             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
-             <property name="text"><string>ДО ДНА</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="styleSheet">
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
+             </property>
+             <property name="text">
+              <string>ДО ДНА</string>
+             </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="lbl_bottom_value">
-             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
-             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
-             <property name="text"><string>N/A</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
+             </property>
+             <property name="text">
+              <string>N/A</string>
+             </property>
             </widget>
            </item>
           </layout>
@@ -378,17 +407,28 @@ QSlider:disabled::handle:horizontal {
           <layout class="QVBoxLayout">
            <item>
             <widget class="QLabel" name="lbl_speed_title">
-             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
-             <property name="text"><string>СКОРОСТЬ</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="styleSheet">
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
+             </property>
+             <property name="text">
+              <string>СКОРОСТЬ</string>
+             </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="lbl_speed_value">
-             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
-             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
-             <property name="text"><string>N/A</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
+             </property>
+             <property name="text">
+              <string>N/A</string>
+             </property>
             </widget>
            </item>
           </layout>
@@ -397,17 +437,28 @@ QSlider:disabled::handle:horizontal {
           <layout class="QVBoxLayout">
            <item>
             <widget class="QLabel" name="lbl_temp_title">
-             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
-             <property name="text"><string>ТЕМП</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="styleSheet">
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
+             </property>
+             <property name="text">
+              <string>ТЕМП</string>
+             </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="lbl_temp_value">
-             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
-             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
-             <property name="text"><string>N/A</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
+             </property>
+             <property name="text">
+              <string>N/A</string>
+             </property>
             </widget>
            </item>
           </layout>
@@ -416,17 +467,28 @@ QSlider:disabled::handle:horizontal {
           <layout class="QVBoxLayout">
            <item>
             <widget class="QLabel" name="lbl_leak_title">
-             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
-             <property name="text"><string>ПРОТЕЧКА</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="styleSheet">
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
+             </property>
+             <property name="text">
+              <string>ПРОТЕЧКА</string>
+             </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="lbl_leak_value">
-             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
-             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
-             <property name="text"><string>N/A</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
+             </property>
+             <property name="text">
+              <string>N/A</string>
+             </property>
             </widget>
            </item>
           </layout>
@@ -435,17 +497,28 @@ QSlider:disabled::handle:horizontal {
           <layout class="QVBoxLayout">
            <item>
             <widget class="QLabel" name="lbl_voltage_title">
-             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
-             <property name="text"><string>АКБ 1</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="styleSheet">
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
+             </property>
+             <property name="text">
+              <string>АКБ 1</string>
+             </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="lbl_voltage_value">
-             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
-             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
-             <property name="text"><string>N/A</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
+             </property>
+             <property name="text">
+              <string>N/A</string>
+             </property>
             </widget>
            </item>
           </layout>
@@ -454,17 +527,28 @@ QSlider:disabled::handle:horizontal {
           <layout class="QVBoxLayout">
            <item>
             <widget class="QLabel" name="lbl_voltage2_title">
-             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
-             <property name="text"><string>АКБ 2</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="styleSheet">
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
+             </property>
+             <property name="text">
+              <string>АКБ 2</string>
+             </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="lbl_voltage2_value">
-             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
-             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
-             <property name="text"><string>N/A</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
+             </property>
+             <property name="text">
+              <string>N/A</string>
+             </property>
             </widget>
            </item>
           </layout>
@@ -473,17 +557,31 @@ QSlider:disabled::handle:horizontal {
           <layout class="QVBoxLayout">
            <item>
             <widget class="QLabel" name="lbl_kill_title">
-             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
-             <property name="text"><string>КИЛЛСВИЧ</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="styleSheet">
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
+             </property>
+             <property name="text">
+              <string>КИЛЛСВИЧ</string>
+             </property>
             </widget>
            </item>
            <item>
             <widget class="QPushButton" name="btn_killswitch_status">
-             <property name="enabled"><bool>false</bool></property>
-             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
-             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
-             <property name="text"><string>N/A</string></property>
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
+             </property>
+             <property name="text">
+              <string>N/A</string>
+             </property>
             </widget>
            </item>
           </layout>
@@ -492,17 +590,28 @@ QSlider:disabled::handle:horizontal {
           <layout class="QVBoxLayout">
            <item>
             <widget class="QLabel" name="lbl_ping_title">
-             <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string></property>
-             <property name="text"><string>ПИНГ</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="styleSheet">
+              <string notr="true">color: #00bcd4; font-weight: bold; font-size: 15px;</string>
+             </property>
+             <property name="text">
+              <string>ПИНГ</string>
+             </property>
             </widget>
            </item>
            <item>
             <widget class="QLabel" name="lbl_ping_value">
-             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
-             <property name="styleSheet"><string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string></property>
-             <property name="text"><string>N/A</string></property>
-             <property name="alignment"><set>Qt::AlignmentFlag::AlignCenter</set></property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;</string>
+             </property>
+             <property name="text">
+              <string>N/A</string>
+             </property>
             </widget>
            </item>
           </layout>
@@ -510,54 +619,99 @@ QSlider:disabled::handle:horizontal {
         </layout>
        </widget>
       </item>
-      <!-- ЧЕКБОКСЫ (от коллеги) -->
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0,0,0,0">
+       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0,0,0,0,0,0">
         <item>
-         <widget class="QCheckBox" name="checkBox">
-          <property name="text"><string>CheckBox</string></property>
+         <widget class="QCheckBox" name="checkbox_left">
+          <property name="text">
+           <string>Сжать</string>
+          </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox_2">
-          <property name="text"><string>CheckBox</string></property>
+         <widget class="QCheckBox" name="checkbox_right">
+          <property name="text">
+           <string>Разжать</string>
+          </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBox_3">
-          <property name="text"><string>CheckBox</string></property>
+         <widget class="QCheckBox" name="checkbox_rotate_stop">
+          <property name="text">
+           <string>Стоп</string>
+          </property>
          </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="full_screen">
-          <property name="text"><string>Полный экран</string></property>
+          <property name="text">
+           <string>Полный экран</string>
+          </property>
          </widget>
         </item>
         <item>
-         <spacer name="horizontalSpacer">
-          <property name="orientation"><enum>Qt::Horizontal</enum></property>
-          <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
-         </spacer>
+         <widget class="QCheckBox" name="checkbox_close">
+          <property name="text">
+           <string>Влево</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkbox_open">
+          <property name="text">
+           <string>Впарво</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkbox_stop">
+          <property name="text">
+           <string>Стоп</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
-      <!-- ОСНОВНОЙ БЛОК (кнопка агента + вкладки + консоль) -->
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_12"/>
+      </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,20">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_7" stretch="1,20">
           <item>
            <widget class="QPushButton" name="pushButton_selectAgent1">
-            <property name="enabled"><bool>true</bool></property>
-            <property name="sizePolicy"><sizepolicy hsizetype="Preferred" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
-            <property name="minimumSize"><size><width>50</width><height>50</height></size></property>
-            <property name="text"><string>1</string></property>
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>32</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>1</string>
+            </property>
            </widget>
           </item>
           <item>
            <spacer name="verticalSpacer_2">
-            <property name="orientation"><enum>Qt::Vertical</enum></property>
-            <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
            </spacer>
           </item>
          </layout>
@@ -566,13 +720,19 @@ QSlider:disabled::handle:horizontal {
          <layout class="QVBoxLayout" name="verticalLayout_5" stretch="3,1">
           <item>
            <widget class="QTabWidget" name="tabWidget">
-            <property name="currentIndex"><number>0</number></property>
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
             <widget class="QWidget" name="tab_video">
-             <attribute name="title"><string>Камера</string></attribute>
+             <attribute name="title">
+              <string>Камера</string>
+             </attribute>
              <layout class="QVBoxLayout" name="verticalLayout_2"/>
             </widget>
             <widget class="QWidget" name="tab_imuData">
-             <attribute name="title"><string>IMU Данные</string></attribute>
+             <attribute name="title">
+              <string>IMU Данные</string>
+             </attribute>
              <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="0">
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_for_checkImu"/>
@@ -580,7 +740,9 @@ QSlider:disabled::handle:horizontal {
              </layout>
             </widget>
             <widget class="QWidget" name="tab_setupMsg">
-             <attribute name="title"><string>Контроль сообщений</string></attribute>
+             <attribute name="title">
+              <string>Контроль сообщений</string>
+             </attribute>
              <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="0">
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_for_checkMsg"/>
@@ -588,14 +750,16 @@ QSlider:disabled::handle:horizontal {
              </layout>
             </widget>
             <widget class="QWidget" name="tab_powerMode">
-             <attribute name="title"><string>Режимы питания</string></attribute>
+             <attribute name="title">
+              <string>Режимы питания</string>
+             </attribute>
              <layout class="QGridLayout" name="gridLayout_5">
               <item row="0" column="0">
                <layout class="QHBoxLayout" name="horizontalLayout_for_powerSystem"/>
               </item>
              </layout>
             </widget>
-                        <widget class="QWidget" name="tab_actuators">
+            <widget class="QWidget" name="tab_actuators">
              <attribute name="title">
               <string>Исполнительные устройства</string>
              </attribute>
@@ -675,7 +839,9 @@ QSlider:disabled::handle:horizontal {
              </layout>
             </widget>
             <widget class="QWidget" name="test">
-             <attribute name="title"><string>Отладка</string></attribute>
+             <attribute name="title">
+              <string>Отладка</string>
+             </attribute>
              <layout class="QVBoxLayout" name="verticalLayout_10">
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_mapWidget"/>
@@ -688,41 +854,98 @@ QSlider:disabled::handle:horizontal {
            <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="5,1">
             <item>
              <widget class="QTextEdit" name="textEdit_console">
-              <property name="readOnly"><bool>true</bool></property>
-              <property name="overwriteMode"><bool>false</bool></property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+              <property name="overwriteMode">
+               <bool>false</bool>
+              </property>
              </widget>
             </item>
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_12">
               <item>
                <widget class="QLabel" name="label_6">
-                <property name="styleSheet"><string notr="true">color: #00bcd4; font-weight: bold; font-size: 11px;</string></property>
-                <property name="text"><string>Выставка репера</string></property>
+                <property name="styleSheet">
+                 <string notr="true">color: #00bcd4; font-weight: bold; font-size: 11px;</string>
+                </property>
+                <property name="text">
+                 <string>Выставка репера</string>
+                </property>
                </widget>
               </item>
               <item>
                <widget class="QPushButton" name="pushButton_sendReper_map_onoff">
-                <property name="text"><string>Тыкнуть по карте</string></property>
-                <property name="checkable"><bool>true</bool></property>
+                <property name="text">
+                 <string>Тыкнуть по карте</string>
+                </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
                </widget>
               </item>
               <item>
                <layout class="QFormLayout" name="formLayout">
-                <item row="0" column="0"><widget class="QLabel" name="label_8"><property name="styleSheet"><string notr="true">font-size: 10px;</string></property><property name="text"><string>Широта:</string></property></widget></item>
-                <item row="1" column="0"><widget class="QLabel" name="label_9"><property name="styleSheet"><string notr="true">font-size: 10px;</string></property><property name="text"><string>Долгота:</string></property></widget></item>
-                <item row="0" column="1"><widget class="QLineEdit" name="lineEdit_reper_latitude"><property name="styleSheet"><string notr="true">font-size: 10px;</string></property><property name="text"><string>55.71752739610301</string></property></widget></item>
-                <item row="1" column="1"><widget class="QLineEdit" name="lineEdit_reper_longitude"><property name="styleSheet"><string notr="true">font-size: 10px;</string></property><property name="text"><string>37.84747427460488</string></property></widget></item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_8">
+                  <property name="styleSheet">
+                   <string notr="true">font-size: 10px;</string>
+                  </property>
+                  <property name="text">
+                   <string>Широта:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_9">
+                  <property name="styleSheet">
+                   <string notr="true">font-size: 10px;</string>
+                  </property>
+                  <property name="text">
+                   <string>Долгота:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLineEdit" name="lineEdit_reper_latitude">
+                  <property name="styleSheet">
+                   <string notr="true">font-size: 10px;</string>
+                  </property>
+                  <property name="text">
+                   <string>55.71752739610301</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLineEdit" name="lineEdit_reper_longitude">
+                  <property name="styleSheet">
+                   <string notr="true">font-size: 10px;</string>
+                  </property>
+                  <property name="text">
+                   <string>37.84747427460488</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </item>
               <item>
                <widget class="QPushButton" name="pushButton_sendReper">
-                <property name="text"><string>Установить репер</string></property>
+                <property name="text">
+                 <string>Установить репер</string>
+                </property>
                </widget>
               </item>
               <item>
                <spacer name="verticalSpacer_4">
-                <property name="orientation"><enum>Qt::Vertical</enum></property>
-                <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
                </spacer>
               </item>
              </layout>
@@ -752,51 +975,95 @@ QSlider:disabled::handle:horizontal {
       <property name="styleSheet">
        <string notr="true">background-color: #151b23; border: 1px solid #2d4052; border-radius: 6px;</string>
       </property>
-      <property name="styleSheet"><string notr="true">background-color: #151b23; border: 1px solid #2d4052; border-radius: 6px;</string></property>
-      <property name="currentIndex"><number>0</number></property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
       <widget class="QWidget" name="page_main">
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <widget class="QGroupBox" name="groupBox_info">
-          <property name="styleSheet"><string notr="true">QGroupBox { margin-top: 5px; padding-top: 10px; }</string></property>
-          <property name="title"><string>Информация</string></property>
+          <property name="styleSheet">
+           <string notr="true">QGroupBox { margin-top: 5px; padding-top: 10px; }</string>
+          </property>
+          <property name="title">
+           <string>Информация</string>
+          </property>
           <layout class="QHBoxLayout" name="horizontalLayout_info">
            <item>
             <widget class="Compass" name="compass" native="true">
-             <property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Expanding"><horstretch>1</horstretch><verstretch>0</verstretch></sizepolicy></property>
-             <property name="minimumSize"><size><width>120</width><height>120</height></size></property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>1</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>120</width>
+               <height>120</height>
+              </size>
+             </property>
             </widget>
            </item>
            <item>
             <widget class="AttitudeIndicator" name="attitudeIndicator" native="true">
-             <property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Expanding"><horstretch>1</horstretch><verstretch>0</verstretch></sizepolicy></property>
-             <property name="minimumSize"><size><width>120</width><height>120</height></size></property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>1</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>120</width>
+               <height>120</height>
+              </size>
+             </property>
             </widget>
            </item>
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_orientation">
              <item>
               <widget class="QLabel" name="lbl_heading">
-               <property name="styleSheet"><string notr="true">font-size: 14px; font-weight: bold; color: #00bcd4;</string></property>
-               <property name="text"><string>HDG: 000°</string></property>
+               <property name="styleSheet">
+                <string notr="true">font-size: 14px; font-weight: bold; color: #00bcd4;</string>
+               </property>
+               <property name="text">
+                <string>HDG: 000°</string>
+               </property>
               </widget>
              </item>
              <item>
               <widget class="QLabel" name="lbl_pitch">
-               <property name="styleSheet"><string notr="true">font-size: 12px;</string></property>
-               <property name="text"><string>PITCH: 0.0°</string></property>
+               <property name="styleSheet">
+                <string notr="true">font-size: 12px;</string>
+               </property>
+               <property name="text">
+                <string>PITCH: 0.0°</string>
+               </property>
               </widget>
              </item>
              <item>
               <widget class="QLabel" name="lbl_roll">
-               <property name="styleSheet"><string notr="true">font-size: 12px;</string></property>
-               <property name="text"><string>ROLL: 0.0°</string></property>
+               <property name="styleSheet">
+                <string notr="true">font-size: 12px;</string>
+               </property>
+               <property name="text">
+                <string>ROLL: 0.0°</string>
+               </property>
               </widget>
              </item>
              <item>
               <spacer name="verticalSpacer_orientation">
-               <property name="orientation"><enum>Qt::Vertical</enum></property>
-               <property name="sizeHint" stdset="0"><size><width>20</width><height>40</height></size></property>
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
               </spacer>
              </item>
             </layout>
@@ -806,42 +1073,62 @@ QSlider:disabled::handle:horizontal {
         </item>
         <item>
          <widget class="Line" name="line_separator1">
-          <property name="orientation"><enum>Qt::Horizontal</enum></property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
          </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_speed">
           <item>
            <widget class="QLabel" name="lbl_speed_mode_title">
-            <property name="styleSheet"><string notr="true">font-weight: bold; color: #00bcd4; font-size: 11px;</string></property>
-            <property name="text"><string>СКОРОСТЬ:</string></property>
+            <property name="styleSheet">
+             <string notr="true">font-weight: bold; color: #00bcd4; font-size: 11px;</string>
+            </property>
+            <property name="text">
+             <string>СКОРОСТЬ:</string>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="pushButton_speedFast">
-            <property name="text"><string>Быстрый</string></property>
-            <property name="checkable"><bool>true</bool></property>
+            <property name="text">
+             <string>Быстрый</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="pushButton_speedMedium">
-            <property name="text"><string>Средний</string></property>
-            <property name="checkable"><bool>true</bool></property>
-            <property name="checked"><bool>true</bool></property>
+            <property name="text">
+             <string>Средний</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="pushButton_speedSlow">
-            <property name="text"><string>Слабый</string></property>
-            <property name="checkable"><bool>true</bool></property>
+            <property name="text">
+             <string>Слабый</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
          </layout>
         </item>
-                <item>
+        <item>
          <widget class="Line" name="line_separator_light">
           <property name="orientation">
-           <enum>Qt::Orientation::Horizontal</enum>
+           <enum>Qt::Vertical</enum>
           </property>
          </widget>
         </item>
@@ -919,35 +1206,23 @@ QSlider:disabled::handle:horizontal {
             <item>
              <widget class="QSlider" name="slider_brightness">
               <property name="orientation">
-               <enum>Qt::Orientation::Horizontal</enum>
-              </property>
-              <property name="minimum">
-               <number>0</number>
-              </property>
-              <property name="maximum">
-               <number>500</number>
-              </property>
-              <property name="value">
-               <number>50</number>
+               <enum>Qt::Horizontal</enum>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QLabel" name="lbl_brightness_value">
-              <property name="styleSheet">
-               <string notr="true">font-size: 11px;</string>
-              </property>
-              <property name="text">
-               <string>50</string>
-              </property>
               <property name="minimumSize">
                <size>
                 <width>40</width>
                 <height>0</height>
                </size>
               </property>
-              <property name="alignment">
-               <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignVCenter</set>
+              <property name="styleSheet">
+               <string notr="true">font-size: 11px;</string>
+              </property>
+              <property name="text">
+               <string>50</string>
               </property>
              </widget>
             </item>
@@ -957,7 +1232,9 @@ QSlider:disabled::handle:horizontal {
         </item>
         <item>
          <widget class="Line" name="line_separator2">
-          <property name="orientation"><enum>Qt::Horizontal</enum></property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
          </widget>
         </item>
         <item>
@@ -968,27 +1245,44 @@ QSlider:disabled::handle:horizontal {
              <layout class="QHBoxLayout" name="horizontalLayout_control_source">
               <item>
                <widget class="QRadioButton" name="radioButton_useJoyStick">
-                <property name="enabled"><bool>true</bool></property>
-                <property name="text"><string>Джойстик</string></property>
-                <property name="checkable"><bool>true</bool></property>
-                <property name="checked"><bool>true</bool></property>
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="text">
+                 <string>Джойстик</string>
+                </property>
+                <property name="checkable">
+                 <bool>true</bool>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
                </widget>
               </item>
               <item>
                <widget class="QRadioButton" name="gamepad_btn">
-                <property name="text"><string>Gamepad</string></property>
+                <property name="text">
+                 <string>Gamepad</string>
+                </property>
                </widget>
               </item>
               <item>
                <widget class="QRadioButton" name="radioButton_useKeyBoard">
-                <property name="text"><string>Клавиатура</string></property>
+                <property name="text">
+                 <string>Клавиатура</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
                </widget>
               </item>
              </layout>
             </item>
             <item>
              <widget class="QPushButton" name="pushButton_zeroYaw">
-              <property name="text"><string>Выставка курса</string></property>
+              <property name="text">
+               <string>Выставка курса</string>
+              </property>
              </widget>
             </item>
            </layout>
@@ -997,32 +1291,212 @@ QSlider:disabled::handle:horizontal {
            <layout class="QVBoxLayout" name="verticalLayout_11">
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout">
-              <item><widget class="QLabel" name="label_4"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>Марш</string></property></widget></item>
-              <item><widget class="QSpinBox" name="spinBox_gain_surge"><property name="sizePolicy"><sizepolicy hsizetype="Maximum" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="value"><number>1</number></property></widget></item>
-              <item><widget class="QLabel" name="label_controlMarch"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>0</string></property></widget></item>
-              <item><widget class="QLabel" name="label_7"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>Курс</string></property></widget></item>
-              <item><widget class="QSpinBox" name="spinBox_gain_yaw"><property name="sizePolicy"><sizepolicy hsizetype="Maximum" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="value"><number>1</number></property></widget></item>
-              <item><widget class="QLabel" name="label_controlYaw"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>0</string></property></widget></item>
+              <item>
+               <widget class="QLabel" name="label_4">
+                <property name="styleSheet">
+                 <string notr="true">font-size: 11px;</string>
+                </property>
+                <property name="text">
+                 <string>Марш</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="spinBox_gain_surge">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="value">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_controlMarch">
+                <property name="styleSheet">
+                 <string notr="true">font-size: 11px;</string>
+                </property>
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_7">
+                <property name="styleSheet">
+                 <string notr="true">font-size: 11px;</string>
+                </property>
+                <property name="text">
+                 <string>Курс</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="spinBox_gain_yaw">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="value">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_controlYaw">
+                <property name="styleSheet">
+                 <string notr="true">font-size: 11px;</string>
+                </property>
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_8">
-              <item><widget class="QLabel" name="label_10"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>Лаг</string></property></widget></item>
-              <item><widget class="QSpinBox" name="spinBox_gain_sway"><property name="sizePolicy"><sizepolicy hsizetype="Maximum" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="value"><number>1</number></property></widget></item>
-              <item><widget class="QLabel" name="label_controlLag"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>0</string></property></widget></item>
-              <item><widget class="QLabel" name="label_11"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>Дифферент</string></property></widget></item>
-              <item><widget class="QSpinBox" name="spinBox_gain_pitch"><property name="sizePolicy"><sizepolicy hsizetype="Maximum" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="value"><number>1</number></property></widget></item>
-              <item><widget class="QLabel" name="label_controlDif"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>0</string></property></widget></item>
+              <item>
+               <widget class="QLabel" name="label_10">
+                <property name="styleSheet">
+                 <string notr="true">font-size: 11px;</string>
+                </property>
+                <property name="text">
+                 <string>Лаг</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="spinBox_gain_sway">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="value">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_controlLag">
+                <property name="styleSheet">
+                 <string notr="true">font-size: 11px;</string>
+                </property>
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_11">
+                <property name="styleSheet">
+                 <string notr="true">font-size: 11px;</string>
+                </property>
+                <property name="text">
+                 <string>Дифферент</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="spinBox_gain_pitch">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="value">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_controlDif">
+                <property name="styleSheet">
+                 <string notr="true">font-size: 11px;</string>
+                </property>
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_9">
-              <item><widget class="QLabel" name="label_12"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>Глубина</string></property></widget></item>
-              <item><widget class="QSpinBox" name="spinBox_gain_depth"><property name="sizePolicy"><sizepolicy hsizetype="Maximum" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="value"><number>1</number></property></widget></item>
-              <item><widget class="QLabel" name="label_controlDepth"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>0</string></property></widget></item>
-              <item><widget class="QLabel" name="label_13"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>Крен</string></property></widget></item>
-              <item><widget class="QSpinBox" name="spinBox_gain_roll"><property name="sizePolicy"><sizepolicy hsizetype="Maximum" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="value"><number>1</number></property></widget></item>
-              <item><widget class="QLabel" name="label_controlKren"><property name="styleSheet"><string notr="true">font-size: 11px;</string></property><property name="text"><string>0</string></property></widget></item>
+              <item>
+               <widget class="QLabel" name="label_12">
+                <property name="styleSheet">
+                 <string notr="true">font-size: 11px;</string>
+                </property>
+                <property name="text">
+                 <string>Глубина</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="spinBox_gain_depth">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="value">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_controlDepth">
+                <property name="styleSheet">
+                 <string notr="true">font-size: 11px;</string>
+                </property>
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_13">
+                <property name="styleSheet">
+                 <string notr="true">font-size: 11px;</string>
+                </property>
+                <property name="text">
+                 <string>Крен</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="spinBox_gain_roll">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="value">
+                 <number>1</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_controlKren">
+                <property name="styleSheet">
+                 <string notr="true">font-size: 11px;</string>
+                </property>
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
            </layout>
@@ -1031,7 +1505,9 @@ QSlider:disabled::handle:horizontal {
         </item>
         <item>
          <widget class="Line" name="line_separator3">
-          <property name="orientation"><enum>Qt::Horizontal</enum></property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
          </widget>
         </item>
         <item>
@@ -1045,34 +1521,153 @@ QSlider:disabled::handle:horizontal {
          <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
           <item>
            <widget class="QPushButton" name="pushButton_modeManual">
-            <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
-            <property name="text"><string>Ручной</string></property>
-            <property name="checkable"><bool>true</bool></property>
-            <property name="checked"><bool>true</bool></property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Ручной</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="pushButton_modeAutomated">
-            <property name="sizePolicy"><sizepolicy hsizetype="Ignored" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
-            <property name="text"><string>Автоматизированный</string></property>
-            <property name="checkable"><bool>true</bool></property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Автоматизированный</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_11">
-            <item><widget class="QPushButton" name="pushButton_modeAutomated_surge"><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text"><string>Марш</string></property><property name="checkable"><bool>true</bool></property></widget></item>
-            <item><widget class="QPushButton" name="pushButton_modeAutomated_sway"><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text"><string>Лаг</string></property><property name="checkable"><bool>true</bool></property></widget></item>
-            <item><widget class="QPushButton" name="pushButton_modeAutomated_depth"><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text"><string>Глубина</string></property><property name="checkable"><bool>true</bool></property></widget></item>
-            <item><widget class="QPushButton" name="pushButton_modeAutomated_yaw"><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text"><string>Курс</string></property><property name="checkable"><bool>true</bool></property></widget></item>
-            <item><widget class="QPushButton" name="pushButton_modeAutomated_pitch"><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text"><string>Дифферент</string></property><property name="checkable"><bool>true</bool></property></widget></item>
-            <item><widget class="QPushButton" name="pushButton_modeAutomated_roll"><property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="text"><string>Крен</string></property><property name="checkable"><bool>true</bool></property></widget></item>
+            <item>
+             <widget class="QPushButton" name="pushButton_modeAutomated_surge">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Марш</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_modeAutomated_sway">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Лаг</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_modeAutomated_depth">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Глубина</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_modeAutomated_yaw">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Курс</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_modeAutomated_pitch">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Дифферент</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_modeAutomated_roll">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Крен</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
           <item>
            <widget class="QPushButton" name="pushButton_modeAutomatic">
-            <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
-            <property name="text"><string>Автоматический</string></property>
-            <property name="checkable"><bool>true</bool></property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Автоматический</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
          </layout>

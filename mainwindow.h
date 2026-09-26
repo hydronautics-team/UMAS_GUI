@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <QMainWindow>
 #include <QTimer>
 #include <QDebug>
@@ -30,7 +29,7 @@ namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 class VideoPlayerWidget;
-class FullscreenVideoWindow; 
+class FullscreenVideoWindow;
 
 class MainWindow : public QMainWindow
 {
@@ -44,7 +43,7 @@ public:
 private:
     Gamepad *gamepad = nullptr;
     std::unique_ptr<GamepadInputSource> gamepadInput;
-  
+
     FullscreenVideoWindow* fullscreenWindow_ = nullptr;
 
     enum class SpeedMode : uint8_t { Slow = 0, Medium = 1, Fast = 2 };
@@ -61,7 +60,7 @@ private:
     void useGamepad();
     void setTimer_updateImpact(int periodUpdateMsec);
     void setBottom();
-    void setupButtonStyles(bool dark);
+    void setupButtonStyles(bool dark);       // ← из develop (с параметром)
     void setBottom_mode();
     void setTab();
     void setUpdateUI();
@@ -72,6 +71,14 @@ private:
     void updateTelemetryFromState();
     bool isConnected = false;
 
+    // ==== мое: манипулятор и поворот ====
+    void setManipulatorState(const QString& state);
+    void setTurnCheckbox(const QString& state);
+    void setGripCheckbox(const QString& state);
+
+    bool m_l2Pressed = false;
+    bool m_r2Pressed = false;
+    static constexpr float TRIGGER_THRESHOLD = 50.0f;
 
     bool status_keyboard = false;
 
@@ -87,11 +94,25 @@ private slots:
     void updateUi_Compass(float yaw);
     void useKeyBoard();
     void useJoyStick();
+
+    // ==== мое: чекбоксы ====
+    void on_checkbox_left_clicked(bool checked);
+    void on_checkbox_right_clicked(bool checked);
+    void on_checkbox_rotate_stop_clicked(bool checked);
+    void on_checkbox_open_clicked(bool checked);
+    void on_checkbox_close_clicked(bool checked);
+    void on_checkbox_stop_clicked(bool checked);
+
+    void onLeftTriggerMoved(float v);
+    void onRightTriggerMoved(float v);
+
+    // ==== из develop: тема и свет ====
     void toggleTheme();
     void onLightModeChanged(unsigned mode);
     void onBrightnessChanged(int value);
 
 private:
+    // ==== из develop: тема и свет ====
     void applyTheme(bool dark);
     void setupActuators();
 
