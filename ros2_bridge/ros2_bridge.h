@@ -21,7 +21,17 @@ public:
 
     bool isReady() const;
     void run() override;
+    void publishPwmInternal(int pwm_value);
 
+    void setTurnState(const QString& state);
+    void setGripState(const QString& state);
+    void updateManipulatorCommand();
+
+public:
+    void setTurnSpeed(float speed);
+
+private:
+    float turn_speed_ = 0.0f;
 signals:
     void poseUpdated(double x, double y, double z);
     void poseReceived(const UVState::Pose& pose);
@@ -44,6 +54,15 @@ private:
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr lights_mode_pub_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr lights_brightness_pub_;
 
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr manipulator_pwm_pub_;
+    rclcpp::TimerBase::SharedPtr manipulator_timer_;
+    
     std::atomic<bool> is_ready_{false};
     uint8_t control_flags_ = 0;
+    int current_pwm_ = 0;
+
+    int last_sent_command_ = -1;
+    QString target_state_ = "stop";
+    QString turn_state_ = "none";
+    QString grip_state_ = "stop";
 };

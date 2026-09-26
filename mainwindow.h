@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <QMainWindow>
 #include <QTimer>
 #include <QDebug>
@@ -30,7 +29,7 @@ namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 class VideoPlayerWidget;
-class FullscreenVideoWindow; 
+class FullscreenVideoWindow;
 
 class MainWindow : public QMainWindow
 {
@@ -44,7 +43,7 @@ public:
 private:
     Gamepad *gamepad = nullptr;
     std::unique_ptr<GamepadInputSource> gamepadInput;
-  
+
     FullscreenVideoWindow* fullscreenWindow_ = nullptr;
 
     enum class SpeedMode : uint8_t { Slow = 0, Medium = 1, Fast = 2 };
@@ -72,6 +71,12 @@ private:
     void updateTelemetryFromState();
     bool isConnected = false;
 
+    void setTurnState(const QString& state);
+    void setGripState(const QString& state);
+
+    bool m_l1Pressed = false;
+    bool m_r1Pressed = false;
+    static constexpr float TRIGGER_THRESHOLD = 50.0f;
 
     bool status_keyboard = false;
 
@@ -87,6 +92,10 @@ private slots:
     void updateUi_Compass(float yaw);
     void useKeyBoard();
     void useJoyStick();
+
+    void onLeftTriggerMoved(float v);
+    void onRightTriggerMoved(float v);
+
     void toggleTheme();
     void onLightModeChanged(unsigned mode);
     void onBrightnessChanged(int value);
@@ -94,6 +103,8 @@ private slots:
 private:
     void applyTheme(bool dark);
     void setupActuators();
+    QTimer *brightnessTimer_ = nullptr;
+    int brightnessStep_ = 0;
 
     QString darkStyle_;
     bool isDark_ = true;
@@ -107,6 +118,7 @@ signals:
 protected:
     Ui::MainWindow *ui;
     QTimer *updateTimer = nullptr;
+    
 
     std::unique_ptr<JoyStick> joyStick;
     std::unique_ptr<KeyBoard> keyBoard;
