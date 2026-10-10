@@ -4,6 +4,9 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPixmap>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QMenuBar>
 #include <cmath>
 
 static QIcon makeSunIcon()
@@ -81,11 +84,44 @@ static const QString LIGHT_THEME =
 "QSlider:disabled::sub-page:horizontal { background: #c3cad2; }"
 "QSlider:disabled::handle:horizontal { background: #9aa4ad; }";
 
+static const QString DARK_THEME =
+"QMainWindow, QWidget#centralwidget { background-color: #061a21; color: #d7f3f1; font-family: 'Inter', 'Segoe UI', sans-serif; font-size: 13px; }"
+"QWidget { outline: none; }"
+"QPushButton { background-color: #0d3540; border: 1px solid #185464; border-radius: 7px; padding: 6px 13px; color: #d7f3f1; min-height: 22px; font-size: 12px; }"
+"QPushButton:hover { background-color: #124653; border-color: #49d8cc; color: #ffffff; }"
+"QPushButton:pressed, QPushButton:checked { background-color: #19b8aa; border-color: #5de2d7; color: #031416; font-weight: 600; }"
+"QPushButton:disabled { background-color: #0a252d; color: #55747a; border-color: #123b45; }"
+"QTabWidget::pane { border: 1px solid #174a56; background-color: #09262e; border-radius: 8px; top: -1px; }"
+"QTabBar::tab { background-color: transparent; color: #7faaa9; padding: 8px 16px; margin-right: 3px; border: none; border-bottom: 2px solid transparent; }"
+"QTabBar::tab:selected { color: #74eee3; border-bottom-color: #20c7b8; font-weight: 600; }"
+"QTabBar::tab:hover:!selected { color: #c4e9e6; background-color: #0d3540; }"
+"QLineEdit, QSpinBox, QComboBox, QDoubleSpinBox { background-color: #071f27; border: 1px solid #185464; border-radius: 6px; padding: 5px 8px; color: #e7fbf9; selection-background-color: #20c7b8; selection-color: #031416; }"
+"QLineEdit:focus, QSpinBox:focus, QComboBox:focus, QDoubleSpinBox:focus { border: 1px solid #5de2d7; background-color: #0a2932; }"
+"QComboBox QAbstractItemView { background-color: #09262e; border: 1px solid #247080; color: #d7f3f1; selection-background-color: #19b8aa; selection-color: #031416; }"
+"QGroupBox { border: 1px solid #174a56; border-radius: 9px; margin-top: 12px; padding-top: 15px; background-color: #09262e; color: #66e2d7; font-weight: 600; }"
+"QGroupBox::title { subcontrol-origin: margin; left: 12px; padding: 0 7px; color: #66e2d7; }"
+"QRadioButton, QCheckBox { color: #c9e7e5; spacing: 7px; }"
+"QRadioButton::indicator, QCheckBox::indicator { width: 15px; height: 15px; }"
+"QTextEdit { background-color: #04161c; color: #7de5d5; border: 1px solid #174a56; border-radius: 7px; padding: 6px; font-family: 'JetBrains Mono', 'Consolas', monospace; }"
+"QLCDNumber { background-color: #04161c; color: #5de2d7; border: 1px solid #174a56; border-radius: 6px; }"
+"QLabel { color: #c9e7e5; background: transparent; }"
+"QSlider::groove:horizontal { background: #123b45; height: 5px; border-radius: 2px; }"
+"QSlider::sub-page:horizontal { background: #20c7b8; border-radius: 2px; }"
+"QSlider::handle:horizontal { background: #8af5ec; border: 2px solid #0d3540; width: 15px; margin: -6px 0; border-radius: 8px; }"
+"QScrollBar:vertical { background: #071f27; width: 9px; margin: 0; }"
+"QScrollBar::handle:vertical { background: #226674; min-height: 24px; border-radius: 4px; }"
+"QScrollBar::handle:vertical:hover { background: #20c7b8; }"
+"QMenuBar { background-color: #04161c; border-bottom: 1px solid #174a56; }"
+"QStatusBar { background-color: #04161c; color: #7faaa9; border-top: 1px solid #174a56; }"
+"QToolTip { background-color: #0d3540; color: #efffff; border: 1px solid #5de2d7; padding: 5px; border-radius: 4px; }";
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setWindowTitle(QStringLiteral("Hydronautics • UMAS Control Station"));
+    setupBrandHeader();
 
     uvState = new UVState(this);
 
@@ -109,7 +145,7 @@ MainWindow::MainWindow(QWidget *parent)
     setTimer_updateImpact(10);
     setBottom();
 
-    darkStyle_ = styleSheet();
+    darkStyle_ = DARK_THEME;
 
     ui->btn_theme_toggle->setText(QString());
     ui->btn_theme_toggle->setIconSize(QSize(22, 22));
@@ -207,6 +243,36 @@ MainWindow::MainWindow(QWidget *parent)
             videoPlayer_->startStream("5000");
         }
     });
+}
+
+void MainWindow::setupBrandHeader()
+{
+    menuBar()->setFixedHeight(58);
+
+    auto *brand = new QWidget(menuBar());
+    brand->setObjectName(QStringLiteral("brandHeader"));
+    auto *layout = new QHBoxLayout(brand);
+    layout->setContentsMargins(14, 6, 18, 6);
+    layout->setSpacing(11);
+
+    auto *logo = new QLabel(brand);
+    logo->setObjectName(QStringLiteral("brandLogo"));
+    logo->setFixedSize(44, 44);
+    logo->setAlignment(Qt::AlignCenter);
+    logo->setPixmap(QPixmap(QStringLiteral(":/branding/hydronautics_logo.jpg"))
+                        .scaled(40, 40, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    logo->setStyleSheet(QStringLiteral(
+        "background-color: #f7fbfc; border: 1px solid #245867; border-radius: 8px; padding: 1px;"));
+
+    auto *title = new QLabel(
+        QStringLiteral("<span style='font-size:16px; font-weight:700; letter-spacing:1px; color:#74eee3;'>HYDRONAUTICS</span>"
+                       "<br><span style='font-size:10px; color:#7faaa9;'>UMAS CONTROL STATION</span>"),
+        brand);
+    title->setTextFormat(Qt::RichText);
+
+    layout->addWidget(logo);
+    layout->addWidget(title);
+    menuBar()->setCornerWidget(brand, Qt::TopLeftCorner);
 }
 
 void MainWindow::setWidget()
@@ -736,7 +802,7 @@ void MainWindow::resetTelemetryToDefault()
     isConnected = false;
     
     // Красный фон для индикации отсутствия связи
-    QString noConnectionStyle = "background-color: #ff4444; color: #ffffff; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;";
+    QString noConnectionStyle = "background-color: #6e3038; color: #ffd9dc; font-weight: 600; border-radius: 7px; border: 1px solid #a94b57; font-size: 15px; padding: 4px 10px;";
     
     ui->lbl_depth_value->setStyleSheet(noConnectionStyle);
     ui->lbl_depth_value->setText("N/A");
@@ -765,7 +831,7 @@ void MainWindow::updateTelemetryFromState()
     isConnected = true;
     
     // Зелёный фон для нормальных данных
-    QString connectedStyle = "background-color: #00ff88; color: #0f1419; font-weight: bold; border-radius: 6px; border: none; font-size: 15px; padding: 4px 10px;";
+    QString connectedStyle = "background-color: #12665f; color: #dffffb; font-weight: 600; border-radius: 7px; border: 1px solid #20c7b8; font-size: 15px; padding: 4px 10px;";
     
     ui->lbl_depth_value->setStyleSheet(connectedStyle);
     ui->lbl_bottom_value->setStyleSheet(connectedStyle);
@@ -788,14 +854,14 @@ void MainWindow::toggleTheme()
 
 void MainWindow::applyTheme(bool dark)
 {
-    setStyleSheet(dark ? darkStyle_ : LIGHT_THEME);
+    setStyleSheet(dark ? DARK_THEME : LIGHT_THEME);
 
     ui->stackedWidget_mode->setStyleSheet(dark
-        ? "background-color: #151b23; border: 1px solid #2d4052; border-radius: 6px;"
+        ? "background-color: #09262e; border: 1px solid #174a56; border-radius: 9px;"
         : "background-color: #ffffff; border: 1px solid #c3cad2; border-radius: 6px;");
 
     const QString titleStyle = dark
-        ? "color: #00bcd4; font-weight: bold; font-size: 15px;"
+        ? "color: #66e2d7; font-weight: 600; font-size: 15px;"
         : "color: #0077aa; font-weight: bold; font-size: 15px;";
     for (QLabel *l : {ui->lbl_depth_title, ui->lbl_bottom_title, ui->lbl_speed_title,
                       ui->lbl_temp_title,  ui->lbl_leak_title,   ui->lbl_voltage_title,
@@ -803,15 +869,15 @@ void MainWindow::applyTheme(bool dark)
         l->setStyleSheet(titleStyle);
 
     ui->lbl_heading->setStyleSheet(dark
-        ? "font-size: 14px; font-weight: bold; color: #00bcd4;"
+        ? "font-size: 14px; font-weight: 600; color: #74eee3;"
         : "font-size: 14px; font-weight: bold; color: #0077aa;");
 
     setupButtonStyles(dark);
 
     ui->btn_theme_toggle->setStyleSheet(dark
-        ? "QPushButton { background-color: #1e2a38; border: 2px solid #2d4052; border-radius: 8px; }"
-          "QPushButton:hover { border-color: #00bcd4; }"
-          "QPushButton:pressed { background-color: #2d4052; }"
+        ? "QPushButton { background-color: #0d3540; border: 1px solid #185464; border-radius: 8px; }"
+          "QPushButton:hover { border-color: #5de2d7; }"
+          "QPushButton:pressed { background-color: #19b8aa; }"
         : "QPushButton { background-color: #ffffff; border: 2px solid #c3cad2; border-radius: 8px; }"
           "QPushButton:hover { border-color: #0088bb; }"
           "QPushButton:pressed { background-color: #e4e8ec; }");
@@ -822,11 +888,11 @@ void MainWindow::applyTheme(bool dark)
 void MainWindow::setupButtonStyles(bool dark)
 {
     const QString speedStyle = dark
-        ? "QPushButton { background-color: #1e2a38; border: 1px solid #2d4052; border-radius: 4px;"
-          " color: #e0e6ed; min-height: 28px; font-size: 13px; }"
-          "QPushButton:hover { border: 1px solid #00ff88; color: #ffffff; }"
-          "QPushButton:checked { background-color: #00ff88; color: #0f1419;"
-          " border: 1px solid #00ff88; font-weight: bold; }"
+        ? "QPushButton { background-color: #0d3540; border: 1px solid #185464; border-radius: 7px;"
+          " color: #d7f3f1; min-height: 28px; font-size: 13px; }"
+          "QPushButton:hover { border: 1px solid #5de2d7; color: #ffffff; }"
+          "QPushButton:checked { background-color: #20c7b8; color: #031416;"
+          " border: 1px solid #74eee3; font-weight: 600; }"
         : "QPushButton { background-color: #ffffff; border: 1px solid #c3cad2; border-radius: 4px;"
           " color: #1c2733; min-height: 28px; font-size: 13px; }"
           "QPushButton:hover { border: 1px solid #00994d; color: #006633; }"
@@ -836,10 +902,10 @@ void MainWindow::setupButtonStyles(bool dark)
         b->setStyleSheet(speedStyle);
 
     const QString modeStyle = dark
-        ? "QPushButton { background-color: #1e2a38; border: 1px solid #2d4052; border-radius: 4px;"
-          " color: #e0e6ed; min-height: 24px; }"
-          "QPushButton:hover { border: 1px solid #00bcd4; color: #ffffff; }"
-          "QPushButton:checked { background-color: #00bcd4; color: #0f1419; font-weight: bold; }"
+        ? "QPushButton { background-color: #0d3540; border: 1px solid #185464; border-radius: 7px;"
+          " color: #d7f3f1; min-height: 24px; }"
+          "QPushButton:hover { border: 1px solid #5de2d7; color: #ffffff; }"
+          "QPushButton:checked { background-color: #19b8aa; color: #031416; font-weight: 600; }"
         : "QPushButton { background-color: #ffffff; border: 1px solid #c3cad2; border-radius: 4px;"
           " color: #1c2733; min-height: 24px; }"
           "QPushButton:hover { border: 1px solid #0088bb; color: #006699; }"

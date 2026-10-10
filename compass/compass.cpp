@@ -31,8 +31,8 @@ void Compass::paintEvent(QPaintEvent *)
     const qreal R = side / 2.0 - 4;
 
     // циферблат
-    p.setPen(QPen(QColor("#2d4052"), 2));
-    p.setBrush(QColor("#12314E"));
+    p.setPen(QPen(QColor("#247080"), 2));
+    p.setBrush(QColor("#082832"));
     p.drawEllipse(c, R, R);
 
     // точка на экране по относительному углу (0 = вверх, по часовой)
@@ -49,7 +49,7 @@ void Compass::paintEvent(QPaintEvent *)
         const bool major = (deg % 30 == 0);
         p.save();
         p.rotate(deg);
-        p.setPen(QPen(major ? QColor("#8fa9c0") : QColor("#41608a"), major ? 2 : 1));
+        p.setPen(QPen(major ? QColor("#8bc8c5") : QColor("#2d6873"), major ? 2 : 1));
         p.drawLine(QPointF(0, -R + 3), QPointF(0, -R + (major ? 13 : 8)));
         p.restore();
     }
@@ -70,7 +70,7 @@ void Compass::paintEvent(QPaintEvent *)
         case 270: t = QStringLiteral("З"); break;
         default:  t = QString::number(deg); break;
         }
-        p.setPen(QColor(deg % 90 == 0 ? "#00bcd4" : "#8fa9c0"));
+        p.setPen(QColor(deg % 90 == 0 ? "#5de2d7" : "#8bc8c5"));
         p.drawText(QRectF(-24, -12, 48, 24), Qt::AlignCenter, t);
         p.restore();
     }
@@ -84,9 +84,9 @@ void Compass::paintEvent(QPaintEvent *)
         const QPointF perp(dir.y(), -dir.x());
         const QPointF tip = screenPt(rel, R * 0.72);
 
-        p.setPen(QPen(QColor("#ffb347"), 2));
+        p.setPen(QPen(QColor("#f4b860"), 2));
         p.drawLine(screenPt(rel, R * 0.25), tip);
-        p.setBrush(QColor("#ffb347"));
+        p.setBrush(QColor("#f4b860"));
         p.setPen(Qt::NoPen);
         p.drawPolygon(QPolygonF() << tip
                       << tip - dir * 9 + perp * 4.5
@@ -96,12 +96,12 @@ void Compass::paintEvent(QPaintEvent *)
     // --- пеленг на дом, зелёная стрелка у обода ---
     if (m_targetValid) {
         const float rel = norm360(m_targetBearing - m_yaw);
-        p.setPen(QPen(QColor("#00ff88"), 2));
+        p.setPen(QPen(QColor("#5de2d7"), 2));
         p.drawLine(screenPt(rel, R * 0.80), screenPt(rel, R * 0.93));
         p.save();
         p.translate(screenPt(rel, R * 0.87));
         p.rotate(rel);
-        p.setBrush(QColor("#00ff88"));
+        p.setBrush(QColor("#5de2d7"));
         p.setPen(Qt::NoPen);
         p.drawPolygon(QPolygonF() << QPointF(0, -8) << QPointF(5.5, 3) << QPointF(0, 0) << QPointF(-5.5, 3));
         p.restore();
@@ -109,20 +109,20 @@ void Compass::paintEvent(QPaintEvent *)
 
     // --- неподвижный индекс (lubber line) ---
     p.setPen(Qt::NoPen);
-    p.setBrush(QColor("#e0e6ed"));
+    p.setBrush(QColor("#e2f7f5"));
     p.drawPolygon(QPolygonF() << QPointF(c.x(), c.y() - R + 15)
                   << QPointF(c.x() - 6, c.y() - R + 2)
                   << QPointF(c.x() + 6, c.y() - R + 2));
 
     // --- цифровой курс в центре ---
-    p.setBrush(QColor("#0a0e13"));
+    p.setBrush(QColor("#04161c"));
     p.setPen(Qt::NoPen);
     p.drawEllipse(c, R * 0.30, R * 0.30);
     QFont fd = font();
     fd.setPixelSize(qMax(12, side / 8));
     fd.setBold(true);
     p.setFont(fd);
-    p.setPen(QColor("#00ff88"));
+    p.setPen(QColor("#74eee3"));
     p.drawText(QRectF(c.x() - R * 0.3, c.y() - R * 0.3, R * 0.6, R * 0.6),
                Qt::AlignCenter,
                QString::number(static_cast<int>(qRound(norm360(m_yaw)))) + QChar(176));

@@ -61,6 +61,7 @@ private:
     void setTimer_updateImpact(int periodUpdateMsec);
     void setBottom();
     void setupButtonStyles(bool dark);
+    void setupBrandHeader();
     void setBottom_mode();
     void setTab();
     void setUpdateUI();
