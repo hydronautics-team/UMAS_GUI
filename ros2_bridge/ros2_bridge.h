@@ -35,6 +35,7 @@ private:
 signals:
     void poseUpdated(double x, double y, double z);
     void poseReceived(const UVState::Pose& pose);
+    void imuReceived(const UVState::ImuData& imu);
     void controlFlagsPublished(std::uint8_t flags);
 
 public slots:

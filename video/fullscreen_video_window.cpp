@@ -1,6 +1,9 @@
 #include "fullscreen_video_window.h"
+#include "attitudeindicator.h"
+#include "compass.h"
 #include <QPalette>
 #include <QDebug>
+#include <QCloseEvent>
 #include <QResizeEvent>
 
 FullscreenVideoWindow::FullscreenVideoWindow(UVState* uvState, QWidget* parent)
@@ -25,6 +28,14 @@ FullscreenVideoWindow::FullscreenVideoWindow(UVState* uvState, QWidget* parent)
 
     alarmLabel_ = new QLabel("СВЯЗЬ С РОБОТОМ ОК", fullscreenVideoLabel_);
     alarmLabel_->setStyleSheet("color: green; font-size: 18px; font-weight: bold; background: transparent;");
+
+    compass_ = new Compass(fullscreenVideoLabel_);
+    attitudeIndicator_ = new AttitudeIndicator(fullscreenVideoLabel_);
+    orientationLabel_ = new QLabel(fullscreenVideoLabel_);
+    orientationLabel_->setAlignment(Qt::AlignCenter);
+    orientationLabel_->setStyleSheet(
+        "color: white; font-size: 18px; font-weight: bold;"
+        "background-color: rgba(5, 12, 18, 170); border-radius: 6px; padding: 4px;");
 
     hudTimer_ = new QTimer(this);
     connect(hudTimer_, &QTimer::timeout, this, &FullscreenVideoWindow::updateHudData);
@@ -69,10 +80,17 @@ void FullscreenVideoWindow::updateHudData()
     if (!uvState_) return;
 
     float depth = static_cast<float>(uvState_->pose().z);
-    float yaw = uvState_->imu().yaw;
+    const UVState::ImuData imu = uvState_->imu();
+    float yaw = imu.yaw;
 
     depthLabel_->setText(QString("ГЛУБИНА: %1 м").arg(QString::number(depth, 'f', 1)));
-    yawLabel_->setText(QString("КУРС: %1°").arg(QString::number(static_cast<int>(yaw))));
+    yawLabel_->setText(QString("КУРС: %1°").arg(static_cast<int>(qRound(yaw + 360.0f)) % 360, 3, 10, QLatin1Char('0')));
+    orientationLabel_->setText(QStringLiteral("Курс %1°   Дифферент %2°   Крен %3°")
+                                   .arg(static_cast<int>(qRound(yaw + 360.0f)) % 360, 3, 10, QLatin1Char('0'))
+                                   .arg(imu.pitch, 0, 'f', 1)
+                                   .arg(imu.roll, 0, 'f', 1));
+    compass_->setYaw(yaw);
+    attitudeIndicator_->setAttitude(imu.pitch, imu.roll);
 
     if (depth > 10.0f) {
         alarmLabel_->setText("ВНИМАНИЕ: ПРЕВЫШЕНИЕ ГЛУБИНЫ!");
@@ -86,8 +104,7 @@ void FullscreenVideoWindow::updateHudData()
 void FullscreenVideoWindow::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Escape) {
-        emit windowClosed();
-        this->close();
+        close();
     } else {
         QWidget::keyPressEvent(event);
     }
@@ -115,8 +132,28 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent* event)
     if (yawLabel_)   yawLabel_->setGeometry(30, 80, 400, 40);
     if (alarmLabel_) alarmLabel_->setGeometry(30, h - 60, 600, 40);
 
+    const int instrumentSize = qBound(140, qMin(w, h) / 5, 240);
+    const int margin = 30;
+    if (compass_)
+        compass_->setGeometry(w - instrumentSize - margin, margin, instrumentSize, instrumentSize);
+    if (attitudeIndicator_)
+        attitudeIndicator_->setGeometry(w - instrumentSize - margin,
+                                        margin + instrumentSize + 15,
+                                        instrumentSize, instrumentSize);
+    if (orientationLabel_)
+        orientationLabel_->setGeometry((w - 560) / 2, margin, 560, 42);
+
     // Выводим надписи на передний план
     if (depthLabel_) depthLabel_->raise();
     if (yawLabel_)   yawLabel_->raise();
     if (alarmLabel_) alarmLabel_->raise();
+    if (compass_) compass_->raise();
+    if (attitudeIndicator_) attitudeIndicator_->raise();
+    if (orientationLabel_) orientationLabel_->raise();
+}
+
+void FullscreenVideoWindow::closeEvent(QCloseEvent* event)
+{
+    emit windowClosed();
+    QWidget::closeEvent(event);
 }

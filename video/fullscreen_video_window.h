@@ -8,6 +8,9 @@
 #include <QPixmap>
 #include "uv_state.h"
 
+class Compass;
+class AttitudeIndicator;
+
 class FullscreenVideoWindow : public QWidget
 {
     Q_OBJECT
@@ -27,6 +30,7 @@ signals:
 protected:
     void keyPressEvent(QKeyEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
 
 private slots:
     void updateHudData();
@@ -39,6 +43,9 @@ private:
     QLabel*  depthLabel_;
     QLabel*  yawLabel_;
     QLabel*  alarmLabel_;
+    Compass* compass_;
+    AttitudeIndicator* attitudeIndicator_;
+    QLabel* orientationLabel_;
     QTimer*  hudTimer_;
 };
 
