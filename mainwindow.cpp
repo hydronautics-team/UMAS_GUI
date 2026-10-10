@@ -101,10 +101,22 @@ static const QString DARK_THEME =
 "QGroupBox { border: 1px solid #174a56; border-radius: 9px; margin-top: 12px; padding-top: 15px; background-color: #09262e; color: #66e2d7; font-weight: 600; }"
 "QGroupBox::title { subcontrol-origin: margin; left: 12px; padding: 0 7px; color: #66e2d7; }"
 "QRadioButton, QCheckBox { color: #c9e7e5; spacing: 7px; }"
-"QRadioButton::indicator, QCheckBox::indicator { width: 15px; height: 15px; }"
+"QRadioButton::indicator, QCheckBox::indicator { width: 15px; height: 15px; border: 1px solid #247080; background-color: #071f27; }"
+"QRadioButton::indicator { border-radius: 8px; }"
+"QCheckBox::indicator { border-radius: 4px; }"
+"QRadioButton::indicator:checked, QCheckBox::indicator:checked { background-color: #20c7b8; border: 2px solid #8af5ec; }"
 "QTextEdit { background-color: #04161c; color: #7de5d5; border: 1px solid #174a56; border-radius: 7px; padding: 6px; font-family: 'JetBrains Mono', 'Consolas', monospace; }"
 "QLCDNumber { background-color: #04161c; color: #5de2d7; border: 1px solid #174a56; border-radius: 6px; }"
 "QLabel { color: #c9e7e5; background: transparent; }"
+"QFrame#frame_telemetry { background-color: #09262e; border: 1px solid #174a56; border-radius: 10px; padding: 5px; }"
+"QLabel[hudValue='true'], QPushButton[hudValue='true'] { background-color: #0b3039; color: #74eee3; border: 1px solid #1d5965; border-radius: 7px; padding: 4px 9px; font-weight: 600; }"
+"QLabel[controlValue='true'] { background-color: #041a20; color: #74eee3; border: 1px solid #174a56; border-radius: 5px; padding: 3px 7px; min-width: 24px; font-family: 'JetBrains Mono', 'Consolas', monospace; font-weight: 600; }"
+"QStackedWidget { background-color: #09262e; border: 1px solid #174a56; border-radius: 9px; }"
+"QTableView, QTableWidget, QListView, QTreeView { background-color: #071f27; alternate-background-color: #0a2932; color: #d7f3f1; border: 1px solid #174a56; border-radius: 6px; gridline-color: #174a56; selection-background-color: #12665f; selection-color: #efffff; }"
+"QHeaderView::section { background-color: #0d3540; color: #74eee3; border: none; border-right: 1px solid #174a56; border-bottom: 1px solid #174a56; padding: 6px; font-weight: 600; }"
+"QProgressBar { background-color: #071f27; color: #d7f3f1; border: 1px solid #174a56; border-radius: 6px; text-align: center; }"
+"QProgressBar::chunk { background-color: #20c7b8; border-radius: 5px; }"
+"QFrame[frameShape='4'], QFrame[frameShape='5'] { color: #174a56; max-height: 1px; }"
 "QSlider::groove:horizontal { background: #123b45; height: 5px; border-radius: 2px; }"
 "QSlider::sub-page:horizontal { background: #20c7b8; border-radius: 2px; }"
 "QSlider::handle:horizontal { background: #8af5ec; border: 2px solid #0d3540; width: 15px; margin: -6px 0; border-radius: 8px; }"
@@ -121,6 +133,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     setWindowTitle(QStringLiteral("Hydronautics • UMAS Control Station"));
+    harmonizeLegacyStyles();
     setupBrandHeader();
 
     uvState = new UVState(this);
@@ -273,6 +286,51 @@ void MainWindow::setupBrandHeader()
     layout->addWidget(logo);
     layout->addWidget(title);
     menuBar()->setCornerWidget(brand, Qt::TopLeftCorner);
+}
+
+void MainWindow::harmonizeLegacyStyles()
+{
+    // Приводим оставшиеся стили из .ui к общей палитре, пока старые формы
+    // постепенно переводятся на централизованную тему.
+    const QList<QPair<QString, QString>> palette = {
+        {"#0d1b2a", "#061a21"}, {"#151b23", "#09262e"},
+        {"#1e2a38", "#0d3540"}, {"#2d4052", "#185464"},
+        {"#00bcd4", "#20c7b8"}, {"#00ff88", "#74eee3"},
+        {"#0f1419", "#031416"}, {"#8a99a8", "#7faaa9"},
+        {"#e0e6ed", "#d7f3f1"}, {"#0a0e13", "#04161c"},
+        {"#4ade80", "#7de5d5"}, {"#4a5568", "#55747a"},
+        {"#ff4444", "#a94b57"}
+    };
+
+    const auto widgets = findChildren<QWidget*>();
+    for (QWidget *widget : widgets) {
+        QString style = widget->styleSheet();
+        if (!style.isEmpty()) {
+            for (const auto &colors : palette)
+                style.replace(colors.first, colors.second, Qt::CaseInsensitive);
+            widget->setStyleSheet(style);
+        }
+    }
+
+    for (QWidget *widget : {static_cast<QWidget*>(ui->lbl_depth_value),
+                            static_cast<QWidget*>(ui->lbl_bottom_value),
+                            static_cast<QWidget*>(ui->lbl_speed_value),
+                            static_cast<QWidget*>(ui->lbl_temp_value),
+                            static_cast<QWidget*>(ui->lbl_leak_value),
+                            static_cast<QWidget*>(ui->lbl_voltage_value),
+                            static_cast<QWidget*>(ui->lbl_voltage2_value),
+                            static_cast<QWidget*>(ui->btn_killswitch_status),
+                            static_cast<QWidget*>(ui->lbl_ping_value)})
+        widget->setProperty("hudValue", true);
+
+    for (QLabel *label : {ui->label_controlMarch, ui->label_controlYaw,
+                          ui->label_controlLag, ui->label_controlDif,
+                          ui->label_controlDepth, ui->label_controlKren})
+        label->setProperty("controlValue", true);
+
+    ui->horizontalLayout_2->setContentsMargins(12, 10, 12, 10);
+    ui->horizontalLayout_2->setSpacing(12);
+    ui->horizontalLayout_telemetry->setSpacing(8);
 }
 
 void MainWindow::setWidget()

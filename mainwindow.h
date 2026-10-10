@@ -62,6 +62,7 @@ private:
     void setBottom();
     void setupButtonStyles(bool dark);
     void setupBrandHeader();
+    void harmonizeLegacyStyles();
     void setBottom_mode();
     void setTab();
     void setUpdateUI();

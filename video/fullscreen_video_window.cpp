@@ -18,13 +18,13 @@ FullscreenVideoWindow::FullscreenVideoWindow(UVState* uvState, QWidget* parent)
 
     // СЛОЙ 2: Привязываем красные надписи НАПРЯМУЮ к видео-холсту как дочерние элементы
     depthLabel_ = new QLabel("ГЛУБИНА: 0.0 м", fullscreenVideoLabel_);
-    depthLabel_->setStyleSheet("color: red; font-size: 24px; font-weight: bold; background: transparent;");
+    depthLabel_->setStyleSheet("color: #dffffb; font-size: 22px; font-weight: 600; background-color: rgba(3, 20, 25, 205); border: 1px solid rgba(93, 226, 215, 120); border-radius: 8px; padding: 5px 12px;");
 
     yawLabel_ = new QLabel("КУРС: 0°", fullscreenVideoLabel_);
-    yawLabel_->setStyleSheet("color: red; font-size: 24px; font-weight: bold; background: transparent;");
+    yawLabel_->setStyleSheet("color: #74eee3; font-size: 22px; font-weight: 600; background-color: rgba(3, 20, 25, 205); border: 1px solid rgba(93, 226, 215, 120); border-radius: 8px; padding: 5px 12px;");
 
     alarmLabel_ = new QLabel("СВЯЗЬ С РОБОТОМ ОК", fullscreenVideoLabel_);
-    alarmLabel_->setStyleSheet("color: green; font-size: 18px; font-weight: bold; background: transparent;");
+    alarmLabel_->setStyleSheet("color: #dffffb; font-size: 17px; font-weight: 600; background-color: rgba(18, 102, 95, 210); border: 1px solid #20c7b8; border-radius: 8px; padding: 5px 12px;");
 
     hudTimer_ = new QTimer(this);
     connect(hudTimer_, &QTimer::timeout, this, &FullscreenVideoWindow::updateHudData);
@@ -76,10 +76,10 @@ void FullscreenVideoWindow::updateHudData()
 
     if (depth > 10.0f) {
         alarmLabel_->setText("ВНИМАНИЕ: ПРЕВЫШЕНИЕ ГЛУБИНЫ!");
-        alarmLabel_->setStyleSheet("color: red; font-size: 18px; font-weight: bold; background: transparent;");
+        alarmLabel_->setStyleSheet("color: #ffd9dc; font-size: 17px; font-weight: 600; background-color: rgba(110, 48, 56, 220); border: 1px solid #d86b77; border-radius: 8px; padding: 5px 12px;");
     } else {
         alarmLabel_->setText("СИСТЕМА СТАБИЛЬНА");
-        alarmLabel_->setStyleSheet("color: #00ff00; font-size: 18px; font-weight: bold; background: transparent;");
+        alarmLabel_->setStyleSheet("color: #dffffb; font-size: 17px; font-weight: 600; background-color: rgba(18, 102, 95, 210); border: 1px solid #20c7b8; border-radius: 8px; padding: 5px 12px;");
     }
 }
 
