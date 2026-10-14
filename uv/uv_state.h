@@ -341,4 +341,7 @@ private:
     std::uint8_t control_flags_ = 0;
 };
 
+Q_DECLARE_METATYPE(UVState::ImuData)
+Q_DECLARE_METATYPE(UVState::Pose)
+
 #endif // UVSTATE_H

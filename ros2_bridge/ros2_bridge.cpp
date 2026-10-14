@@ -1,5 +1,7 @@
 #include "ros2_bridge.h"
 #include <QDebug>
+#include <algorithm>
+#include <cmath>
 
 RosBridge::RosBridge(QObject* parent)
     : QThread(parent)
@@ -38,6 +40,30 @@ void RosBridge::run()
             pose.y = msg->position.y;
             pose.z = msg->position.z;
             emit poseReceived(pose);
+
+            // geometry_msgs/Pose stores orientation as an ENU quaternion.
+            // Convert it to aerospace roll/pitch/yaw angles for the HUD.
+            const double x = msg->orientation.x;
+            const double y = msg->orientation.y;
+            const double z = msg->orientation.z;
+            const double w = msg->orientation.w;
+
+            UVState::ImuData imu;
+            const double sinRollCosPitch = 2.0 * (w * x + y * z);
+            const double cosRollCosPitch = 1.0 - 2.0 * (x * x + y * y);
+            const double sinPitch = std::clamp(2.0 * (w * y - z * x), -1.0, 1.0);
+            const double sinYawCosPitch = 2.0 * (w * z + x * y);
+            const double cosYawCosPitch = 1.0 - 2.0 * (y * y + z * z);
+            constexpr double radToDeg = 180.0 / 3.14159265358979323846;
+
+            imu.roll = static_cast<float>(std::atan2(sinRollCosPitch, cosRollCosPitch) * radToDeg);
+            imu.pitch = static_cast<float>(std::asin(sinPitch) * radToDeg);
+            imu.yaw = static_cast<float>(std::atan2(sinYawCosPitch, cosYawCosPitch) * radToDeg);
+            imu.quat[0] = static_cast<float>(x);
+            imu.quat[1] = static_cast<float>(y);
+            imu.quat[2] = static_cast<float>(z);
+            imu.quat[3] = static_cast<float>(w);
+            emit imuReceived(imu);
         });
 
     control_flags_pub_ =

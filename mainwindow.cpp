@@ -136,6 +136,9 @@ MainWindow::MainWindow(QWidget *parent)
     harmonizeLegacyStyles();
     setupBrandHeader();
 
+    qRegisterMetaType<UVState::ImuData>("UVState::ImuData");
+    qRegisterMetaType<UVState::Pose>("UVState::Pose");
+
     uvState = new UVState(this);
 
     rosBridge = new RosBridge(this);
@@ -148,6 +151,19 @@ MainWindow::MainWindow(QWidget *parent)
     connect(rosBridge, &RosBridge::poseReceived,
             uvState, static_cast<void (UVState::*)(const UVState::Pose&)>(&UVState::setPose),
             Qt::QueuedConnection);
+
+    connect(rosBridge, &RosBridge::imuReceived,
+            uvState, &UVState::setImu,
+            Qt::QueuedConnection);
+
+    connect(uvState, &UVState::imuUpdated, this, [this](const UVState::ImuData& imu) {
+        ui->compass->setYaw(imu.yaw);
+        ui->attitudeIndicator->setAttitude(imu.pitch, imu.roll);
+        ui->lbl_heading->setText(QStringLiteral("КУРС: %1°")
+                                     .arg(static_cast<int>(qRound(imu.yaw + 360.0f)) % 360, 3, 10, QLatin1Char('0')));
+        ui->lbl_pitch->setText(QStringLiteral("ДИФФЕРЕНТ: %1°").arg(imu.pitch, 0, 'f', 1));
+        ui->lbl_roll->setText(QStringLiteral("КРЕН: %1°").arg(imu.roll, 0, 'f', 1));
+    });
 
     connect(rosBridge, &RosBridge::controlFlagsPublished,
             uvState, &UVState::setControlFlags,
@@ -224,6 +240,8 @@ MainWindow::MainWindow(QWidget *parent)
                 //сигнал закрытия окна
                 connect(fullscreenWindow_, &FullscreenVideoWindow::windowClosed, this, [this]() {
 
+                    FullscreenVideoWindow* closedWindow = fullscreenWindow_;
+
                     ui->full_screen->blockSignals(true);
                     ui->full_screen->setChecked(false);
                     ui->full_screen->blockSignals(false);
@@ -237,6 +255,8 @@ MainWindow::MainWindow(QWidget *parent)
                     }
 
                     fullscreenWindow_ = nullptr;
+                    if (closedWindow)
+                        closedWindow->deleteLater();
                 });
 
                 fullscreenWindow_->showFullScreen();
@@ -244,8 +264,6 @@ MainWindow::MainWindow(QWidget *parent)
         } else {
             if (fullscreenWindow_) {
                 fullscreenWindow_->close();
-                fullscreenWindow_->deleteLater();
-                fullscreenWindow_ = nullptr;
             }
         }
     });
