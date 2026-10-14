@@ -10,6 +10,7 @@
 #include <QPushButton>
 #include <QFontMetrics>
 #include <QTabBar>
+#include <QApplication>
 #include <cmath>
 
 static QIcon makeSunIcon()
@@ -189,13 +190,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->btn_theme_toggle->setText(QString());
     ui->btn_theme_toggle->setIconSize(QSize(22, 22));
-    applyTheme(true);
-    ui->btn_theme_toggle->setIcon(makeMoonIcon());
 
     connect(ui->btn_theme_toggle, &QPushButton::clicked,
             this, &MainWindow::toggleTheme);
-
-    setupButtonStyles(true);
 
     setTab();
     setupActuators();
@@ -219,6 +216,7 @@ MainWindow::MainWindow(QWidget *parent)
         ui->spinBox_gain_pitch,
         ui->spinBox_gain_roll
     };
+    qApp->installEventFilter(this);
 
     loadSettings();
     setSpinBoxValuesForCurrentMode();
@@ -235,6 +233,11 @@ MainWindow::MainWindow(QWidget *parent)
     inputGroup->addButton(ui->radioButton_useKeyBoard);
     inputGroup->addButton(ui->gamepad_btn);
     inputGroup->setExclusive(true);
+
+    // Применяем тему после создания всех групп и настройки виджетов. Иначе
+    // радиокнопки выбора источника управления впервые получают актуальный
+    // стиль только после ручного переключения темы.
+    applyTheme(isDark_);
    
 
     connect(ui->full_screen, &QPushButton::toggled, this, [this](bool checked) {
@@ -979,6 +982,28 @@ void MainWindow::toggleTheme()
     applyTheme(isDark_);
 }
 
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    if (event->type() == QEvent::MouseButtonPress) {
+        QWidget *focusedWidget = QApplication::focusWidget();
+        QWidget *clickedWidget = qobject_cast<QWidget *>(watched);
+
+        for (QSpinBox *spinBox : gainSpinBoxes) {
+            const bool ownsFocus = focusedWidget
+                && (focusedWidget == spinBox || spinBox->isAncestorOf(focusedWidget));
+            const bool clickedInside = clickedWidget
+                && (clickedWidget == spinBox || spinBox->isAncestorOf(clickedWidget));
+
+            if (ownsFocus && !clickedInside) {
+                spinBox->clearFocus();
+                break;
+            }
+        }
+    }
+
+    return QMainWindow::eventFilter(watched, event);
+}
+
 void MainWindow::applyTheme(bool dark)
 {
     setStyleSheet(dark ? DARK_THEME : LIGHT_THEME);
@@ -1000,6 +1025,24 @@ void MainWindow::applyTheme(bool dark)
         : "font-size: 14px; font-weight: 600; color: #087f77;");
 
     setupButtonStyles(dark);
+
+    // Локальный стиль исключает зависимость переключателей источника
+    // управления от момента полировки глобальной таблицы стилей Qt.
+    const QString inputSelectorStyle = dark
+        ? "QRadioButton { color: #c9e7e5; spacing: 8px; font-weight: 500; }"
+          "QRadioButton::indicator { width: 16px; height: 16px; border-radius: 9px; border: 1px solid #397886; background-color: #071f27; }"
+          "QRadioButton::indicator:hover { border-color: #69ddd3; background-color: #0b3039; }"
+          "QRadioButton::indicator:checked { background-color: #69ddd3; border: 4px solid #0b3039; }"
+        : "QRadioButton { color: #23474c; spacing: 8px; font-weight: 500; }"
+          "QRadioButton::indicator { width: 16px; height: 16px; border-radius: 9px; border: 1px solid #789fa0; background-color: #f2f8f7; }"
+          "QRadioButton::indicator:hover { border-color: #087e79; background-color: #e0f2f0; }"
+          "QRadioButton::indicator:checked { background-color: #087e79; border: 4px solid #dcecea; }";
+    for (QRadioButton *selector : {ui->radioButton_useJoyStick,
+                                   ui->gamepad_btn,
+                                   ui->radioButton_useKeyBoard}) {
+        selector->setStyleSheet(inputSelectorStyle);
+        selector->update();
+    }
 
     ui->btn_theme_toggle->setStyleSheet(dark
         ? "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #124653, stop:1 #0a303a); border: 1px solid #236574; border-radius: 9px; }"

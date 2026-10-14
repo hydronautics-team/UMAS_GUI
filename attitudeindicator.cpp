@@ -40,10 +40,10 @@ void AttitudeIndicator::paintEvent(QPaintEvent *)
     const QPointF c(side / 2.0, side / 2.0);
     const qreal R = side / 2.0 - qMax(5, side / 35);
     const qreal pxPerDeg = R / 27.5; // видно примерно ±25 град
-    const QColor cyan(m_lightTheme ? "#087f77" : "#74eee3");
-    const QColor teal(m_lightTheme ? "#15a99f" : "#20c7b8");
-    const QColor muted(m_lightTheme ? "#557b7d" : "#6ba6aa");
-    const QColor amber(m_lightTheme ? "#c87916" : "#f4b860");
+    const QColor cyan(m_lightTheme ? "#087e79" : "#69ddd3");
+    const QColor teal(m_lightTheme ? "#169c95" : "#24b8ae");
+    const QColor muted(m_lightTheme ? "#587c82" : "#78a7ad");
+    const QColor amber(m_lightTheme ? "#b87524" : "#efb766");
 
     // Мягкое свечение и глубокий технологичный безель.
     for (int i = 5; i >= 1; --i) {
@@ -54,10 +54,10 @@ void AttitudeIndicator::paintEvent(QPaintEvent *)
         p.drawEllipse(c, R - 2, R - 2);
     }
     QRadialGradient bezel(c - QPointF(R * 0.15, R * 0.2), R * 1.25);
-    bezel.setColorAt(0.0, QColor(m_lightTheme ? "#f0f7f5" : "#124653"));
-    bezel.setColorAt(0.55, QColor(m_lightTheme ? "#dbecea" : "#082d37"));
-    bezel.setColorAt(1.0, QColor(m_lightTheme ? "#bfd8d5" : "#031419"));
-    p.setPen(QPen(QColor(m_lightTheme ? "#78aaa7" : "#287584"), qMax<qreal>(1.5, side / 90.0)));
+    bezel.setColorAt(0.0, QColor(m_lightTheme ? "#eef6f5" : "#123d49"));
+    bezel.setColorAt(0.55, QColor(m_lightTheme ? "#d6e6e5" : "#092a34"));
+    bezel.setColorAt(1.0, QColor(m_lightTheme ? "#b9d0d0" : "#04171d"));
+    p.setPen(QPen(QColor(m_lightTheme ? "#789fa0" : "#2c6875"), qMax<qreal>(1.5, side / 90.0)));
     p.setBrush(bezel);
     p.drawEllipse(c, R, R);
 
@@ -74,23 +74,23 @@ void AttitudeIndicator::paintEvent(QPaintEvent *)
 
     p.setPen(Qt::NoPen);
     QLinearGradient sky(0, -R * 2.4, 0, 0);
-    sky.setColorAt(0.0, QColor(m_lightTheme ? "#69afc1" : "#062b42"));
-    sky.setColorAt(0.58, QColor(m_lightTheme ? "#8bcbd3" : "#0f6075"));
-    sky.setColorAt(1.0, QColor(m_lightTheme ? "#b2dfe0" : "#238a96"));
+    sky.setColorAt(0.0, QColor(m_lightTheme ? "#79b8ce" : "#0d4262"));
+    sky.setColorAt(0.58, QColor(m_lightTheme ? "#9bd3dc" : "#176f86"));
+    sky.setColorAt(1.0, QColor(m_lightTheme ? "#c4e8e5" : "#2f9ca2"));
     p.setBrush(sky);
     p.drawRect(QRectF(-2 * R, -4 * R, 4 * R, 4 * R));
     QLinearGradient seabed(0, 0, 0, R * 2.8);
-    seabed.setColorAt(0.0, QColor(m_lightTheme ? "#b99c70" : "#66543a"));
-    seabed.setColorAt(0.5, QColor(m_lightTheme ? "#9c825f" : "#3c352c"));
-    seabed.setColorAt(1.0, QColor(m_lightTheme ? "#6f604d" : "#171b1b"));
+    seabed.setColorAt(0.0, QColor(m_lightTheme ? "#4c7180" : "#173846"));
+    seabed.setColorAt(0.5, QColor(m_lightTheme ? "#365866" : "#102a36"));
+    seabed.setColorAt(1.0, QColor(m_lightTheme ? "#243f4b" : "#071a23"));
     p.setBrush(seabed);
     p.drawRect(QRectF(-2 * R, 0, 4 * R, 4 * R));
 
     // Светящийся горизонт и тонкая перспективная сетка.
-    p.setPen(QPen(m_lightTheme ? QColor(8, 90, 86, 55) : QColor(116, 238, 227, 45),
-                  7, Qt::SolidLine, Qt::RoundCap));
+    p.setPen(QPen(m_lightTheme ? QColor(8, 90, 86, 70) : QColor(116, 238, 227, 60),
+                  8, Qt::SolidLine, Qt::RoundCap));
     p.drawLine(QPointF(-2 * R, 0), QPointF(2 * R, 0));
-    p.setPen(QPen(QColor(m_lightTheme ? "#effaf8" : "#dffefa"), 1.8));
+    p.setPen(QPen(QColor(m_lightTheme ? "#f6fffd" : "#eafffc"), 2.2));
     p.drawLine(QPointF(-2 * R, 0), QPointF(2 * R, 0));
     p.setPen(QPen(m_lightTheme ? QColor(15, 85, 82, 30) : QColor(215, 243, 241, 24),
                   1, Qt::DashLine));
@@ -108,7 +108,7 @@ void AttitudeIndicator::paintEvent(QPaintEvent *)
         const qreal y = -d * pxPerDeg;
         const bool limit = qAbs(d) >= 15;
         const qreal w = (d % 10 == 0) ? R * 0.34 : R * 0.18;
-        const QColor mark = limit ? amber : QColor(m_lightTheme ? "#f7fcfb" : "#e2f7f5");
+        const QColor mark = limit ? amber : QColor(m_lightTheme ? "#f5fbfa" : "#dcefed");
         p.setPen(QPen(mark, limit ? 2.2 : 1.2, Qt::SolidLine, Qt::RoundCap));
         p.drawLine(QPointF(-w, y), QPointF(-R * 0.07, y));
         p.drawLine(QPointF(R * 0.07, y), QPointF(w, y));
@@ -124,7 +124,7 @@ void AttitudeIndicator::paintEvent(QPaintEvent *)
     // Сегментированный безель и неподвижная шкала крена.
     p.setBrush(Qt::NoBrush);
     for (int deg = 0; deg < 360; deg += 15) {
-        QColor segment = (deg % 90 == 0) ? cyan : QColor(m_lightTheme ? "#78aaa7" : "#226674");
+        QColor segment = (deg % 90 == 0) ? cyan : QColor(m_lightTheme ? "#789fa0" : "#2c6875");
         segment.setAlpha(deg % 90 == 0 ? 220 : 120);
         p.setPen(QPen(segment, deg % 90 == 0 ? 3.0 : 1.5, Qt::SolidLine, Qt::RoundCap));
         p.drawArc(QRectF(c.x() - R + 3, c.y() - R + 3, 2 * (R - 3), 2 * (R - 3)),
