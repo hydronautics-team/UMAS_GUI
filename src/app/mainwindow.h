@@ -14,15 +14,15 @@
 
 #include "joy_stick.h"
 #include "key_board.h"
-#include "input/i_input_source.h"
-#include "input/gamepad_input_source.h"
-#include "control/control_service.h"
+#include "i_input_source.h"
+#include "gamepad_input_source.h"
+#include "control_service.h"
 #include "diagnostic_board.h"
 #include "ros2_bridge.h"
 #include "uv_state.h"
-#include "video/video_player_widget.h"
-#include "video/fullscreen_video_window.h"
-#include "Gamepad/gamepad.h"
+#include "video_player_widget.h"
+#include "fullscreen_video_window.h"
+#include "gamepad.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }

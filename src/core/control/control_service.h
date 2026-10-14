@@ -1,6 +1,6 @@
 #pragma once
 
-#include "input/i_input_source.h"
+#include "i_input_source.h"
 
 namespace umas::control {
 

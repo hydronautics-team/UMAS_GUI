@@ -2,7 +2,7 @@
 #define JOYSTICK_H
 
 #include "SFML/Window.hpp"
-#include "input/i_input_source.h"
+#include "i_input_source.h"
 
 class JoyStick : public umas::input::IInputSource
 {

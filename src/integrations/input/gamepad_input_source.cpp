@@ -1,8 +1,8 @@
-#include "input/gamepad_input_source.h"
+#include "gamepad_input_source.h"
 
 #include <chrono>
 #include <cmath>  
-#include "Gamepad/gamepad.h"
+#include "gamepad.h"
 
 namespace {
     constexpr float STICK_DEADZONE = 15.0f;

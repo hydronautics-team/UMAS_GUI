@@ -4,7 +4,7 @@
 #include <QKeyEvent>
 #include <optional>
 
-#include "input/i_input_source.h"
+#include "i_input_source.h"
 
 class KeyBoard : public umas::input::IInputSource
 {

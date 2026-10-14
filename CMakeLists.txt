@@ -54,17 +54,20 @@ link_directories(${GST_LIBRARY_DIRS})
 
 # include_directories(/opt/ros/humble/include)
 
-include_directories("${PROJECT_SOURCE_DIR}/compass")
-include_directories("${PROJECT_SOURCE_DIR}/remote_control")
-include_directories("${PROJECT_SOURCE_DIR}/uv")
-include_directories("${PROJECT_SOURCE_DIR}/input")
-include_directories("${PROJECT_SOURCE_DIR}/control")
-# include_directories("${PROJECT_SOURCE_DIR}/map")
-include_directories("${PROJECT_SOURCE_DIR}/tabs")
-include_directories("${PROJECT_SOURCE_DIR}/mods")
+include_directories("${PROJECT_SOURCE_DIR}/src/app")
+include_directories("${PROJECT_SOURCE_DIR}/src/core/telemetry")
+include_directories("${PROJECT_SOURCE_DIR}/src/core/control")
+include_directories("${PROJECT_SOURCE_DIR}/src/integrations/ros")
+include_directories("${PROJECT_SOURCE_DIR}/src/integrations/video")
+include_directories("${PROJECT_SOURCE_DIR}/src/integrations/input")
+include_directories("${PROJECT_SOURCE_DIR}/src/integrations/input/gamepad")
+include_directories("${PROJECT_SOURCE_DIR}/src/integrations/input/legacy")
+include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/attitude")
+include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/compass")
+include_directories("${PROJECT_SOURCE_DIR}/src/ui/panels")
+include_directories("${PROJECT_SOURCE_DIR}/src/features/modes")
+include_directories("${PROJECT_SOURCE_DIR}/src/features/map")
 include_directories("${PROJECT_SOURCE_DIR}/Diagnostic_bord_UI/Diagnostic_bord")
-include_directories("${PROJECT_SOURCE_DIR}/ros2_bridge")
-include_directories("${PROJECT_SOURCE_DIR}/video")
 include_directories("${PROJECT_SOURCE_DIR}")
 
 include_directories(${Python3_INCLUDE_DIRS})
@@ -77,40 +80,40 @@ find_package(Qt5 REQUIRED COMPONENTS Widgets )
 include_directories(${Python3_INCLUDE_DIRS})
 
 set(PROJECT_SOURCES
-        Gamepad/gamepad.cpp
-        Gamepad/gamepad.h
-        input/gamepad_input_source.h
-        input/gamepad_input_source.cpp
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
-        resources.qrc
-        attitudeindicator.h
-        attitudeindicator.cpp
-        compass/compass.cpp
-        compass/compass.h
-        compass/compass.ui
-        uv/uv_state.cpp
-        uv/uv_state.h
-        input/i_input_source.h
-        control/control_service.h
-        remote_control/key_board.h remote_control/key_board.cpp
-        remote_control/joy_stick.h remote_control/joy_stick.cpp
-        # tabs/power_system.h tabs/power_system.cpp tabs/power_system.ui
-        # tabs/check_msg.h tabs/check_msg.cpp tabs/check_msg.ui
-        # tabs/check_imu.h tabs/check_imu.cpp tabs/check_imu.ui
-        # mods/mode_automatic.h mods/mode_automatic.cpp mods/mode_automatic.ui
-        # map/map_widget.h map/map_widget.cpp map/map_widget.ui map/map.html
+        src/integrations/input/gamepad/gamepad.cpp
+        src/integrations/input/gamepad/gamepad.h
+        src/integrations/input/gamepad_input_source.h
+        src/integrations/input/gamepad_input_source.cpp
+        src/app/main.cpp
+        src/app/mainwindow.cpp
+        src/app/mainwindow.h
+        src/app/mainwindow.ui
+        resources/resources.qrc
+        src/ui/instruments/attitude/attitudeindicator.h
+        src/ui/instruments/attitude/attitudeindicator.cpp
+        src/ui/instruments/compass/compass.cpp
+        src/ui/instruments/compass/compass.h
+        src/ui/instruments/compass/compass.ui
+        src/core/telemetry/uv_state.cpp
+        src/core/telemetry/uv_state.h
+        src/integrations/input/i_input_source.h
+        src/core/control/control_service.h
+        src/integrations/input/legacy/key_board.h src/integrations/input/legacy/key_board.cpp
+        src/integrations/input/legacy/joy_stick.h src/integrations/input/legacy/joy_stick.cpp
+        # src/ui/panels/power_system.h src/ui/panels/power_system.cpp src/ui/panels/power_system.ui
+        # src/ui/panels/check_msg.h src/ui/panels/check_msg.cpp src/ui/panels/check_msg.ui
+        # src/ui/panels/check_imu.h src/ui/panels/check_imu.cpp src/ui/panels/check_imu.ui
+        # src/features/modes/mode_automatic.h src/features/modes/mode_automatic.cpp src/features/modes/mode_automatic.ui
+        # src/features/map/map_widget.h src/features/map/map_widget.cpp src/features/map/map_widget.ui src/features/map/map.html
         Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.cpp
         Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.h
         Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.ui
-        ros2_bridge/ros2_bridge.h
-        ros2_bridge/ros2_bridge.cpp
-        video/video_player_widget.h
-        video/video_player_widget.cpp
-        video/fullscreen_video_window.cpp
-        video/fullscreen_video_window.h
+        src/integrations/ros/ros2_bridge.h
+        src/integrations/ros/ros2_bridge.cpp
+        src/integrations/video/video_player_widget.h
+        src/integrations/video/video_player_widget.cpp
+        src/integrations/video/fullscreen_video_window.cpp
+        src/integrations/video/fullscreen_video_window.h
         )
 
 

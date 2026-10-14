@@ -6,7 +6,7 @@
 ![mission_planning_example](gui.png)
 
 Архитектура взаимодействия с ROS 2
-- RosBridge (ros2_bridge/RosBridge) работает в отдельном QThread и инициализирует rclcpp::Node с namespace "qt_controller".
+- RosBridge (`src/integrations/ros`) работает в отдельном QThread и инициализирует rclcpp::Node с namespace "qt_controller".
 - Публикации:
   - geometry_msgs::msg::Twist → /control/data (управляющие команды)
   - std_msgs::msg::UInt8 → /control/loop_flags (флаги режимов управления)
@@ -53,11 +53,14 @@ cmake .. && make -j$(nproc)
 - CMakeLists.txt, package.xml — сборка и зависимости
 - docker/ — скрипты сборки и запуска
 - main.cpp, mainwindow.* — точка входа и главный UI
-- ros2_bridge/ — RosBridge (rclcpp ↔ Qt)
-- input/ — адаптеры источников ввода (gamepad, клавиатура)
-- remote_control/ — joystick/keyboard helpers
-- control/ — control_service (применение команд)
-- uv/ — UVState (центральная модель состояния аппарата)
-- compass/, map/, Diagnostic_bord_UI/ — дополнительные UI-модули
-- Gamepad/, mods/ — вспомогательные модули и режимы
+- `src/app/` — точка входа и главное окно
+- `src/core/` — состояние телеметрии и логика управления
+- `src/integrations/ros/` — мост между rclcpp и Qt
+- `src/integrations/video/` — видеопоток и полноэкранный HUD
+- `src/integrations/input/` — источники ввода и драйвер gamepad
+- `src/ui/instruments/` — компас и авиагоризонт
+- `src/ui/panels/` — панели интерфейса
+- `src/features/` — отдельные функции, включая карту и автоматические режимы
+- `resources/` — изображения и Qt-ресурсы
+- `Diagnostic_bord_UI/`, `algorithm_cpp/` — внешние submodule
 
