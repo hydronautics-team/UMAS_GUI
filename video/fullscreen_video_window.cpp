@@ -31,6 +31,7 @@ FullscreenVideoWindow::FullscreenVideoWindow(UVState* uvState, QWidget* parent)
 
     compass_ = new Compass(fullscreenVideoLabel_);
     attitudeIndicator_ = new AttitudeIndicator(fullscreenVideoLabel_);
+    attitudeIndicator_->setOverlayMode(true);
     orientationLabel_ = new QLabel(fullscreenVideoLabel_);
     orientationLabel_->setAlignment(Qt::AlignCenter);
     orientationLabel_->setStyleSheet(
@@ -94,7 +95,7 @@ void FullscreenVideoWindow::updateHudData()
 
     if (depth > 10.0f) {
         alarmLabel_->setText("ВНИМАНИЕ: ПРЕВЫШЕНИЕ ГЛУБИНЫ!");
-        alarmLabel_->setStyleSheet("color: #ffd9dc; font-size: 17px; font-weight: 600; background-color: rgba(110, 48, 56, 220); border: 1px solid #d86b77; border-radius: 8px; padding: 5px 12px;");
+        alarmLabel_->setStyleSheet("color: #ffe8ec; font-size: 17px; font-weight: 600; background-color: rgba(163, 38, 61, 225); border: 1px solid #f05268; border-radius: 8px; padding: 5px 12px;");
     } else {
         alarmLabel_->setText("СИСТЕМА СТАБИЛЬНА");
         alarmLabel_->setStyleSheet("color: #dffffb; font-size: 17px; font-weight: 600; background-color: rgba(18, 102, 95, 210); border: 1px solid #20c7b8; border-radius: 8px; padding: 5px 12px;");
@@ -136,10 +137,13 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent* event)
     const int margin = 30;
     if (compass_)
         compass_->setGeometry(w - instrumentSize - margin, margin, instrumentSize, instrumentSize);
-    if (attitudeIndicator_)
-        attitudeIndicator_->setGeometry(w - instrumentSize - margin,
-                                        margin + instrumentSize + 15,
-                                        instrumentSize, instrumentSize);
+    if (attitudeIndicator_) {
+        const int overlayWidth = qBound(440, static_cast<int>(w * 0.48), 820);
+        const int overlayHeight = qBound(300, static_cast<int>(h * 0.52), 580);
+        attitudeIndicator_->setGeometry((w - overlayWidth) / 2,
+                                        (h - overlayHeight) / 2,
+                                        overlayWidth, overlayHeight);
+    }
     if (orientationLabel_)
         orientationLabel_->setGeometry((w - 560) / 2, margin, 560, 42);
 

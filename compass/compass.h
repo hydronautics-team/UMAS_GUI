@@ -13,6 +13,7 @@ public slots:
     void setYaw(float yawDeg);
     void setTargetBearing(float bearingDeg, bool valid = true); // пеленг на дом/цель
     void setCog(float cogDeg, bool valid = true);               // путевой курс
+    void setLightTheme(bool light);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -23,4 +24,5 @@ private:
     float m_cog = 0.0f;
     bool  m_targetValid = false;
     bool  m_cogValid = false;
+    bool  m_lightTheme = false;
 };

@@ -605,9 +605,12 @@ QSlider:disabled::handle:horizontal {
          </spacer>
         </item>
         <item>
-         <widget class="QCheckBox" name="full_screen">
+         <widget class="QPushButton" name="full_screen">
           <property name="text">
            <string>Полный экран</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
           </property>
          </widget>
         </item>

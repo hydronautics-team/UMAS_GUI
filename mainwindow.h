@@ -63,6 +63,7 @@ private:
     void setupButtonStyles(bool dark);
     void setupBrandHeader();
     void harmonizeLegacyStyles();
+    void ensureInteractiveTextFits();
     void setBottom_mode();
     void setTab();
     void setUpdateUI();
