@@ -299,6 +299,19 @@ public:
         double x = 0.0;
         double y = 0.0;
         double z = 0.0;
+        double velocity_x = 0.0;
+        double velocity_y = 0.0;
+        double velocity_z = 0.0;
+        std::uint64_t timestamp_ms = 0;
+    };
+
+    struct BatteryData {
+        float voltage_1 = 0.f;
+        float voltage_2 = 0.f;
+        float percentage_1 = 0.f;
+        float percentage_2 = 0.f;
+        std::uint64_t timestamp_1_ms = 0;
+        std::uint64_t timestamp_2_ms = 0;
     };
 
     struct Diagnostics {
@@ -318,6 +331,7 @@ public:
 
     ImuData imu() const { return imu_; }
     Pose pose() const { return pose_; }
+    BatteryData battery() const { return battery_; }
     Diagnostics diagnostics() const { return diagnostics_; }
     std::uint8_t controlFlags() const { return control_flags_; }
 
@@ -325,23 +339,27 @@ public slots:
     void setImu(const UVState::ImuData& imu);
     void setPose(double x, double y, double z);
     void setPose(const UVState::Pose& pose);
+    void setBattery(const UVState::BatteryData& battery);
     void setDiagnostics(const UVState::Diagnostics& diagnostics);
     void setControlFlags(std::uint8_t flags);
 
 signals:
     void imuUpdated(const UVState::ImuData& imu);
     void poseUpdated(const UVState::Pose& pose);
+    void batteryUpdated(const UVState::BatteryData& battery);
     void diagnosticsUpdated(const UVState::Diagnostics& diagnostics);
     void controlFlagsUpdated(std::uint8_t flags);
 
 private:
     ImuData imu_{};
     Pose pose_{};
+    BatteryData battery_{};
     Diagnostics diagnostics_{};
     std::uint8_t control_flags_ = 0;
 };
 
 Q_DECLARE_METATYPE(UVState::ImuData)
 Q_DECLARE_METATYPE(UVState::Pose)
+Q_DECLARE_METATYPE(UVState::BatteryData)
 
 #endif // UVSTATE_H

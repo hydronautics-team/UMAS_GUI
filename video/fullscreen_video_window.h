@@ -43,6 +43,9 @@ private:
     QLabel*  depthLabel_;
     QLabel*  yawLabel_;
     QLabel*  alarmLabel_;
+    QLabel*  motionLabel_;
+    QLabel*  batteryLabel_;
+    QLabel*  coreStatusLabel_;
     Compass* compass_;
     AttitudeIndicator* attitudeIndicator_;
     QLabel* orientationLabel_;

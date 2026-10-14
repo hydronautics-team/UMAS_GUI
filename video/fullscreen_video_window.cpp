@@ -5,6 +5,8 @@
 #include <QDebug>
 #include <QCloseEvent>
 #include <QResizeEvent>
+#include <QDateTime>
+#include <cmath>
 
 FullscreenVideoWindow::FullscreenVideoWindow(UVState* uvState, QWidget* parent)
     : QWidget(parent)
@@ -28,6 +30,17 @@ FullscreenVideoWindow::FullscreenVideoWindow(UVState* uvState, QWidget* parent)
 
     alarmLabel_ = new QLabel("СВЯЗЬ С РОБОТОМ ОК", fullscreenVideoLabel_);
     alarmLabel_->setStyleSheet("color: #dffffb; font-size: 17px; font-weight: 600; background-color: rgba(18, 102, 95, 210); border: 1px solid #20c7b8; border-radius: 8px; padding: 5px 12px;");
+
+    const QString dataPanelStyle =
+        "color: #dffffb; font-size: 17px; font-weight: 600;"
+        "background-color: rgba(3, 20, 25, 205);"
+        "border: 1px solid rgba(93, 226, 215, 120);"
+        "border-radius: 8px; padding: 7px 12px;";
+    motionLabel_ = new QLabel("СКОРОСТЬ: N/A", fullscreenVideoLabel_);
+    motionLabel_->setStyleSheet(dataPanelStyle);
+    batteryLabel_ = new QLabel("АКБ: N/A", fullscreenVideoLabel_);
+    batteryLabel_->setStyleSheet(dataPanelStyle);
+    coreStatusLabel_ = new QLabel("CORE: НЕТ ДАННЫХ", fullscreenVideoLabel_);
 
     compass_ = new Compass(fullscreenVideoLabel_);
     attitudeIndicator_ = new AttitudeIndicator(fullscreenVideoLabel_);
@@ -80,22 +93,67 @@ void FullscreenVideoWindow::updateHudData()
 {
     if (!uvState_) return;
 
-    float depth = static_cast<float>(uvState_->pose().z);
+    const UVState::Pose pose = uvState_->pose();
+    const UVState::BatteryData battery = uvState_->battery();
     const UVState::ImuData imu = uvState_->imu();
-    float yaw = imu.yaw;
+    const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
+    const bool coreFresh = pose.timestamp_ms > 0
+        && nowMs - static_cast<qint64>(pose.timestamp_ms) < 1000;
+    const bool battery1Fresh = battery.timestamp_1_ms > 0
+        && nowMs - static_cast<qint64>(battery.timestamp_1_ms) < 3000;
+    const bool battery2Fresh = battery.timestamp_2_ms > 0
+        && nowMs - static_cast<qint64>(battery.timestamp_2_ms) < 3000;
 
-    depthLabel_->setText(QString("ГЛУБИНА: %1 м").arg(QString::number(depth, 'f', 1)));
-    yawLabel_->setText(QString("КУРС: %1°").arg(static_cast<int>(qRound(yaw + 360.0f)) % 360, 3, 10, QLatin1Char('0')));
-    orientationLabel_->setText(QStringLiteral("Курс %1°   Дифферент %2°   Крен %3°")
-                                   .arg(static_cast<int>(qRound(yaw + 360.0f)) % 360, 3, 10, QLatin1Char('0'))
-                                   .arg(imu.pitch, 0, 'f', 1)
-                                   .arg(imu.roll, 0, 'f', 1));
-    compass_->setYaw(yaw);
-    attitudeIndicator_->setAttitude(imu.pitch, imu.roll);
+    const float depth = static_cast<float>(-pose.z);
+    const float yaw = imu.yaw;
 
-    if (depth > 10.0f) {
+    if (coreFresh) {
+        const double horizontalSpeed = std::hypot(pose.velocity_x, pose.velocity_y);
+        depthLabel_->setText(QStringLiteral("ГЛУБИНА: %1 м").arg(depth, 0, 'f', 1));
+        yawLabel_->setText(QStringLiteral("КУРС: %1°")
+            .arg(static_cast<int>(qRound(yaw + 360.0f)) % 360, 3, 10, QLatin1Char('0')));
+        motionLabel_->setText(QStringLiteral("СКОРОСТЬ: %1 м/с\nВЕРТИКАЛЬНАЯ: %2 м/с")
+            .arg(horizontalSpeed, 0, 'f', 2)
+            .arg(pose.velocity_z, 0, 'f', 2));
+        orientationLabel_->setText(QStringLiteral("Курс %1°   Дифферент %2°   Крен %3°")
+            .arg(static_cast<int>(qRound(yaw + 360.0f)) % 360, 3, 10, QLatin1Char('0'))
+            .arg(imu.pitch, 0, 'f', 1)
+            .arg(imu.roll, 0, 'f', 1));
+        compass_->setYaw(yaw);
+        attitudeIndicator_->setAttitude(imu.pitch, imu.roll);
+    } else {
+        depthLabel_->setText("ГЛУБИНА: N/A");
+        yawLabel_->setText("КУРС: N/A");
+        motionLabel_->setText("СКОРОСТЬ: N/A\nВЕРТИКАЛЬНАЯ: N/A");
+        orientationLabel_->setText("НЕТ ДАННЫХ ОРИЕНТАЦИИ");
+    }
+
+    const QString battery1Text = battery1Fresh
+        ? QStringLiteral("АКБ 1  %1 В  %2%").arg(battery.voltage_1, 0, 'f', 1)
+              .arg(battery.percentage_1, 0, 'f', 0)
+        : QStringLiteral("АКБ 1  N/A");
+    const QString battery2Text = battery2Fresh
+        ? QStringLiteral("АКБ 2  %1 В  %2%").arg(battery.voltage_2, 0, 'f', 1)
+              .arg(battery.percentage_2, 0, 'f', 0)
+        : QStringLiteral("АКБ 2  N/A");
+    batteryLabel_->setText(battery1Text + "\n" + battery2Text);
+
+    coreStatusLabel_->setText(coreFresh ? "● STINGRAY CORE" : "● CORE НЕТ ДАННЫХ");
+    coreStatusLabel_->setStyleSheet(coreFresh
+        ? "color: #8af5ec; font-size: 15px; font-weight: 700; background-color: rgba(8, 57, 60, 210); border: 1px solid #20c7b8; border-radius: 8px; padding: 6px 11px;"
+        : "color: #ffe8ec; font-size: 15px; font-weight: 700; background-color: rgba(120, 22, 39, 220); border: 1px solid #f05268; border-radius: 8px; padding: 6px 11px;");
+
+    const bool lowBattery = (battery1Fresh && battery.voltage_1 < 13.6f)
+        || (battery2Fresh && battery.voltage_2 < 13.6f);
+    if (!coreFresh) {
+        alarmLabel_->setText("ВНИМАНИЕ: НЕТ ДАННЫХ STINGRAY CORE");
+        alarmLabel_->setStyleSheet("color: #ffe8ec; font-size: 17px; font-weight: 600; background-color: rgba(163, 38, 61, 225); border: 1px solid #f05268; border-radius: 8px; padding: 5px 12px;");
+    } else if (depth > 10.0f) {
         alarmLabel_->setText("ВНИМАНИЕ: ПРЕВЫШЕНИЕ ГЛУБИНЫ!");
         alarmLabel_->setStyleSheet("color: #ffe8ec; font-size: 17px; font-weight: 600; background-color: rgba(163, 38, 61, 225); border: 1px solid #f05268; border-radius: 8px; padding: 5px 12px;");
+    } else if (lowBattery) {
+        alarmLabel_->setText("ВНИМАНИЕ: НИЗКОЕ НАПРЯЖЕНИЕ АКБ");
+        alarmLabel_->setStyleSheet("color: #fff3df; font-size: 17px; font-weight: 600; background-color: rgba(135, 77, 18, 225); border: 1px solid #efb766; border-radius: 8px; padding: 5px 12px;");
     } else {
         alarmLabel_->setText("СИСТЕМА СТАБИЛЬНА");
         alarmLabel_->setStyleSheet("color: #dffffb; font-size: 17px; font-weight: 600; background-color: rgba(18, 102, 95, 210); border: 1px solid #20c7b8; border-radius: 8px; padding: 5px 12px;");
@@ -131,7 +189,10 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent* event)
     // Выставляем точные координаты для надписей телеметрии
     if (depthLabel_) depthLabel_->setGeometry(30, 30, 400, 40);
     if (yawLabel_)   yawLabel_->setGeometry(30, 80, 400, 40);
-    if (alarmLabel_) alarmLabel_->setGeometry(30, h - 60, 600, 40);
+    if (motionLabel_) motionLabel_->setGeometry(30, 130, 310, 76);
+    if (batteryLabel_) batteryLabel_->setGeometry(w - 310, h - 120, 280, 88);
+    if (coreStatusLabel_) coreStatusLabel_->setGeometry(30, h - 108, 260, 38);
+    if (alarmLabel_) alarmLabel_->setGeometry((w - 600) / 2, h - 62, 600, 40);
 
     const int instrumentSize = qBound(140, qMin(w, h) / 5, 240);
     const int margin = 30;
@@ -151,6 +212,9 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent* event)
     if (depthLabel_) depthLabel_->raise();
     if (yawLabel_)   yawLabel_->raise();
     if (alarmLabel_) alarmLabel_->raise();
+    if (motionLabel_) motionLabel_->raise();
+    if (batteryLabel_) batteryLabel_->raise();
+    if (coreStatusLabel_) coreStatusLabel_->raise();
     if (compass_) compass_->raise();
     if (attitudeIndicator_) attitudeIndicator_->raise();
     if (orientationLabel_) orientationLabel_->raise();

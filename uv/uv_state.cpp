@@ -25,6 +25,12 @@ void UVState::setPose(const UVState::Pose& pose)
     emit poseUpdated(pose_);
 }
 
+void UVState::setBattery(const UVState::BatteryData& battery)
+{
+    battery_ = battery;
+    emit batteryUpdated(battery_);
+}
+
 void UVState::setDiagnostics(const UVState::Diagnostics& diagnostics)
 {
     diagnostics_ = diagnostics;

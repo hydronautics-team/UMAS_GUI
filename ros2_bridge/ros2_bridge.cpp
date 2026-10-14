@@ -30,23 +30,30 @@ void RosBridge::run()
 
     twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/control/data", 10);
 
-    pose_sub_ = node_->create_subscription<geometry_msgs::msg::Pose>(
-        "pose_topic", 10,
-        [this](const geometry_msgs::msg::Pose::SharedPtr msg) {
-            emit poseUpdated(msg->position.x, msg->position.y, msg->position.z);
+    odometry_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
+        "/core/state/odometry", rclcpp::QoS(10).reliable(),
+        [this](const nav_msgs::msg::Odometry::SharedPtr msg) {
+            const auto nowMs = static_cast<std::uint64_t>(
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count());
+            emit poseUpdated(msg->pose.pose.position.x,
+                             msg->pose.pose.position.y,
+                             msg->pose.pose.position.z);
 
             UVState::Pose pose;
-            pose.x = msg->position.x;
-            pose.y = msg->position.y;
-            pose.z = msg->position.z;
+            pose.x = msg->pose.pose.position.x;
+            pose.y = msg->pose.pose.position.y;
+            pose.z = msg->pose.pose.position.z;
+            pose.velocity_x = msg->twist.twist.linear.x;
+            pose.velocity_y = msg->twist.twist.linear.y;
+            pose.velocity_z = msg->twist.twist.linear.z;
+            pose.timestamp_ms = nowMs;
             emit poseReceived(pose);
 
-            // geometry_msgs/Pose stores orientation as an ENU quaternion.
-            // Convert it to aerospace roll/pitch/yaw angles for the HUD.
-            const double x = msg->orientation.x;
-            const double y = msg->orientation.y;
-            const double z = msg->orientation.z;
-            const double w = msg->orientation.w;
+            const double x = msg->pose.pose.orientation.x;
+            const double y = msg->pose.pose.orientation.y;
+            const double z = msg->pose.pose.orientation.z;
+            const double w = msg->pose.pose.orientation.w;
 
             UVState::ImuData imu;
             const double sinRollCosPitch = 2.0 * (w * x + y * z);
@@ -63,7 +70,28 @@ void RosBridge::run()
             imu.quat[1] = static_cast<float>(y);
             imu.quat[2] = static_cast<float>(z);
             imu.quat[3] = static_cast<float>(w);
+            imu.timestamp_ms = nowMs;
             emit imuReceived(imu);
+        });
+
+    battery_sub_ = node_->create_subscription<sensor_msgs::msg::BatteryState>(
+        "/stingray_core/battery/state", rclcpp::SensorDataQoS(),
+        [this](const sensor_msgs::msg::BatteryState::SharedPtr msg) {
+            const auto nowMs = static_cast<std::uint64_t>(
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count());
+            if (msg->location == "1") {
+                battery_data_.voltage_1 = msg->voltage;
+                battery_data_.percentage_1 = msg->percentage;
+                battery_data_.timestamp_1_ms = nowMs;
+            } else if (msg->location == "2") {
+                battery_data_.voltage_2 = msg->voltage;
+                battery_data_.percentage_2 = msg->percentage;
+                battery_data_.timestamp_2_ms = nowMs;
+            } else {
+                return;
+            }
+            emit batteryReceived(battery_data_);
         });
 
     control_flags_pub_ =

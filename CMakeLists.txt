@@ -23,6 +23,7 @@ find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(ament_cmake REQUIRED)
 
 
@@ -137,7 +138,7 @@ else()
     endif()
 endif()
 
-ament_target_dependencies(UMAS_GUI rclcpp geometry_msgs std_msgs sensor_msgs)
+ament_target_dependencies(UMAS_GUI rclcpp geometry_msgs std_msgs sensor_msgs nav_msgs)
 
 target_link_libraries(UMAS_GUI
     ${GST_LIBRARIES}                           # <-- ДОБАВЛЕНО

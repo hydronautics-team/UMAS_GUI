@@ -1,7 +1,8 @@
 #pragma once
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/twist.hpp>
-#include <geometry_msgs/msg/pose.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <sensor_msgs/msg/battery_state.hpp>
 #include <std_msgs/msg/u_int8.hpp>
 #include <std_msgs/msg/int32.hpp>
 #include <std_msgs/msg/bool.hpp>
@@ -36,6 +37,7 @@ signals:
     void poseUpdated(double x, double y, double z);
     void poseReceived(const UVState::Pose& pose);
     void imuReceived(const UVState::ImuData& imu);
+    void batteryReceived(const UVState::BatteryData& battery);
     void controlFlagsPublished(std::uint8_t flags);
 
 public slots:
@@ -49,7 +51,9 @@ public slots:
 private:
     rclcpp::Node::SharedPtr node_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr twist_pub_;
-    rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr pose_sub_;
+    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_sub_;
+    rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr battery_sub_;
+    UVState::BatteryData battery_data_{};
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr control_flags_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr zero_yaw_pub_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr lights_mode_pub_;

@@ -150,6 +150,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     qRegisterMetaType<UVState::ImuData>("UVState::ImuData");
     qRegisterMetaType<UVState::Pose>("UVState::Pose");
+    qRegisterMetaType<UVState::BatteryData>("UVState::BatteryData");
 
     uvState = new UVState(this);
 
@@ -166,6 +167,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(rosBridge, &RosBridge::imuReceived,
             uvState, &UVState::setImu,
+            Qt::QueuedConnection);
+
+    connect(rosBridge, &RosBridge::batteryReceived,
+            uvState, &UVState::setBattery,
             Qt::QueuedConnection);
 
     connect(uvState, &UVState::imuUpdated, this, [this](const UVState::ImuData& imu) {
