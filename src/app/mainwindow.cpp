@@ -4,6 +4,7 @@
 #include <QAbstractButton>
 #include <QApplication>
 #include <QButtonGroup>
+#include <QComboBox>
 #include <QDateTime>
 #include <QFontMetrics>
 #include <QFrame>
@@ -20,9 +21,56 @@
 #include <QStackedWidget>
 #include <QTabBar>
 #include <QTabWidget>
+#include <QTextBlock>
+#include <QTextCharFormat>
+#include <QTextCursor>
 #include <QVBoxLayout>
 #include <QtMath>
 #include <cmath>
+
+enum EventCategory
+{
+    EventInfo = 1,
+    EventSuccess,
+    EventWarning,
+    EventError
+};
+
+static EventCategory classifyEventMessage(const QString &message)
+{
+    const QString normalized = message.toLower();
+    if (normalized.contains(QStringLiteral("ошиб")) ||
+        normalized.contains(QStringLiteral("не обнаружен")) ||
+        normalized.contains(QStringLiteral("недоступ")) ||
+        normalized.contains(QStringLiteral("авар")))
+        return EventError;
+    if (normalized.contains(QStringLiteral("предуп")) ||
+        normalized.contains(QStringLiteral("до дна")) ||
+        normalized.contains(QStringLiteral("низк")))
+        return EventWarning;
+    if (normalized.contains(QStringLiteral("установлено")) ||
+        normalized.contains(QStringLiteral("готов")) ||
+        normalized.contains(QStringLiteral("успеш")) ||
+        normalized.contains(QStringLiteral("активен")))
+        return EventSuccess;
+    return EventInfo;
+}
+
+static QColor eventCategoryColor(EventCategory category)
+{
+    switch (category)
+    {
+    case EventSuccess:
+        return QColor(QStringLiteral("#17f49a"));
+    case EventWarning:
+        return QColor(QStringLiteral("#ff8a2a"));
+    case EventError:
+        return QColor(QStringLiteral("#f05268"));
+    case EventInfo:
+    default:
+        return QColor(QStringLiteral("#83bce0"));
+    }
+}
 
 class ManipulatorPreview final : public QWidget
 {
@@ -439,6 +487,14 @@ static const QString DARK_THEME =
     "font-size: 9px; }"
     "QLabel[depthCommand='true'] { color: #e3f6ff; font-family: 'IBM Plex Mono', monospace; "
     "font-size: 13px; font-weight: 600; }"
+    "QComboBox[eventLogFilter='true'] { min-height: 20px; padding: 2px 7px; font-size: 10px; "
+    "background-color: #031b29; border: 1px solid #0b5c78; border-radius: 4px; }"
+    "QComboBox[eventLogFilter='true']::drop-down { width: 24px; border-left: 1px solid #0b5c78; }"
+    "HudPanel#eventLogPanel QTextEdit { background-color: #000c17; border: none; padding: 5px 7px; "
+    "font-family: 'IBM Plex Mono', 'Consolas', monospace; font-size: 10px; }"
+    "HudPanel#eventLogPanel QScrollBar:vertical { width: 7px; background: #000c17; }"
+    "HudPanel#eventLogPanel QScrollBar::handle:vertical { background: #073149; border-radius: 3px; "
+    "}"
     "QPushButton[dashboardNav='true'] { text-align: left; padding: 11px 13px; border: none; "
     "border-left: 3px solid transparent; background: transparent; color: #7faaa9; }"
     "QPushButton[dashboardNav='true']:hover { color: #c4e9e6; background-color: #0d3540; }"
@@ -917,7 +973,46 @@ static void setupDashboardGrid(MainWindow *window)
     HudPanel *eventsPanel =
         makeDashboardPanel(QStringLiteral("eventLogPanel"), QStringLiteral("ЖУРНАЛ СОБЫТИЙ"),
                            &eventsLayout, bottomRow);
+    if (QLayoutItem *titleItem = eventsLayout->takeAt(0))
+    {
+        auto *header = new QHBoxLayout();
+        header->setContentsMargins(0, 0, 0, 0);
+        header->setSpacing(7);
+        if (QWidget *title = titleItem->widget())
+            header->addWidget(title);
+        header->addStretch();
+
+        auto *filter = new QComboBox(eventsPanel);
+        filter->setObjectName(QStringLiteral("eventLogFilter"));
+        filter->setProperty("eventLogFilter", true);
+        filter->addItem(QStringLiteral("Все сообщения"), 0);
+        filter->addItem(QStringLiteral("Информация"), EventInfo);
+        filter->addItem(QStringLiteral("Успех"), EventSuccess);
+        filter->addItem(QStringLiteral("Предупреждения"), EventWarning);
+        filter->addItem(QStringLiteral("Ошибки"), EventError);
+        filter->setMinimumWidth(112);
+        header->addWidget(filter);
+        eventsLayout->insertLayout(0, header);
+        delete titleItem;
+
+        QObject::connect(filter, QOverload<int>::of(&QComboBox::currentIndexChanged), console,
+                         [filter, console]()
+                         {
+                             const int selectedCategory = filter->currentData().toInt();
+                             QTextBlock block = console->document()->firstBlock();
+                             while (block.isValid())
+                             {
+                                 block.setVisible(selectedCategory == 0 ||
+                                                  block.userState() == selectedCategory);
+                                 block = block.next();
+                             }
+                             console->document()->markContentsDirty(
+                                 0, console->document()->characterCount());
+                             console->viewport()->update();
+                         });
+    }
     console->setMaximumHeight(QWIDGETSIZE_MAX);
+    console->setLineWrapMode(QTextEdit::NoWrap);
     eventsLayout->addWidget(console, 1);
 
     QVBoxLayout *mapLayout = nullptr;
@@ -1316,9 +1411,51 @@ void MainWindow::setConsole()
 
 void MainWindow::displayText(QString str)
 {
-    QString currentTime = QTime::currentTime().toString("HH:mm:ss");
+    const QString currentTime = QTime::currentTime().toString(QStringLiteral("HH:mm:ss"));
+    const EventCategory category = classifyEventMessage(str);
     qInfo() << currentTime << str;
-    ui->textEdit_console->append(currentTime + " " + str);
+
+    QTextCursor cursor(ui->textEdit_console->document());
+    cursor.movePosition(QTextCursor::End);
+    if (!ui->textEdit_console->document()->isEmpty())
+        cursor.insertBlock();
+    const int firstPosition = cursor.position();
+
+    QTextCharFormat timeFormat;
+    timeFormat.setForeground(QColor(QStringLiteral("#6fb7d2")));
+    timeFormat.setFontFamily(QStringLiteral("IBM Plex Mono"));
+    timeFormat.setFontFixedPitch(true);
+    cursor.insertText(currentTime + QStringLiteral("  "), timeFormat);
+
+    QTextCharFormat messageFormat;
+    messageFormat.setForeground(eventCategoryColor(category));
+    cursor.insertText(str, messageFormat);
+
+    QTextBlock block = ui->textEdit_console->document()->findBlock(firstPosition);
+    const int lastPosition = cursor.position();
+    while (block.isValid() && block.position() <= lastPosition)
+    {
+        block.setUserState(category);
+        block = block.next();
+    }
+
+    if (auto *filter = findChild<QComboBox *>(QStringLiteral("eventLogFilter")))
+    {
+        const int selectedCategory = filter->currentData().toInt();
+        if (selectedCategory != 0 && selectedCategory != category)
+        {
+            block = ui->textEdit_console->document()->findBlock(firstPosition);
+            while (block.isValid() && block.position() <= lastPosition)
+            {
+                block.setVisible(false);
+                block = block.next();
+            }
+            ui->textEdit_console->document()->markContentsDirty(firstPosition,
+                                                                lastPosition - firstPosition + 1);
+        }
+    }
+    ui->textEdit_console->moveCursor(QTextCursor::End);
+    ui->textEdit_console->ensureCursorVisible();
 }
 
 void MainWindow::setTimer_updateImpact(int periodUpdateMsec)
