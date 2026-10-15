@@ -65,6 +65,7 @@ include_directories("${PROJECT_SOURCE_DIR}/src/integrations/input/gamepad")
 include_directories("${PROJECT_SOURCE_DIR}/src/integrations/input/legacy")
 include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/attitude")
 include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/compass")
+include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/depth")
 include_directories("${PROJECT_SOURCE_DIR}")
 
 include_directories(${Python3_INCLUDE_DIRS})
@@ -91,6 +92,8 @@ set(PROJECT_SOURCES
         src/ui/instruments/compass/compass.cpp
         src/ui/instruments/compass/compass.h
         src/ui/instruments/compass/compass.ui
+        src/ui/instruments/depth/depth_gauge.cpp
+        src/ui/instruments/depth/depth_gauge.h
         src/core/telemetry/uv_state.cpp
         src/core/telemetry/uv_state.h
         src/integrations/input/i_input_source.h
