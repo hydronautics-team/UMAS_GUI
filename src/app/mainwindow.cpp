@@ -216,6 +216,86 @@ private:
     bool hasPosition_ = false;
 };
 
+class VehicleOrientationPreview final : public QWidget
+{
+public:
+    explicit VehicleOrientationPreview(QWidget *parent = nullptr) : QWidget(parent)
+    {
+        setObjectName(QStringLiteral("vehicleOrientationPreview"));
+        setMinimumSize(170, 115);
+        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    }
+
+    void setAttitude(float yaw, float pitch, float roll)
+    {
+        yaw_ = yaw;
+        pitch_ = pitch;
+        roll_ = roll;
+        hasAttitude_ = true;
+        update();
+    }
+
+protected:
+    void paintEvent(QPaintEvent *) override
+    {
+        QPainter painter(this);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.fillRect(rect(), QColor(QStringLiteral("#00111d")));
+
+        const QPointF horizon(width() * 0.5, height() * 0.68);
+        painter.setPen(QPen(QColor(7, 81, 107, 115), 1));
+        for (int row = 0; row < 6; ++row)
+        {
+            const qreal factor = row / 5.0;
+            const qreal y = horizon.y() + factor * (height() - horizon.y());
+            const qreal halfWidth = 18 + factor * width() * 0.55;
+            painter.drawLine(QPointF(horizon.x() - halfWidth, y),
+                             QPointF(horizon.x() + halfWidth, y));
+        }
+        for (int column = -5; column <= 5; ++column)
+            painter.drawLine(horizon, QPointF(horizon.x() + column * width() * 0.12, height()));
+
+        painter.save();
+        painter.translate(width() * 0.5, height() * 0.48 + pitch_ * 0.22);
+        painter.rotate(-roll_);
+        const qreal yawScale = 0.78 + 0.22 * std::abs(std::cos(qDegreesToRadians(yaw_)));
+        painter.scale(yawScale, 1.0);
+
+        const QColor outline(0, 174, 239, hasAttitude_ ? 220 : 95);
+        const QColor detail(21, 216, 255, hasAttitude_ ? 170 : 70);
+        painter.setBrush(QColor(0, 89, 122, hasAttitude_ ? 38 : 18));
+        painter.setPen(QPen(outline, 1.3));
+        painter.drawRoundedRect(QRectF(-54, -22, 108, 44), 20, 20);
+        painter.drawRoundedRect(QRectF(-34, -15, 68, 30), 11, 11);
+
+        for (int side : {-1, 1})
+        {
+            const qreal x = side * 47;
+            painter.drawEllipse(QPointF(x, 0), 17, 17);
+            painter.drawEllipse(QPointF(x, 0), 9, 9);
+            painter.drawLine(QPointF(side * 33, -14), QPointF(x, -12));
+            painter.drawLine(QPointF(side * 33, 14), QPointF(x, 12));
+        }
+        painter.setPen(QPen(detail, 1));
+        painter.drawLine(QPointF(-28, 0), QPointF(28, 0));
+        painter.drawLine(QPointF(0, -15), QPointF(0, 15));
+        painter.drawEllipse(QPointF(0, 0), 5, 5);
+        painter.restore();
+
+        painter.setFont(QFont(QStringLiteral("IBM Plex Mono"), 7));
+        painter.setPen(QColor(QStringLiteral("#668a9b")));
+        painter.drawText(rect().adjusted(7, 5, -7, -5), Qt::AlignLeft | Qt::AlignTop,
+                         hasAttitude_ ? QStringLiteral("IMU / ORIENTATION")
+                                      : QStringLiteral("ОЖИДАНИЕ IMU"));
+    }
+
+private:
+    float yaw_ = 0.0f;
+    float pitch_ = 0.0f;
+    float roll_ = 0.0f;
+    bool hasAttitude_ = false;
+};
+
 class DepthSonarPreview final : public QWidget
 {
 public:
@@ -833,8 +913,12 @@ static void setupDashboardGrid(MainWindow *window)
         {
             orientationContent->removeWidget(compass);
             orientationContent->removeWidget(attitude);
-            orientationContent->insertWidget(0, attitude, 3);
+            auto *vehicle = new VehicleOrientationPreview(orientationPanel);
+            orientationContent->insertWidget(0, vehicle, 3);
             orientationContent->addWidget(compass, 3);
+            if (auto *debugLayout =
+                    window->findChild<QVBoxLayout *>(QStringLiteral("verticalLayout_10")))
+                debugLayout->addWidget(attitude);
         }
     }
     for (const QString &labelName :
@@ -1204,6 +1288,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                         QStringLiteral("%1 м").arg(std::abs(pose.z), 0, 'f', 1));
                     ui->lbl_speed_value->setText(QStringLiteral("%1 м/с").arg(speed, 0, 'f', 2));
                 });
+    }
+    if (auto *vehicle =
+            findChild<VehicleOrientationPreview *>(QStringLiteral("vehicleOrientationPreview")))
+    {
+        connect(uvState, &UVState::imuUpdated, vehicle,
+                [vehicle](const UVState::ImuData &imu)
+                { vehicle->setAttitude(imu.yaw, imu.pitch, imu.roll); });
     }
 
     rosBridge = new RosBridge(this);
