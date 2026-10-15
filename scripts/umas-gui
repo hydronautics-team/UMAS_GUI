@@ -1,0 +1,173 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CLI_PATH="$(realpath "${BASH_SOURCE[0]}")"
+PROJECT_ROOT="$(realpath "$(dirname "$CLI_PATH")/..")"
+IMAGE_NAME="${UMAS_GUI_IMAGE:-qt-ros2}"
+ROS_DOMAIN="${ROS_DOMAIN_ID:-1}"
+
+usage()
+{
+    cat <<'EOF'
+Usage: umas-gui <command>
+
+Commands:
+  docker-build  Build or update the Docker image
+  build         Build only the UMAS GUI application
+  run           Run the built application in Docker
+  shell         Open an interactive development shell in Docker
+  format        Format project C and C++ sources
+  check         Check formatting without changing files
+  help          Show this help
+EOF
+}
+
+require_command()
+{
+    if ! command -v "$1" >/dev/null 2>&1; then
+        echo "Error: required command '$1' was not found." >&2
+        exit 1
+    fi
+}
+
+docker_base_args()
+{
+    DOCKER_ARGS=(
+        --rm
+        --network host
+        --privileged
+        -e "ROS_DOMAIN_ID=$ROS_DOMAIN"
+        -v "$PROJECT_ROOT:/UMAS_GUI:rw"
+        -v /dev:/dev
+    )
+}
+
+require_image()
+{
+    require_command docker
+    if ! docker image inspect "$IMAGE_NAME" >/dev/null 2>&1; then
+        echo "Docker image '$IMAGE_NAME' was not found. Run 'umas-gui docker-build' first." >&2
+        exit 1
+    fi
+}
+
+build_docker_image()
+{
+    require_command docker
+    echo "Building Docker image '$IMAGE_NAME'..."
+    docker build -f "$PROJECT_ROOT/docker/Dockerfile" -t "$IMAGE_NAME" "$PROJECT_ROOT"
+}
+
+build_project()
+{
+    require_image
+    echo "Building UMAS GUI..."
+    docker_base_args
+    docker run "${DOCKER_ARGS[@]}" "$IMAGE_NAME" bash -lc \
+        'source /opt/ros/humble/setup.bash && cmake -S /UMAS_GUI -B /UMAS_GUI/build && cmake --build /UMAS_GUI/build -j"$(nproc)"'
+}
+
+enable_x11()
+{
+    require_command xhost
+    if [[ -z "${DISPLAY:-}" ]]; then
+        echo "Error: DISPLAY is not set." >&2
+        exit 1
+    fi
+    xhost +si:localuser:root >/dev/null
+    trap 'xhost -si:localuser:root >/dev/null 2>&1 || true' EXIT
+}
+
+run_project()
+{
+    require_image
+    if [[ ! -x "$PROJECT_ROOT/build/UMAS_GUI" ]]; then
+        echo "UMAS GUI is not built. Run 'umas-gui build' first." >&2
+        exit 1
+    fi
+
+    enable_x11
+    docker_base_args
+    docker run -it "${DOCKER_ARGS[@]}" \
+        -e "DISPLAY=$DISPLAY" \
+        -v /tmp/.X11-unix:/tmp/.X11-unix \
+        "$IMAGE_NAME" bash -lc \
+        'source /opt/ros/humble/setup.bash && exec /UMAS_GUI/build/UMAS_GUI'
+}
+
+open_shell()
+{
+    require_image
+    enable_x11
+    docker_base_args
+    docker run -it "${DOCKER_ARGS[@]}" \
+        -e "DISPLAY=$DISPLAY" \
+        -v /tmp/.X11-unix:/tmp/.X11-unix \
+        "$IMAGE_NAME" bash
+}
+
+format_sources()
+{
+    if command -v clang-format >/dev/null 2>&1; then
+        find "$PROJECT_ROOT/src" \
+            \( -name '*.cpp' -o -name '*.hpp' -o -name '*.c' -o -name '*.h' \) \
+            -print0 | xargs -0 clang-format -i
+        return
+    fi
+
+    ensure_docker_tool clang-format
+    docker run --rm -v "$PROJECT_ROOT:/UMAS_GUI:rw" "$IMAGE_NAME" bash -lc \
+        'find /UMAS_GUI/src \( -name "*.cpp" -o -name "*.hpp" -o -name "*.c" -o -name "*.h" \) -print0 | xargs -0 clang-format -i'
+}
+
+check_sources()
+{
+    if command -v clang-format >/dev/null 2>&1; then
+        "$PROJECT_ROOT/scripts/ci/format.sh"
+        return
+    fi
+
+    ensure_docker_tool clang-format
+    docker run --rm -v "$PROJECT_ROOT:/UMAS_GUI:rw" "$IMAGE_NAME" bash -lc \
+        'cd /UMAS_GUI && ./scripts/ci/format.sh'
+}
+
+ensure_docker_tool()
+{
+    local tool="$1"
+    require_image
+
+    if ! docker run --rm "$IMAGE_NAME" bash -lc "command -v '$tool'" >/dev/null 2>&1; then
+        echo "Docker image '$IMAGE_NAME' does not contain $tool. Run 'umas-gui docker-build' to update it." >&2
+        exit 1
+    fi
+}
+
+case "${1:-help}" in
+    docker-build|build-docker)
+        build_docker_image
+        ;;
+    build)
+        build_project
+        ;;
+    run)
+        run_project
+        ;;
+    shell)
+        open_shell
+        ;;
+    format)
+        format_sources
+        ;;
+    check)
+        check_sources
+        ;;
+    help|-h|--help)
+        usage
+        ;;
+    *)
+        echo "Unknown command: $1" >&2
+        usage >&2
+        exit 2
+        ;;
+esac

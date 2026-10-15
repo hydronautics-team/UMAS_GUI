@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/branding">
-        <file alias="hydronautics_logo.jpg">assets/hydronautics_logo.png</file>
-    </qresource>
-</RCC>
