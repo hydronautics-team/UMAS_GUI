@@ -14,11 +14,76 @@
 #include <QPainterPath>
 #include <QPixmap>
 #include <QPushButton>
+#include <QStackedWidget>
 #include <QTabBar>
 #include <QTabWidget>
 #include <QVBoxLayout>
 #include <QtMath>
 #include <cmath>
+
+class DepthSonarPreview final : public QWidget
+{
+public:
+    explicit DepthSonarPreview(QWidget *parent = nullptr) : QWidget(parent)
+    {
+        setMinimumHeight(145);
+        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    }
+
+protected:
+    void paintEvent(QPaintEvent *) override
+    {
+        QPainter painter(this);
+        painter.setRenderHint(QPainter::Antialiasing);
+
+        const QColor grid(12, 82, 105, 120);
+        const QColor accent("#18d8de");
+        const QColor muted("#668a9b");
+        const QRectF profile = rect().adjusted(12, 12, -width() * 0.43, -14);
+        const QRectF sonar(width() * 0.62, 12, width() * 0.34, height() - 26);
+
+        painter.setPen(QPen(grid, 1));
+        for (int column = 0; column <= 8; ++column)
+        {
+            const qreal x = profile.left() + profile.width() * column / 8.0;
+            painter.drawLine(QPointF(x, profile.top()), QPointF(x, profile.bottom()));
+        }
+        for (int row = 0; row <= 4; ++row)
+        {
+            const qreal y = profile.top() + profile.height() * row / 4.0;
+            painter.drawLine(QPointF(profile.left(), y), QPointF(profile.right(), y));
+        }
+
+        QPainterPath seabed;
+        seabed.moveTo(profile.left(), profile.top() + profile.height() * 0.58);
+        seabed.cubicTo(profile.left() + profile.width() * 0.23, profile.bottom() * 0.78,
+                       profile.left() + profile.width() * 0.45, profile.top() * 1.65,
+                       profile.left() + profile.width() * 0.64,
+                       profile.top() + profile.height() * 0.72);
+        seabed.cubicTo(profile.left() + profile.width() * 0.78, profile.bottom() * 0.87,
+                       profile.right() - profile.width() * 0.08,
+                       profile.top() + profile.height() * 0.52, profile.right(),
+                       profile.top() + profile.height() * 0.61);
+        painter.setPen(QPen(accent, 1.4));
+        painter.drawPath(seabed);
+
+        const QPointF center = sonar.center();
+        const qreal radius = qMin(sonar.width(), sonar.height()) * 0.46;
+        painter.setPen(QPen(grid, 1));
+        for (int ring = 1; ring <= 4; ++ring)
+            painter.drawEllipse(center, radius * ring / 4.0, radius * ring / 4.0);
+        for (int ray = 0; ray < 8; ++ray)
+        {
+            const qreal angle = ray * M_PI / 4.0;
+            painter.drawLine(center, center + QPointF(std::cos(angle), std::sin(angle)) * radius);
+        }
+
+        painter.setPen(muted);
+        painter.setFont(QFont(QStringLiteral("Roboto Condensed"), 9));
+        painter.drawText(profile, Qt::AlignCenter, QStringLiteral("ПРОФИЛЬ ДНА\nНЕТ ДАННЫХ"));
+        painter.drawText(sonar, Qt::AlignCenter, QStringLiteral("СОНАР\nНЕТ ДАННЫХ"));
+    }
+};
 
 static QIcon makeSunIcon()
 {
@@ -201,6 +266,12 @@ static const QString DARK_THEME =
     "QLabel[telemetryTitle='true'] { color: #91bbd0; font-size: 11px; font-weight: 500; }"
     "QLabel[telemetryValue='true'] { color: #e3f6ff; font-family: 'Exo 2', 'Segoe UI', sans-serif; "
     "font-size: 20px; font-weight: 600; background: transparent; border: none; padding: 0; }"
+    "QLabel[dashboardPanelTitle='true'] { color: #55e9ed; font-size: 12px; font-weight: 700; "
+    "letter-spacing: 0.5px; padding: 0 0 2px 1px; }"
+    "QLabel[emptyInstrument='true'] { color: #668a9b; border: 1px solid #0c5269; "
+    "background-color: #021522; font-family: 'IBM Plex Mono', monospace; font-size: 10px; }"
+    "QWidget#dashboardBottomRow, QWidget#dashboardInstrumentColumn { background: transparent; }"
+    "HudPanel#movementControlPanel QStackedWidget { background: transparent; border: none; }"
     "QPushButton[dashboardNav='true'] { text-align: left; padding: 11px 13px; border: none; "
     "border-left: 3px solid transparent; background: transparent; color: #7faaa9; }"
     "QPushButton[dashboardNav='true']:hover { color: #c4e9e6; background-color: #0d3540; }"
@@ -263,8 +334,8 @@ static void setupDashboardNavigation(MainWindow *window)
 
     auto *navigationGroup = new QButtonGroup(navigation);
     navigationGroup->setExclusive(true);
-    const QStringList labels = {QStringLiteral("▣  Камера"), QStringLiteral("◉  БСО"),
-                                QStringLiteral("▤  Сообщения"), QStringLiteral("▥  Питание"),
+    const QStringList labels = {QStringLiteral("▣  Камера"),     QStringLiteral("◉  БСО"),
+                                QStringLiteral("▤  Сообщения"),  QStringLiteral("▥  Питание"),
                                 QStringLiteral("⌘  Устройства"), QStringLiteral("◇  Отладка")};
     for (int index = 0; index < tabs->count() && index < labels.size(); ++index)
     {
@@ -374,6 +445,137 @@ static void setupTelemetryCards(MainWindow *window)
     telemetryLayout->addStretch(1);
 }
 
+static QLabel *makePanelTitle(const QString &text, QWidget *parent)
+{
+    auto *title = new QLabel(text, parent);
+    title->setProperty("dashboardPanelTitle", true);
+    title->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    return title;
+}
+
+static HudPanel *makeDashboardPanel(const QString &name, const QString &titleText,
+                                    QVBoxLayout **contentLayout, QWidget *parent)
+{
+    auto *panel = new HudPanel(parent);
+    panel->setObjectName(name);
+    auto *layout = new QVBoxLayout(panel);
+    layout->setContentsMargins(13, 10, 13, 12);
+    layout->setSpacing(7);
+    layout->addWidget(makePanelTitle(titleText, panel));
+    *contentLayout = layout;
+    return panel;
+}
+
+static void setupDashboardGrid(MainWindow *window)
+{
+    auto *rootLayout = window->findChild<QVBoxLayout *>(QStringLiteral("mainWorkspaceLayout"));
+    auto *centerLayout = window->findChild<QHBoxLayout *>(QStringLiteral("horizontalLayout_2"));
+    auto *workspaceLayout = window->findChild<QVBoxLayout *>(QStringLiteral("verticalLayout_4"));
+    auto *controlStack = window->findChild<QStackedWidget *>(QStringLiteral("stackedWidget_mode"));
+    auto *orientation = window->findChild<QGroupBox *>(QStringLiteral("groupBox_info"));
+    auto *quickActions = window->findChild<QFrame *>(QStringLiteral("frame_quickActions"));
+    auto *console = window->findChild<QTextEdit *>(QStringLiteral("textEdit_console"));
+    if (!rootLayout || !centerLayout || !workspaceLayout || !controlStack || !orientation ||
+        !quickActions || !console)
+        return;
+
+    workspaceLayout->removeWidget(quickActions);
+    centerLayout->removeWidget(controlStack);
+    if (orientation->parentWidget() && orientation->parentWidget()->layout())
+        orientation->parentWidget()->layout()->removeWidget(orientation);
+
+    auto *instrumentColumn = new QWidget(window);
+    instrumentColumn->setObjectName(QStringLiteral("dashboardInstrumentColumn"));
+    instrumentColumn->setMinimumWidth(430);
+    auto *instrumentLayout = new QVBoxLayout(instrumentColumn);
+    instrumentLayout->setContentsMargins(0, 0, 0, 0);
+    instrumentLayout->setSpacing(10);
+
+    QVBoxLayout *orientationLayout = nullptr;
+    HudPanel *orientationPanel = makeDashboardPanel(QStringLiteral("orientationPanel"),
+                                                    QStringLiteral("ОРИЕНТАЦИЯ И ПОЛОЖЕНИЕ"),
+                                                    &orientationLayout, instrumentColumn);
+    orientation->setTitle(QString());
+    orientation->setStyleSheet(QStringLiteral(
+        "QGroupBox { border: none; margin: 0; padding: 0; background: transparent; }"));
+    orientationLayout->addWidget(orientation, 1);
+
+    QVBoxLayout *depthLayout = nullptr;
+    HudPanel *depthPanel =
+        makeDashboardPanel(QStringLiteral("depthSonarPanel"),
+                           QStringLiteral("ГЛУБИНА И РЕЛЬЕФ ДНА"), &depthLayout, instrumentColumn);
+    depthLayout->addWidget(new DepthSonarPreview(depthPanel), 1);
+
+    instrumentLayout->addWidget(orientationPanel, 1);
+    instrumentLayout->addWidget(depthPanel, 1);
+    centerLayout->addWidget(instrumentColumn, 35);
+    centerLayout->setStretch(0, 65);
+    centerLayout->setStretch(1, 35);
+
+    auto *bottomRow = new QWidget(window);
+    bottomRow->setObjectName(QStringLiteral("dashboardBottomRow"));
+    bottomRow->setMinimumHeight(245);
+    bottomRow->setMaximumHeight(310);
+    auto *bottomLayout = new QHBoxLayout(bottomRow);
+    bottomLayout->setContentsMargins(0, 0, 0, 0);
+    bottomLayout->setSpacing(10);
+
+    quickActions->setMinimumWidth(330);
+    quickActions->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    if (auto *manipulatorLayout =
+            window->findChild<QHBoxLayout *>(QStringLiteral("horizontalLayout_manipulator")))
+        manipulatorLayout->setAlignment(Qt::AlignTop);
+    if (auto *manipulatorTitle = window->findChild<QLabel *>(QStringLiteral("lbl_manip_title")))
+    {
+        manipulatorTitle->setText(QStringLiteral("МАНИПУЛЯТОР"));
+        manipulatorTitle->setProperty("dashboardPanelTitle", true);
+        manipulatorTitle->setStyleSheet(QString());
+    }
+
+    QVBoxLayout *controlLayout = nullptr;
+    HudPanel *controlPanel =
+        makeDashboardPanel(QStringLiteral("movementControlPanel"),
+                           QStringLiteral("УПРАВЛЕНИЕ ДВИЖЕНИЕМ"), &controlLayout, bottomRow);
+    controlStack->setMinimumWidth(0);
+    controlStack->setMaximumWidth(QWIDGETSIZE_MAX);
+    controlStack->setStyleSheet(QStringLiteral("background: transparent; border: none;"));
+    controlLayout->addWidget(controlStack, 1);
+
+    QVBoxLayout *eventsLayout = nullptr;
+    HudPanel *eventsPanel =
+        makeDashboardPanel(QStringLiteral("eventLogPanel"), QStringLiteral("ЖУРНАЛ СОБЫТИЙ"),
+                           &eventsLayout, bottomRow);
+    console->setMaximumHeight(QWIDGETSIZE_MAX);
+    eventsLayout->addWidget(console, 1);
+
+    QVBoxLayout *mapLayout = nullptr;
+    HudPanel *mapPanel = makeDashboardPanel(
+        QStringLiteral("positionPanel"), QStringLiteral("КАРТА И ПОЗИЦИЯ"), &mapLayout, bottomRow);
+    auto *positionState =
+        new QLabel(QStringLiteral("КАРТОГРАФИЧЕСКИЕ ДАННЫЕ\nНЕ ПОЛУЧЕНЫ"), mapPanel);
+    positionState->setProperty("emptyInstrument", true);
+    positionState->setAlignment(Qt::AlignCenter);
+    positionState->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    mapLayout->addWidget(positionState, 1);
+
+    const QStringList positionControls = {
+        QStringLiteral("pushButton_sendReper_map_onoff"), QStringLiteral("lineEdit_reper_latitude"),
+        QStringLiteral("lineEdit_reper_longitude"), QStringLiteral("pushButton_sendReper")};
+    for (const QString &objectName : positionControls)
+    {
+        if (QWidget *control = window->findChild<QWidget *>(objectName))
+            mapLayout->addWidget(control);
+    }
+
+    bottomLayout->addWidget(quickActions, 27);
+    bottomLayout->addWidget(controlPanel, 29);
+    bottomLayout->addWidget(eventsPanel, 25);
+    bottomLayout->addWidget(mapPanel, 19);
+    rootLayout->addWidget(bottomRow);
+    rootLayout->setStretch(1, 5);
+    rootLayout->setStretch(2, 3);
+}
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -382,6 +584,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     setupBrandHeader();
     setupDashboardNavigation(this);
     setupTelemetryCards(this);
+    setupDashboardGrid(this);
     ui->btn_theme_toggle->hide();
 
     qRegisterMetaType<UVState::ImuData>("UVState::ImuData");
@@ -405,13 +608,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(rosBridge, &RosBridge::batteryReceived, uvState, &UVState::setBattery,
             Qt::QueuedConnection);
 
-    connect(rosBridge, &RosBridge::dvlOriginResetFinished, this,
-            [this](bool success, const QString &message)
-            {
-                ui->pushButton_resetDvlOrigin->setEnabled(true);
-                displayText((success ? "DVL: " : "Ошибка DVL: ") + message);
-            },
-            Qt::QueuedConnection);
+    connect(
+        rosBridge, &RosBridge::dvlOriginResetFinished, this,
+        [this](bool success, const QString &message)
+        {
+            ui->pushButton_resetDvlOrigin->setEnabled(true);
+            displayText((success ? "DVL: " : "Ошибка DVL: ") + message);
+        },
+        Qt::QueuedConnection);
 
     connect(uvState, &UVState::imuUpdated, this,
             [this](const UVState::ImuData &imu)
@@ -596,7 +800,8 @@ void MainWindow::setupBrandHeader()
     clock->setAlignment(Qt::AlignCenter);
     auto updateClock = [clock]()
     {
-        clock->setText(QDateTime::currentDateTime().toString(QStringLiteral("dd MMM yyyy\nHH:mm:ss"))
+        clock->setText(QDateTime::currentDateTime()
+                           .toString(QStringLiteral("dd MMM yyyy\nHH:mm:ss"))
                            .toUpper());
     };
     updateClock();

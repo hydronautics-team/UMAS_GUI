@@ -1,9 +1,9 @@
 #include "hud_panel.h"
 
 #include <QLinearGradient>
+#include <QPaintEvent>
 #include <QPainter>
 #include <QPainterPath>
-#include <QPaintEvent>
 
 HudPanel::HudPanel(QWidget *parent) : QFrame(parent)
 {
@@ -53,8 +53,7 @@ void HudPanel::paintEvent(QPaintEvent *event)
     if (!accentVisible_)
         return;
 
-    painter.setPen(QPen(QColor(QStringLiteral("#00D9E6")), 2.0, Qt::SolidLine,
-                        Qt::RoundCap));
+    painter.setPen(QPen(QColor(QStringLiteral("#00D9E6")), 2.0, Qt::SolidLine, Qt::RoundCap));
     painter.drawLine(QPointF(bounds.left() + 18.0, bounds.top()),
                      QPointF(bounds.left() + 48.0, bounds.top()));
     painter.drawLine(QPointF(bounds.right() - 54.0, bounds.bottom()),

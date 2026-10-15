@@ -176,13 +176,13 @@ void RosBridge::resetDvlOriginInternal()
             try
             {
                 const auto response = future.get();
-                emit dvlOriginResetFinished(
-                    response->success, QString::fromStdString(response->message));
+                emit dvlOriginResetFinished(response->success,
+                                            QString::fromStdString(response->message));
             }
             catch (const std::exception &error)
             {
-                emit dvlOriginResetFinished(
-                    false, QString("Ошибка вызова сервиса: %1").arg(error.what()));
+                emit dvlOriginResetFinished(false,
+                                            QString("Ошибка вызова сервиса: %1").arg(error.what()));
             }
         });
 }
