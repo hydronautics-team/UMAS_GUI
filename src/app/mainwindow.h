@@ -17,7 +17,6 @@
 #include "i_input_source.h"
 #include "gamepad_input_source.h"
 #include "control_service.h"
-#include "diagnostic_board.h"
 #include "ros2_bridge.h"
 #include "uv_state.h"
 #include "video_player_widget.h"
@@ -83,7 +82,6 @@ private:
 
     bool status_keyboard = false;
 
-    Diagnostic_board    *diagnostic_board;
     RosBridge           *rosBridge;
     UVState             *uvState;
     VideoPlayerWidget   *videoPlayer_ = nullptr;

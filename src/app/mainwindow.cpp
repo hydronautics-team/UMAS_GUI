@@ -369,7 +369,7 @@ void MainWindow::harmonizeLegacyStyles()
     // Панели и интервалы уже формируют визуальную иерархию — дополнительные
     // горизонтальные линии только дробят компактный операторский интерфейс.
     for (QFrame *separator : {ui->line_separator1, ui->line_separator_light,
-                              ui->line_separator2, ui->line_separator3})
+                              ui->line_separator2})
         separator->hide();
 
     ui->horizontalLayout_2->setContentsMargins(12, 10, 12, 10);
@@ -418,9 +418,6 @@ void MainWindow::setWidget()
     // ui->horizontalLayout_for_checkMsg->addWidget(checkMsg);
     // modeAutomatic = new ModeAutomatic(this);
     // ui->verticalLayout_modeAutomatic->addWidget(modeAutomatic);
-    // diagnostic_board = new Diagnostic_board(this);
-    // ui->horizontalLayout_diagnosticBoard->addWidget(diagnostic_board);
-
     videoPlayer_ = new VideoPlayerWidget(this);
 
     if (!ui->tab_video->layout()) {

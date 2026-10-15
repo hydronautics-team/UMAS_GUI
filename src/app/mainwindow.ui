@@ -1111,18 +1111,6 @@ QSlider:disabled::handle:horizontal {
          </layout>
         </item>
         <item>
-         <widget class="Line" name="line_separator3">
-          <property name="orientation"><enum>Qt::Horizontal</enum></property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_9">
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_diagnosticBoard"/>
-          </item>
-         </layout>
-        </item>
-        <item>
          <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
           <item>
            <widget class="QPushButton" name="pushButton_modeManual">

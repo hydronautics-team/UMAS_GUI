@@ -29,4 +29,4 @@ docker/                  # Dockerfile и скрипты контейнера
 docs/                    # документация
 ```
 
-`Diagnostic_bord_UI` и `algorithm_cpp` подключены как внешние submodule и пока сохраняют собственную структуру.
+`algorithm_cpp` подключён как внешний submodule и сохраняет собственную структуру.

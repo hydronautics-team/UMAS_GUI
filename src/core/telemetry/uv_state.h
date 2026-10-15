@@ -315,7 +315,7 @@ public:
     };
 
     struct Diagnostics {
-        // Поля названы под текущий UI Diagnostic_board.
+        // Диагностические значения бортового питания.
         float u_lipo_1 = 0.f;
         float u_lipo_2 = 0.f;
         float u_diagnostic_board = 0.f;

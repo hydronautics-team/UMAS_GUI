@@ -67,7 +67,6 @@ include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/compass")
 include_directories("${PROJECT_SOURCE_DIR}/src/ui/panels")
 include_directories("${PROJECT_SOURCE_DIR}/src/features/modes")
 include_directories("${PROJECT_SOURCE_DIR}/src/features/map")
-include_directories("${PROJECT_SOURCE_DIR}/Diagnostic_bord_UI/Diagnostic_bord")
 include_directories("${PROJECT_SOURCE_DIR}")
 
 include_directories(${Python3_INCLUDE_DIRS})
@@ -105,9 +104,6 @@ set(PROJECT_SOURCES
         # src/ui/panels/check_imu.h src/ui/panels/check_imu.cpp src/ui/panels/check_imu.ui
         # src/features/modes/mode_automatic.h src/features/modes/mode_automatic.cpp src/features/modes/mode_automatic.ui
         # src/features/map/map_widget.h src/features/map/map_widget.cpp src/features/map/map_widget.ui src/features/map/map.html
-        Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.cpp
-        Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.h
-        Diagnostic_bord_UI/Diagnostic_bord/diagnostic_board.ui
         src/integrations/ros/ros2_bridge.h
         src/integrations/ros/ros2_bridge.cpp
         src/integrations/video/video_player_widget.h
