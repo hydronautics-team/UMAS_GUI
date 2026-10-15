@@ -4,6 +4,7 @@ set -euo pipefail
 CLI_PATH="$(realpath "${BASH_SOURCE[0]}")"
 PROJECT_ROOT="$(realpath "$(dirname "$CLI_PATH")/..")"
 IMAGE_NAME="${UMAS_GUI_IMAGE:-umas-gui}"
+APP_CONTAINER_NAME="${UMAS_GUI_CONTAINER:-umas-gui-app}"
 ROS_DOMAIN="${ROS_DOMAIN_ID:-1}"
 
 usage()
@@ -78,6 +79,45 @@ enable_x11()
     trap 'xhost -si:localuser:root >/dev/null 2>&1 || true' EXIT
 }
 
+stop_running_app()
+{
+    local container_id
+    local container_command
+
+    if docker container inspect "$APP_CONTAINER_NAME" >/dev/null 2>&1; then
+        echo "Stopping the previous UMAS GUI instance..."
+        stop_app_container
+    fi
+
+    # Подхватывает экземпляры, запущенные до появления постоянного имени контейнера.
+    while IFS= read -r container_id; do
+        [[ -z "$container_id" ]] && continue
+        container_command="$(docker container inspect --format '{{json .Config.Cmd}}' "$container_id")"
+        if [[ "$container_command" == *"/UMAS_GUI/build/UMAS_GUI"* ]]; then
+            echo "Stopping a legacy UMAS GUI instance..."
+            docker stop --time 2 "$container_id" >/dev/null
+        fi
+    done < <(docker ps --quiet --filter "ancestor=$IMAGE_NAME")
+}
+
+stop_app_container()
+{
+    if docker container inspect "$APP_CONTAINER_NAME" >/dev/null 2>&1; then
+        docker stop --time 2 "$APP_CONTAINER_NAME" >/dev/null 2>&1 || true
+        docker rm --force "$APP_CONTAINER_NAME" >/dev/null 2>&1 || true
+    fi
+}
+
+handle_run_signal()
+{
+    local exit_code="$1"
+    trap - INT TERM
+    echo
+    echo "Stopping UMAS GUI..."
+    stop_app_container
+    exit "$exit_code"
+}
+
 run_project()
 {
     require_image
@@ -86,13 +126,19 @@ run_project()
         exit 1
     fi
 
+    stop_running_app
     enable_x11
     docker_base_args
+    trap 'handle_run_signal 130' INT
+    trap 'handle_run_signal 143' TERM
     docker run "${DOCKER_ARGS[@]}" \
+        --name "$APP_CONTAINER_NAME" \
+        --label "com.hydronautics.umas-gui.role=application" \
         -e "DISPLAY=$DISPLAY" \
         -v /tmp/.X11-unix:/tmp/.X11-unix \
         "$IMAGE_NAME" bash -lc \
         'source /opt/ros/humble/setup.bash && exec /UMAS_GUI/build/UMAS_GUI'
+    trap - INT TERM
 }
 
 open_shell()
