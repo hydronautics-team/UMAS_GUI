@@ -1,7 +1,59 @@
 #include "video_player_widget.h"
 #include <QDebug>
+#include <QHBoxLayout>
+#include <QPainter>
+#include <QPushButton>
 #include <QResizeEvent>
 #include <QVBoxLayout>
+
+class VideoHudOverlay final : public QWidget
+{
+public:
+    explicit VideoHudOverlay(QWidget *parent = nullptr) : QWidget(parent)
+    {
+        setAttribute(Qt::WA_TransparentForMouseEvents);
+        setAttribute(Qt::WA_TranslucentBackground);
+    }
+
+protected:
+    void paintEvent(QPaintEvent *) override
+    {
+        QPainter painter(this);
+        painter.setRenderHint(QPainter::Antialiasing);
+        const QColor hud(202, 255, 255, 205);
+        const QPointF center = rect().center();
+        painter.setPen(QPen(hud, 1.2));
+        painter.drawLine(center + QPointF(-17, 0), center + QPointF(17, 0));
+        painter.drawLine(center + QPointF(0, -17), center + QPointF(0, 17));
+
+        const qreal leftX = width() * 0.055;
+        const qreal top = height() * 0.25;
+        const qreal bottom = height() * 0.74;
+        painter.setFont(QFont(QStringLiteral("IBM Plex Mono"), 8));
+        painter.drawLine(QPointF(leftX, top), QPointF(leftX, bottom));
+        const QStringList depths = {QStringLiteral("-110"), QStringLiteral("-120"),
+                                    QStringLiteral("-130"), QStringLiteral("-140")};
+        for (int index = 0; index < depths.size(); ++index)
+        {
+            const qreal y = top + (bottom - top) * index / (depths.size() - 1.0);
+            painter.drawLine(QPointF(leftX, y), QPointF(leftX + 8, y));
+            painter.drawText(QRectF(leftX + 12, y - 8, 45, 16), Qt::AlignLeft | Qt::AlignVCenter,
+                             depths.at(index));
+        }
+
+        const qreal rightX = width() * 0.94;
+        painter.drawLine(QPointF(rightX, top), QPointF(rightX, bottom));
+        const QStringList angles = {QStringLiteral("+30"), QStringLiteral("0"),
+                                    QStringLiteral("-30")};
+        for (int index = 0; index < angles.size(); ++index)
+        {
+            const qreal y = top + (bottom - top) * index / (angles.size() - 1.0);
+            painter.drawLine(QPointF(rightX - 8, y), QPointF(rightX, y));
+            painter.drawText(QRectF(rightX - 42, y - 8, 30, 16), Qt::AlignRight | Qt::AlignVCenter,
+                             angles.at(index));
+        }
+    }
+};
 
 VideoPlayerWidget::VideoPlayerWidget(QWidget *parent) : QWidget(parent)
 {
@@ -14,33 +66,115 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget *parent) : QWidget(parent)
 
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
 
-    titleLabel_ = new QLabel("Video Player", this);
-    titleLabel_->setAlignment(Qt::AlignCenter);
-    titleLabel_->setStyleSheet("font-weight: bold; font-size: 14px; color: white;");
+    toolbar_ = new QWidget(this);
+    toolbar_->setObjectName(QStringLiteral("cameraToolbar"));
+    toolbar_->setFixedHeight(40);
+    auto *toolbarLayout = new QHBoxLayout(toolbar_);
+    toolbarLayout->setContentsMargins(10, 4, 7, 4);
+    toolbarLayout->setSpacing(7);
+
+    titleLabel_ = new QLabel(QStringLiteral("◉  КАМЕРА 1"), toolbar_);
+    titleLabel_->setObjectName(QStringLiteral("cameraTitle"));
+    auto *cameraType = new QLabel(QStringLiteral("Основная"), toolbar_);
+    cameraType->setObjectName(QStringLiteral("cameraType"));
+    liveDot_ = new QLabel(QStringLiteral("●"), toolbar_);
+    liveDot_->setObjectName(QStringLiteral("cameraLiveDot"));
+    liveLabel_ = new QLabel(QStringLiteral("LIVE"), toolbar_);
+    liveLabel_->setObjectName(QStringLiteral("cameraLiveLabel"));
+    resolutionLabel_ = new QLabel(QStringLiteral("—"), toolbar_);
+    resolutionLabel_->setProperty("streamBadge", true);
+    fpsLabel_ = new QLabel(QStringLiteral("— FPS"), toolbar_);
+    fpsLabel_->setProperty("streamBadge", true);
+    auto *bitrate = new QLabel(QStringLiteral("Поток: —"), toolbar_);
+    bitrate->setObjectName(QStringLiteral("cameraBitrate"));
+
+    liveDot_->hide();
+    liveLabel_->hide();
+    toolbarLayout->addWidget(titleLabel_);
+    toolbarLayout->addWidget(cameraType);
+    toolbarLayout->addSpacing(10);
+    toolbarLayout->addWidget(liveDot_);
+    toolbarLayout->addWidget(liveLabel_);
+    toolbarLayout->addStretch();
+    toolbarLayout->addWidget(resolutionLabel_);
+    toolbarLayout->addWidget(fpsLabel_);
+    toolbarLayout->addWidget(bitrate);
+
+    auto makeAction =
+        [this, toolbarLayout](const QString &text, const QString &tooltip, bool enabled)
+    {
+        auto *button = new QPushButton(text, toolbar_);
+        button->setProperty("cameraAction", true);
+        button->setToolTip(tooltip);
+        button->setEnabled(enabled);
+        button->setFixedSize(34, 29);
+        toolbarLayout->addWidget(button);
+        return button;
+    };
+    makeAction(QStringLiteral("□"), QStringLiteral("Снимок пока не подключён"), false);
+    makeAction(QStringLiteral("●"), QStringLiteral("Запись пока не подключена"), false);
+    auto *fullscreen = makeAction(QStringLiteral("⛶"), QStringLiteral("Полноэкранный режим"), true);
+    connect(fullscreen, &QPushButton::clicked, this, &VideoPlayerWidget::fullscreenRequested);
 
     imageLabel_ = new QLabel(this);
     imageLabel_->setAlignment(Qt::AlignCenter);
     imageLabel_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     imageLabel_->setMinimumSize(160, 120);
-    imageLabel_->setStyleSheet("background-color: #1a1a1a; border: 1px solid #444;");
+    imageLabel_->setStyleSheet("background-color: #00111d; border: 1px solid #07516b;");
 
     statusLabel_ = new QLabel("Ожидание потока GStreamer...", this);
     statusLabel_->setAlignment(Qt::AlignCenter);
-    statusLabel_->setStyleSheet("color: #aaa; font-size: 10px;");
+    statusLabel_->setStyleSheet(
+        "color: #668a9b; font-size: 11px; background: rgba(0, 12, 23, 180); padding: 5px;");
 
-    layout->addWidget(titleLabel_);
+    hudOverlay_ = new VideoHudOverlay(imageLabel_);
+    thumbnailStrip_ = new QWidget(imageLabel_);
+    thumbnailStrip_->setObjectName(QStringLiteral("cameraThumbnailStrip"));
+    auto *thumbnailLayout = new QHBoxLayout(thumbnailStrip_);
+    thumbnailLayout->setContentsMargins(0, 0, 0, 0);
+    thumbnailLayout->setSpacing(8);
+    for (int camera = 1; camera <= 4; ++camera)
+    {
+        auto *thumbnail = new QPushButton(QStringLiteral("Камера %1").arg(camera), thumbnailStrip_);
+        thumbnail->setProperty("cameraThumbnail", true);
+        thumbnail->setProperty("activeCamera", camera == 1);
+        thumbnail->setEnabled(camera == 1);
+        thumbnail->setToolTip(camera == 1 ? QStringLiteral("Активная камера")
+                                          : QStringLiteral("Источник не настроен"));
+        thumbnail->setFixedSize(112, 55);
+        thumbnailLayout->addWidget(thumbnail);
+    }
+
+    layout->addWidget(toolbar_);
     layout->addWidget(imageLabel_, 1);
-    layout->addWidget(statusLabel_);
+    statusLabel_->setParent(imageLabel_);
 
     connect(this, &VideoPlayerWidget::frameReceived, this,
             [this](const QPixmap &pix)
             {
                 if (!pix.isNull())
                 {
-                    imageLabel_->setPixmap(pix.scaled(imageLabel_->size(), Qt::KeepAspectRatio,
+                    imageLabel_->setPixmap(pix.scaled(imageLabel_->size(),
+                                                      Qt::KeepAspectRatioByExpanding,
                                                       Qt::SmoothTransformation));
                     currentPixmap_ = pix;
+                    statusLabel_->hide();
+                    liveDot_->show();
+                    liveLabel_->show();
+                    resolutionLabel_->setText(
+                        QStringLiteral("%1×%2").arg(pix.width()).arg(pix.height()));
+                    ++frameCount_;
+                    if (!frameTimer_.isValid())
+                        frameTimer_.start();
+                    else if (frameTimer_.elapsed() >= 1000)
+                    {
+                        const int fps = qRound(frameCount_ * 1000.0 / frameTimer_.elapsed());
+                        fpsLabel_->setText(QStringLiteral("%1 FPS").arg(fps));
+                        frameCount_ = 0;
+                        frameTimer_.restart();
+                    }
                 }
             });
 
@@ -51,8 +185,9 @@ VideoPlayerWidget::~VideoPlayerWidget() { stopStream(); }
 
 void VideoPlayerWidget::setFullscreenPresentation(bool fullscreen)
 {
-    titleLabel_->setVisible(!fullscreen);
-    statusLabel_->setVisible(!fullscreen);
+    toolbar_->setVisible(!fullscreen);
+    thumbnailStrip_->setVisible(!fullscreen);
+    statusLabel_->setVisible(!fullscreen && currentPixmap_.isNull());
     imageLabel_->setStyleSheet(fullscreen ? "background-color: black; border: none;"
                                           : "background-color: #1a1a1a; border: 1px solid #444;");
 }
@@ -97,7 +232,7 @@ void VideoPlayerWidget::startStream(const QString &portStr)
     }
 
     gst_element_set_state(gstPipeline_, GST_STATE_PLAYING);
-    statusLabel_->setText(QString("Поток активен (Порт: %1)").arg(portStr));
+    statusLabel_->setText(QString("Ожидание кадров (порт %1)").arg(portStr));
     qDebug() << "Видео-поток запущен на порту" << portStr;
 }
 
@@ -109,6 +244,13 @@ void VideoPlayerWidget::stopStream()
         gst_object_unref(gstPipeline_);
         gstPipeline_ = nullptr;
         statusLabel_->setText("Поток остановлен");
+        statusLabel_->show();
+        liveDot_->hide();
+        liveLabel_->hide();
+        resolutionLabel_->setText(QStringLiteral("—"));
+        fpsLabel_->setText(QStringLiteral("— FPS"));
+        frameTimer_.invalidate();
+        frameCount_ = 0;
         qDebug() << "Видео-поток остановлен";
     }
 }
@@ -148,7 +290,15 @@ void VideoPlayerWidget::resizeEvent(QResizeEvent *event)
     QWidget::resizeEvent(event);
     if (!currentPixmap_.isNull())
     {
-        imageLabel_->setPixmap(currentPixmap_.scaled(imageLabel_->size(), Qt::KeepAspectRatio,
-                                                     Qt::SmoothTransformation));
+        imageLabel_->setPixmap(currentPixmap_.scaled(
+            imageLabel_->size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
     }
+    hudOverlay_->setGeometry(imageLabel_->rect());
+    hudOverlay_->raise();
+    statusLabel_->adjustSize();
+    statusLabel_->move((imageLabel_->width() - statusLabel_->width()) / 2,
+                       (imageLabel_->height() - statusLabel_->height()) / 2);
+    const int stripWidth = qMin(imageLabel_->width() - 24, 4 * 112 + 3 * 8);
+    thumbnailStrip_->setGeometry(12, imageLabel_->height() - 67, stripWidth, 55);
+    thumbnailStrip_->raise();
 }

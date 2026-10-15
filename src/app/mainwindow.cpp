@@ -495,6 +495,22 @@ static const QString DARK_THEME =
     "HudPanel#eventLogPanel QScrollBar:vertical { width: 7px; background: #000c17; }"
     "HudPanel#eventLogPanel QScrollBar::handle:vertical { background: #073149; border-radius: 3px; "
     "}"
+    "QWidget#cameraToolbar { background-color: #02131f; border-bottom: 1px solid #07516b; }"
+    "QLabel#cameraTitle { color: #00d9e6; font-size: 11px; font-weight: 700; }"
+    "QLabel#cameraType, QLabel[streamBadge='true'] { color: #91bbd0; background-color: #011421; "
+    "border: 1px solid #10445a; border-radius: 4px; padding: 3px 7px; font-size: 9px; }"
+    "QLabel#cameraLiveDot { color: #f03d59; font-size: 11px; }"
+    "QLabel#cameraLiveLabel { color: #f5fbff; font-size: 10px; font-weight: 700; }"
+    "QLabel#cameraBitrate { color: #91bbd0; font-size: 9px; }"
+    "QPushButton[cameraAction='true'] { min-width: 0; min-height: 0; padding: 0; border-radius: "
+    "5px; "
+    "background-color: #032236; border: 1px solid #0a6380; color: #55e9ed; font-size: 14px; }"
+    "QPushButton[cameraThumbnail='true'] { text-align: left bottom; padding: 5px 7px; min-width: "
+    "0; "
+    "min-height: 0; color: #7f9cab; background-color: rgba(0, 15, 26, 220); "
+    "border: 1px solid #19485d; border-radius: 6px; font-size: 10px; }"
+    "QPushButton[cameraThumbnail='true'][activeCamera='true'] { color: #ffffff; "
+    "border: 2px solid #00d9e6; background-color: rgba(3, 53, 65, 220); }"
     "QPushButton[dashboardNav='true'] { text-align: left; padding: 11px 13px; border: none; "
     "border-left: 3px solid transparent; background: transparent; color: #7faaa9; }"
     "QPushButton[dashboardNav='true']:hover { color: #c4e9e6; background-color: #0d3540; }"
@@ -1394,6 +1410,8 @@ void MainWindow::ensureInteractiveTextFits()
 void MainWindow::setWidget()
 {
     videoPlayer_ = new VideoPlayerWidget(this);
+    connect(videoPlayer_, &VideoPlayerWidget::fullscreenRequested, ui->full_screen,
+            [this]() { ui->full_screen->setChecked(true); });
 
     if (!ui->tab_video->layout())
     {
