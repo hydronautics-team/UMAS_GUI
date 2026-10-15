@@ -185,7 +185,7 @@ protected:
         if (!hasPosition_)
         {
             painter.setPen(QColor("#668a9b"));
-            painter.drawText(rect().adjusted(12, 12, -12, -12), Qt::AlignCenter,
+            painter.drawText(rect().adjusted(12, 12, -12, -12), Qt::AlignCenter | Qt::TextWordWrap,
                              QStringLiteral("НЕТ НАВИГАЦИОННЫХ ДАННЫХ"));
             return;
         }
@@ -652,6 +652,7 @@ static const QString DARK_THEME =
     "border: 1px solid #19485d; border-radius: 6px; font-size: 10px; }"
     "QPushButton[cameraThumbnail='true'][activeCamera='true'] { color: #ffffff; "
     "border: 2px solid #00d9e6; background-color: rgba(3, 53, 65, 220); }"
+    "QFrame#frame_quickActions QPushButton { padding: 3px 5px; min-width: 0; font-size: 10px; }"
     "QLabel[orientationMetric='true'] { color: #dceff7; background-color: #031722; "
     "border: 1px solid #0b526b; border-radius: 5px; padding: 5px 6px; "
     "font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; }"
@@ -892,6 +893,12 @@ static void setupDashboardGrid(MainWindow *window)
         return;
 
     contentColumn->removeItem(legacyBottomLayout);
+    for (const QString &legacyLabel :
+         {QStringLiteral("label_6"), QStringLiteral("label_8"), QStringLiteral("label_9")})
+    {
+        if (QWidget *widget = window->findChild<QWidget *>(legacyLabel))
+            widget->hide();
+    }
     workspaceLayout->removeWidget(quickActions);
     centerLayout->removeWidget(controlStack);
     if (orientation->parentWidget() && orientation->parentWidget()->layout())
@@ -1225,6 +1232,8 @@ static void setupDashboardGrid(MainWindow *window)
     auto *longitude = window->findChild<QLineEdit *>(QStringLiteral("lineEdit_reper_longitude"));
     if (latitude && longitude)
     {
+        latitude->setText(QString::number(latitude->text().toDouble(), 'f', 6));
+        longitude->setText(QString::number(longitude->text().toDouble(), 'f', 6));
         auto *latitudeLabel = new QLabel(QStringLiteral("Широта"), mapPanel);
         auto *longitudeLabel = new QLabel(QStringLiteral("Долгота"), mapPanel);
         latitudeLabel->setProperty("coordinateLabel", true);
@@ -1351,29 +1360,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                 if (!freshness->rosReady)
                 {
                     state = QStringLiteral("offline");
-                    text = QStringLiteral("ROS НЕДОСТУПЕН");
+                    text = QStringLiteral("ROS OFFLINE");
                 }
                 else if (newestTelemetry == 0)
                 {
                     state = QStringLiteral("waiting");
-                    text = QStringLiteral("ROS ГОТОВ · НЕТ ТЕЛЕМЕТРИИ");
+                    text = QStringLiteral("ROS · НЕТ ДАННЫХ");
                 }
                 else if (now - newestTelemetry > staleAfterMs)
                 {
                     state = QStringLiteral("stale");
-                    text = QStringLiteral("ТЕЛЕМЕТРИЯ УСТАРЕЛА · %1 с")
-                               .arg((now - newestTelemetry) / 1000);
+                    text = QStringLiteral("ДАННЫЕ · %1с").arg((now - newestTelemetry) / 1000);
                 }
                 else
                 {
                     state = QStringLiteral("online");
-                    text = QStringLiteral("ТЕЛЕМЕТРИЯ ONLINE");
+                    text = QStringLiteral("ROS ONLINE");
                 }
                 if (headerConnection)
                 {
-                    headerConnection->setText(
-                        QStringLiteral("%1 · DOMAIN %2")
-                            .arg(text, qEnvironmentVariable("ROS_DOMAIN_ID", "—")));
+                    headerConnection->setText(text);
                     setDynamicProperty(headerConnection, "connectionState", state);
                 }
 
@@ -1579,10 +1585,21 @@ void MainWindow::setupBrandHeader()
     logo->setObjectName(QStringLiteral("brandLogo"));
     logo->setFixedSize(44, 44);
     logo->setAlignment(Qt::AlignCenter);
-    logo->setPixmap(QPixmap(QStringLiteral(":/branding/hydronautics_logo.jpg"))
-                        .scaled(40, 40, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    logo->setStyleSheet(QStringLiteral(
-        "background-color: #f7fbfc; border: 1px solid #245867; border-radius: 8px; padding: 1px;"));
+    QPixmap brandPixmap(QStringLiteral(":/branding/hydronautics_logo.png"));
+    if (brandPixmap.isNull())
+    {
+        brandPixmap = QPixmap(40, 40);
+        brandPixmap.fill(Qt::transparent);
+        QPainter painter(&brandPixmap);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setPen(QPen(QColor(QStringLiteral("#20d9e6")), 3, Qt::SolidLine, Qt::RoundCap));
+        painter.drawArc(QRectF(5, 8, 30, 22), 205 * 16, 130 * 16);
+        painter.drawLine(QPointF(10, 25), QPointF(18, 32));
+        painter.drawLine(QPointF(30, 25), QPointF(22, 32));
+        painter.drawEllipse(QPointF(20, 17), 4, 4);
+    }
+    logo->setPixmap(brandPixmap.scaled(40, 40, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    logo->setStyleSheet(QStringLiteral("background: transparent; border: none;"));
 
     auto *title = new QLabel(
         QStringLiteral(
@@ -1605,12 +1622,11 @@ void MainWindow::setupBrandHeader()
     actionsLayout->setContentsMargins(8, 5, 14, 5);
     actionsLayout->setSpacing(10);
 
-    auto *connection = new QLabel(QStringLiteral("ROS ЗАПУСКАЕТСЯ  ·  DOMAIN %1")
-                                      .arg(qEnvironmentVariable("ROS_DOMAIN_ID", "—")),
-                                  headerActions);
+    auto *connection = new QLabel(QStringLiteral("ROS ЗАПУСКАЕТСЯ"), headerActions);
     connection->setObjectName(QStringLiteral("headerConnection"));
     connection->setProperty("connectionState", QStringLiteral("waiting"));
-    connection->setToolTip(QStringLiteral("Состояние канала связи ROS 2"));
+    connection->setToolTip(QStringLiteral("Состояние ROS 2 · DOMAIN %1")
+                               .arg(qEnvironmentVariable("ROS_DOMAIN_ID", "—")));
 
     auto *clock = new QLabel(headerActions);
     clock->setObjectName(QStringLiteral("headerClock"));
@@ -1628,6 +1644,7 @@ void MainWindow::setupBrandHeader()
 
     actionsLayout->addWidget(connection);
     actionsLayout->addWidget(ui->btn_theme_toggle);
+    ui->full_screen->setFixedWidth(120);
     actionsLayout->addWidget(ui->full_screen);
     actionsLayout->addWidget(clock);
     menuBar()->setCornerWidget(headerActions, Qt::TopRightCorner);
@@ -1831,19 +1848,10 @@ void MainWindow::useKeyBoard()
     ui->radioButton_useKeyBoard->setChecked(true);
     status_keyboard = true;
     activeInput = keyBoard.get();
-    displayText("Используемые клавиши(должна быть английская раскладка):\n"
-                "Клавиша O - вперед по маршу\n"
-                "Клавиша L - назад по маршу\n"
-                "Клавиша W - вниз по дифференту\n"
-                "Клавиша S - вверх по дифференту\n"
-                "Клавиша A - влево по курсу\n"
-                "Клавиша D - вправо по курсу\n"
-                "Клавиша C - вниз по глубине\n"
-                "Клавиша V - вверх по глубине\n"
-                "Клавиша Q - влево по крену\n"
-                "Клавиша E - вправо по крену\n"
-                "Клавиша K - влево по лагу\n"
-                "Клавиша ; - вправо по лагу\n");
+    ui->radioButton_useKeyBoard->setToolTip(
+        QStringLiteral("O/L — марш; W/S — дифферент; A/D — курс; C/V — глубина; "
+                       "Q/E — крен; K/; — лаг"));
+    displayText(QStringLiteral("Источник управления: клавиатура"));
 }
 
 void MainWindow::useJoyStick()
