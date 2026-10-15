@@ -12,12 +12,13 @@ usage()
 Usage: umas-gui <command>
 
 Commands:
-  build    Build the Docker image and UMAS GUI application
-  run      Run the built application in Docker
-  shell    Open an interactive development shell in Docker
-  format   Format project C and C++ sources
-  check    Check formatting without changing files
-  help     Show this help
+  docker-build  Build or update the Docker image
+  build         Build only the UMAS GUI application
+  run           Run the built application in Docker
+  shell         Open an interactive development shell in Docker
+  format        Format project C and C++ sources
+  check         Check formatting without changing files
+  help          Show this help
 EOF
 }
 
@@ -41,12 +42,25 @@ docker_base_args()
     )
 }
 
-build_project()
+require_image()
+{
+    require_command docker
+    if ! docker image inspect "$IMAGE_NAME" >/dev/null 2>&1; then
+        echo "Docker image '$IMAGE_NAME' was not found. Run 'umas-gui docker-build' first." >&2
+        exit 1
+    fi
+}
+
+build_docker_image()
 {
     require_command docker
     echo "Building Docker image '$IMAGE_NAME'..."
     docker build -f "$PROJECT_ROOT/docker/Dockerfile" -t "$IMAGE_NAME" "$PROJECT_ROOT"
+}
 
+build_project()
+{
+    require_image
     echo "Building UMAS GUI..."
     docker_base_args
     docker run "${DOCKER_ARGS[@]}" "$IMAGE_NAME" bash -lc \
@@ -66,7 +80,7 @@ enable_x11()
 
 run_project()
 {
-    require_command docker
+    require_image
     if [[ ! -x "$PROJECT_ROOT/build/UMAS_GUI" ]]; then
         echo "UMAS GUI is not built. Run 'umas-gui build' first." >&2
         exit 1
@@ -83,7 +97,7 @@ run_project()
 
 open_shell()
 {
-    require_command docker
+    require_image
     enable_x11
     docker_base_args
     docker run -it "${DOCKER_ARGS[@]}" \
@@ -121,16 +135,18 @@ check_sources()
 ensure_docker_tool()
 {
     local tool="$1"
-    require_command docker
+    require_image
 
-    if ! docker image inspect "$IMAGE_NAME" >/dev/null 2>&1 \
-        || ! docker run --rm "$IMAGE_NAME" bash -lc "command -v '$tool'" >/dev/null 2>&1; then
-        echo "Docker image '$IMAGE_NAME' does not contain $tool; rebuilding it..."
-        docker build -f "$PROJECT_ROOT/docker/Dockerfile" -t "$IMAGE_NAME" "$PROJECT_ROOT"
+    if ! docker run --rm "$IMAGE_NAME" bash -lc "command -v '$tool'" >/dev/null 2>&1; then
+        echo "Docker image '$IMAGE_NAME' does not contain $tool. Run 'umas-gui docker-build' to update it." >&2
+        exit 1
     fi
 }
 
 case "${1:-help}" in
+    docker-build|build-docker)
+        build_docker_image
+        ;;
     build)
         build_project
         ;;
