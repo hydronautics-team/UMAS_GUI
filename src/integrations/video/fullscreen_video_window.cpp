@@ -1,9 +1,10 @@
 #include "fullscreen_video_window.h"
 #include "attitudeindicator.h"
-#include "battery_alert_overlay.h"
 #include "battery_status_widget.h"
 #include "compass.h"
 #include "depth_gauge.h"
+#include "hud_alert_overlay.h"
+#include "hud_notification_stack.h"
 #include "video_player_widget.h"
 #include <QCloseEvent>
 #include <QDateTime>
@@ -23,25 +24,19 @@ FullscreenVideoWindow::FullscreenVideoWindow(UVState *uvState, QWidget *parent)
     fullscreenVideoLabel_->setAlignment(Qt::AlignCenter);
     fullscreenVideoLabel_->setStyleSheet("background-color: black;");
 
-    alarmLabel_ = new QLabel("СВЯЗЬ С РОБОТОМ ОК", fullscreenVideoLabel_);
-    alarmLabel_->setAlignment(Qt::AlignCenter);
-    alarmLabel_->setStyleSheet(
-        "color: #dffffb; font-size: 17px; font-weight: 600; background-color: rgba(18, 102, 95, "
-        "210); border: 1px solid #20c7b8; border-radius: 8px; padding: 5px 12px;");
-
     const QString dataPanelStyle = "color: #dffffb; font-size: 17px; font-weight: 600;"
                                    "background-color: rgba(3, 20, 25, 205);"
                                    "border: 1px solid rgba(93, 226, 215, 120);"
                                    "border-radius: 8px; padding: 7px 12px;";
     motionLabel_ = new QLabel("СКОРОСТЬ: N/A", fullscreenVideoLabel_);
     motionLabel_->setStyleSheet(dataPanelStyle);
-    coreStatusLabel_ = new QLabel("CORE: НЕТ ДАННЫХ", fullscreenVideoLabel_);
 
     compass_ = new Compass(fullscreenVideoLabel_);
     attitudeIndicator_ = new AttitudeIndicator(fullscreenVideoLabel_);
     depthGauge_ = new DepthGauge(fullscreenVideoLabel_);
     batteryStatusWidget_ = new BatteryStatusWidget(fullscreenVideoLabel_);
-    batteryAlertOverlay_ = new BatteryAlertOverlay(fullscreenVideoLabel_);
+    alertOverlay_ = new HudAlertOverlay(fullscreenVideoLabel_);
+    notificationStack_ = new HudNotificationStack(fullscreenVideoLabel_);
     attitudeIndicator_->setOverlayMode(true);
     orientationLabel_ = new QLabel(fullscreenVideoLabel_);
     orientationLabel_->setAlignment(Qt::AlignCenter);
@@ -135,49 +130,37 @@ void FullscreenVideoWindow::updateHudData()
                                  (battery2Fresh && battery.percentage_2 <= 15.0f);
     const bool warningBattery = (battery1Fresh && battery.percentage_1 <= 25.0f) ||
                                 (battery2Fresh && battery.percentage_2 <= 25.0f);
-    batteryAlertOverlay_->setLevel(criticalBattery
-                                       ? BatteryAlertOverlay::Level::Critical
-                                       : (warningBattery ? BatteryAlertOverlay::Level::Warning
-                                                         : BatteryAlertOverlay::Level::None));
-
-    coreStatusLabel_->setText(coreFresh ? "● STINGRAY CORE" : "● CORE НЕТ ДАННЫХ");
-    coreStatusLabel_->setStyleSheet(
-        coreFresh
-            ? "color: #8af5ec; font-size: 15px; font-weight: 700; background-color: rgba(8, 57, "
-              "60, 210); border: 1px solid #20c7b8; border-radius: 8px; padding: 6px 11px;"
-            : "color: #ffe8ec; font-size: 15px; font-weight: 700; background-color: rgba(120, 22, "
-              "39, 220); border: 1px solid #f05268; border-radius: 8px; padding: 6px 11px;");
-
-    const bool lowBattery = (battery1Fresh && battery.voltage_1 < 13.6f) ||
+    const bool depthExceeded = coreFresh && depth > 10.0f;
+    const bool lowVoltage = (battery1Fresh && battery.voltage_1 < 13.6f) ||
                             (battery2Fresh && battery.voltage_2 < 13.6f);
-    if (!coreFresh)
-    {
-        alarmLabel_->setText("ВНИМАНИЕ: НЕТ ДАННЫХ STINGRAY CORE");
-        alarmLabel_->setStyleSheet(
-            "color: #ffe8ec; font-size: 17px; font-weight: 600; background-color: rgba(163, 38, "
-            "61, 225); border: 1px solid #f05268; border-radius: 8px; padding: 5px 12px;");
-    }
-    else if (depth > 10.0f)
-    {
-        alarmLabel_->setText("ВНИМАНИЕ: ПРЕВЫШЕНИЕ ГЛУБИНЫ!");
-        alarmLabel_->setStyleSheet(
-            "color: #ffe8ec; font-size: 17px; font-weight: 600; background-color: rgba(163, 38, "
-            "61, 225); border: 1px solid #f05268; border-radius: 8px; padding: 5px 12px;");
-    }
-    else if (lowBattery)
-    {
-        alarmLabel_->setText("ВНИМАНИЕ: НИЗКОЕ НАПРЯЖЕНИЕ АКБ");
-        alarmLabel_->setStyleSheet(
-            "color: #fff3df; font-size: 17px; font-weight: 600; background-color: rgba(135, 77, "
-            "18, 225); border: 1px solid #efb766; border-radius: 8px; padding: 5px 12px;");
-    }
-    else
-    {
-        alarmLabel_->setText("СИСТЕМА СТАБИЛЬНА");
-        alarmLabel_->setStyleSheet(
-            "color: #dffffb; font-size: 17px; font-weight: 600; background-color: rgba(18, 102, "
-            "95, 210); border: 1px solid #20c7b8; border-radius: 8px; padding: 5px 12px;");
-    }
+
+    alertOverlay_->setAlert("connection", HudAlertOverlay::Level::Critical, !coreFresh);
+    alertOverlay_->setAlert("depth", HudAlertOverlay::Level::Critical, depthExceeded);
+    alertOverlay_->setAlert("battery_critical", HudAlertOverlay::Level::Critical, criticalBattery);
+    alertOverlay_->setAlert("battery_warning", HudAlertOverlay::Level::Warning,
+                            warningBattery && !criticalBattery);
+    alertOverlay_->setAlert("battery_voltage", HudAlertOverlay::Level::Warning, lowVoltage);
+
+    notificationStack_->setCondition("connection", !coreFresh, "НЕТ СВЯЗИ СО STINGRAY CORE",
+                                     HudNotificationStack::Severity::Error);
+    notificationStack_->setCondition(
+        "depth", depthExceeded, QStringLiteral("ПРЕВЫШЕНИЕ ГЛУБИНЫ: %1 м").arg(depth, 0, 'f', 1),
+        HudNotificationStack::Severity::Error);
+    notificationStack_->setCondition("battery_critical", criticalBattery,
+                                     "КРИТИЧЕСКИЙ ЗАРЯД АККУМУЛЯТОРА",
+                                     HudNotificationStack::Severity::Error);
+    notificationStack_->setCondition("battery_warning", warningBattery && !criticalBattery,
+                                     "НИЗКИЙ ЗАРЯД АККУМУЛЯТОРА",
+                                     HudNotificationStack::Severity::Warning);
+    notificationStack_->setCondition("battery_voltage", lowVoltage,
+                                     "НИЗКОЕ НАПРЯЖЕНИЕ АККУМУЛЯТОРА",
+                                     HudNotificationStack::Severity::Warning);
+
+    const bool stable =
+        coreFresh && !depthExceeded && !criticalBattery && !warningBattery && !lowVoltage;
+    if (stable && !wasStable_)
+        notificationStack_->showInfo("stable", "СИСТЕМА СТАБИЛЬНА", 4000);
+    wasStable_ = stable;
 }
 
 void FullscreenVideoWindow::keyPressEvent(QKeyEvent *event)
@@ -213,15 +196,13 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
 
     // Выставляем точные координаты для надписей телеметрии
     if (motionLabel_)
-        motionLabel_->setGeometry(30, 30, 310, 48);
+        motionLabel_->setGeometry(w - 606, h - 84, 310, 48);
     if (batteryStatusWidget_)
         batteryStatusWidget_->setGeometry(w - 280, h - 146, 250, 110);
-    if (batteryAlertOverlay_)
-        batteryAlertOverlay_->setGeometry(0, 0, w, h);
-    if (coreStatusLabel_)
-        coreStatusLabel_->setGeometry(30, h - 108, 260, 38);
-    if (alarmLabel_)
-        alarmLabel_->setGeometry((w - 600) / 2, h - 62, 600, 40);
+    if (alertOverlay_)
+        alertOverlay_->setGeometry(0, 0, w, h);
+    if (notificationStack_)
+        notificationStack_->setGeometry(30, 30, qBound(300, w / 4, 430), qMax(120, h - 168));
 
     const int instrumentSize = qBound(140, qMin(w, h) / 5, 240);
     const int margin = 30;
@@ -246,16 +227,14 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
         orientationLabel_->setGeometry((w - 560) / 2, margin, 560, 42);
 
     // Выводим надписи на передний план
-    if (batteryAlertOverlay_)
-        batteryAlertOverlay_->raise();
-    if (alarmLabel_)
-        alarmLabel_->raise();
+    if (alertOverlay_)
+        alertOverlay_->raise();
     if (motionLabel_)
         motionLabel_->raise();
     if (batteryStatusWidget_)
         batteryStatusWidget_->raise();
-    if (coreStatusLabel_)
-        coreStatusLabel_->raise();
+    if (notificationStack_)
+        notificationStack_->raise();
     if (compass_)
         compass_->raise();
     if (depthGauge_)

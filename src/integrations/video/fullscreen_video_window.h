@@ -12,7 +12,8 @@ class Compass;
 class AttitudeIndicator;
 class DepthGauge;
 class BatteryStatusWidget;
-class BatteryAlertOverlay;
+class HudAlertOverlay;
+class HudNotificationStack;
 
 class FullscreenVideoWindow : public QWidget
 {
@@ -43,16 +44,16 @@ private:
     QLabel *fullscreenVideoLabel_;   // Холст для видео
     QWidget *videoPlayer_ = nullptr; // Указатель на видео-плеер
 
-    QLabel *alarmLabel_;
     QLabel *motionLabel_;
-    QLabel *coreStatusLabel_;
     Compass *compass_;
     AttitudeIndicator *attitudeIndicator_;
     DepthGauge *depthGauge_;
     BatteryStatusWidget *batteryStatusWidget_;
-    BatteryAlertOverlay *batteryAlertOverlay_;
+    HudAlertOverlay *alertOverlay_;
+    HudNotificationStack *notificationStack_;
     QLabel *orientationLabel_;
     QTimer *hudTimer_;
+    bool wasStable_ = false;
 };
 
 #endif // FULLSCREEN_VIDEO_WINDOW_H

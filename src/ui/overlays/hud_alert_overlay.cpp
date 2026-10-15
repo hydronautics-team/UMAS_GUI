@@ -1,10 +1,10 @@
-#include "battery_alert_overlay.h"
+#include "hud_alert_overlay.h"
 
 #include <QLinearGradient>
 #include <QPainter>
 #include <cmath>
 
-BatteryAlertOverlay::BatteryAlertOverlay(QWidget *parent) : QWidget(parent)
+HudAlertOverlay::HudAlertOverlay(QWidget *parent) : QWidget(parent)
 {
     setAttribute(Qt::WA_TransparentForMouseEvents);
     setAttribute(Qt::WA_TranslucentBackground);
@@ -13,8 +13,25 @@ BatteryAlertOverlay::BatteryAlertOverlay(QWidget *parent) : QWidget(parent)
     connect(&animationTimer_, &QTimer::timeout, this, qOverload<>(&QWidget::update));
 }
 
-void BatteryAlertOverlay::setLevel(Level level)
+void HudAlertOverlay::setAlert(const QString &reason, Level level, bool active)
 {
+    if (active)
+        alerts_.insert(reason, level);
+    else
+        alerts_.remove(reason);
+
+    updateLevel();
+}
+
+void HudAlertOverlay::updateLevel()
+{
+    Level level = Level::None;
+    for (const Level candidate : alerts_)
+    {
+        if (static_cast<int>(candidate) > static_cast<int>(level))
+            level = candidate;
+    }
+
     if (level_ == level)
         return;
 
@@ -28,7 +45,7 @@ void BatteryAlertOverlay::setLevel(Level level)
     update();
 }
 
-void BatteryAlertOverlay::paintEvent(QPaintEvent *event)
+void HudAlertOverlay::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event)
 
