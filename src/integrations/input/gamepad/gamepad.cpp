@@ -1,22 +1,22 @@
 #include "gamepad.h"
-#include <QDebug>
 #include <QCoreApplication>
+#include <QDebug>
 #include <errno.h>
 #include <string.h>
 
 Gamepad::Gamepad(int id, QObject *parent)
-    : QObject(parent)
-    , m_fd(-1)
-    , m_notifier(nullptr)
-    , m_connected(false)
-    , m_triggerLeftZero(0.0f)
-    , m_triggerRightZero(0.0f)
-    , m_triggersCalibrated(false)
-    , m_calibrationFrames(0)
-    , m_prevDPadUp(false)
-    , m_prevDPadDown(false)
-    , m_prevDPadLeft(false)
-    , m_prevDPadRight(false)
+    : QObject(parent),
+      m_fd(-1),
+      m_notifier(nullptr),
+      m_connected(false),
+      m_triggerLeftZero(0.0f),
+      m_triggerRightZero(0.0f),
+      m_triggersCalibrated(false),
+      m_calibrationFrames(0),
+      m_prevDPadUp(false),
+      m_prevDPadDown(false),
+      m_prevDPadLeft(false),
+      m_prevDPadRight(false)
 {
     for (int i = 0; i < 8; ++i)
         m_axisValues[i] = 0.0f;
@@ -25,7 +25,8 @@ Gamepad::Gamepad(int id, QObject *parent)
 
     QString devicePath = QString("/dev/input/js%1").arg(id);
     m_fd = open(devicePath.toLocal8Bit().constData(), O_RDONLY | O_NONBLOCK);
-    if (m_fd < 0) {
+    if (m_fd < 0)
+    {
         qWarning() << "Не удалось открыть устройство" << devicePath << ":" << strerror(errno);
         m_connected = false;
         return;
@@ -40,26 +41,27 @@ Gamepad::Gamepad(int id, QObject *parent)
 
 Gamepad::~Gamepad()
 {
-    if (m_notifier) {
+    if (m_notifier)
+    {
         m_notifier->setEnabled(false);
         delete m_notifier;
     }
-    if (m_fd >= 0) {
+    if (m_fd >= 0)
+    {
         close(m_fd);
     }
 }
 
-bool Gamepad::isConnected() const
-{
-    return m_connected && m_fd >= 0;
-}
+bool Gamepad::isConnected() const { return m_connected && m_fd >= 0; }
 
 void Gamepad::onJoystickEvent()
 {
     struct js_event e;
     int bytesRead = read(m_fd, &e, sizeof(e));
-    if (bytesRead != sizeof(e)) {
-        if (bytesRead < 0 && errno != EAGAIN) {
+    if (bytesRead != sizeof(e))
+    {
+        if (bytesRead < 0 && errno != EAGAIN)
+        {
             qWarning() << "Ошибка чтения из джойстика:" << strerror(errno);
             m_connected = false;
             m_notifier->setEnabled(false);
@@ -70,19 +72,18 @@ void Gamepad::onJoystickEvent()
     }
 
     // ===== DEBUG: сырое событие от геймпада =====
-    const char* typeStr = (e.type & JS_EVENT_BUTTON) ? "BUTTON"
-                       : (e.type & JS_EVENT_AXIS)   ? "AXIS"
-                       : (e.type & JS_EVENT_INIT)   ? "INIT"
-                       : "UNKNOWN";
+    const char *typeStr = (e.type & JS_EVENT_BUTTON) ? "BUTTON"
+                          : (e.type & JS_EVENT_AXIS) ? "AXIS"
+                          : (e.type & JS_EVENT_INIT) ? "INIT"
+                                                     : "UNKNOWN";
     qDebug() << "[Gamepad RAW]"
-             << "type=" << typeStr
-             << "number=" << e.number
-             << "value=" << e.value
+             << "type=" << typeStr << "number=" << e.number << "value=" << e.value
              << "(init=" << bool(e.type & JS_EVENT_INIT) << ")";
     // ============================================
 
     // INIT-события игнорируем
-    if (e.type & JS_EVENT_INIT) {
+    if (e.type & JS_EVENT_INIT)
+    {
         return;
     }
 
@@ -92,14 +93,17 @@ void Gamepad::onJoystickEvent()
     // Обрабатываем их напрямую через clamp(normalized, 0, 100).
     // ============================================================
 
-    if (e.type & JS_EVENT_AXIS) {
+    if (e.type & JS_EVENT_AXIS)
+    {
         int axis = e.number;
-        float normalized = normalizeAxis(e.value);   // -100..100
+        float normalized = normalizeAxis(e.value); // -100..100
 
-        if (axis < 8) {
+        if (axis < 8)
+        {
             m_axisValues[axis] = normalized;
 
-            switch (axis) {
+            switch (axis)
+            {
             case AxisLeftStickX:
                 emit leftStickXMoved(normalized);
                 break;
@@ -114,102 +118,170 @@ void Gamepad::onJoystickEvent()
                 break;
 
             case AxisLeftTrigger:
-                {
-                    // L2: -100 (отпущена) → 0 ; +100 (нажата) → 100
-                    float trigger = std::clamp(normalized, 0.0f, 100.0f);
-                    qDebug() << "[Gamepad] L2 → normalized=" << normalized
-                             << "trigger=" << trigger
-                             << "→ emit leftTriggerMoved";
-                    emit leftTriggerMoved(trigger);
-                }
-                break;
+            {
+                // L2: -100 (отпущена) → 0 ; +100 (нажата) → 100
+                float trigger = std::clamp(normalized, 0.0f, 100.0f);
+                qDebug() << "[Gamepad] L2 → normalized=" << normalized << "trigger=" << trigger
+                         << "→ emit leftTriggerMoved";
+                emit leftTriggerMoved(trigger);
+            }
+            break;
             case AxisRightTrigger:
-                {
-                    // R2: -100 (отпущена) → 0 ; +100 (нажата) → 100
-                    float trigger = std::clamp(normalized, 0.0f, 100.0f);
-                    qDebug() << "[Gamepad] R2 → normalized=" << normalized
-                             << "trigger=" << trigger
-                             << "→ emit rightTriggerMoved";
-                    emit rightTriggerMoved(trigger);
-                }
-                break;
+            {
+                // R2: -100 (отпущена) → 0 ; +100 (нажата) → 100
+                float trigger = std::clamp(normalized, 0.0f, 100.0f);
+                qDebug() << "[Gamepad] R2 → normalized=" << normalized << "trigger=" << trigger
+                         << "→ emit rightTriggerMoved";
+                emit rightTriggerMoved(trigger);
+            }
+            break;
 
             case AxisDPadX:
+            {
+                bool left = normalized <= -80.0f;
+                bool right = normalized >= 80.0f;
+                if (left != m_prevDPadLeft)
                 {
-                    bool left  = normalized <= -80.0f;
-                    bool right = normalized >=  80.0f;
-                    if (left != m_prevDPadLeft) {
-                        m_prevDPadLeft = left;
-                        if (left) emit dPadLeftPressed();
-                        else      emit dPadLeftReleased();
-                    }
-                    if (right != m_prevDPadRight) {
-                        m_prevDPadRight = right;
-                        if (right) emit dPadRightPressed();
-                        else       emit dPadRightReleased();
-                    }
+                    m_prevDPadLeft = left;
+                    if (left)
+                        emit dPadLeftPressed();
+                    else
+                        emit dPadLeftReleased();
                 }
-                break;
+                if (right != m_prevDPadRight)
+                {
+                    m_prevDPadRight = right;
+                    if (right)
+                        emit dPadRightPressed();
+                    else
+                        emit dPadRightReleased();
+                }
+            }
+            break;
             case AxisDPadY:
+            {
+                bool up = normalized <= -80.0f;
+                bool down = normalized >= 80.0f;
+                if (up != m_prevDPadUp)
                 {
-                    bool up   = normalized <= -80.0f;
-                    bool down = normalized >=  80.0f;
-                    if (up != m_prevDPadUp) {
-                        m_prevDPadUp = up;
-                        if (up) emit dPadUpPressed();
-                        else    emit dPadUpReleased();
-                    }
-                    if (down != m_prevDPadDown) {
-                        m_prevDPadDown = down;
-                        if (down) emit dPadDownPressed();
-                        else      emit dPadDownReleased();
-                    }
+                    m_prevDPadUp = up;
+                    if (up)
+                        emit dPadUpPressed();
+                    else
+                        emit dPadUpReleased();
                 }
-                break;
+                if (down != m_prevDPadDown)
+                {
+                    m_prevDPadDown = down;
+                    if (down)
+                        emit dPadDownPressed();
+                    else
+                        emit dPadDownReleased();
+                }
+            }
+            break;
             default:
                 break;
             }
         }
     }
-    else if (e.type & JS_EVENT_BUTTON) {
+    else if (e.type & JS_EVENT_BUTTON)
+    {
         int btn = e.number;
         bool pressed = e.value;
 
-        if (btn < 13) {
+        if (btn < 13)
+        {
             bool old = m_buttonStates[btn];
-            if (pressed != old) {
+            if (pressed != old)
+            {
                 m_buttonStates[btn] = pressed;
-                if (pressed) {
-                    switch (btn) {
-                    case ButtonA:     emit buttonAPressed();      break;
-                    case ButtonB:     emit buttonBPressed();      break;
-                    case ButtonX:     emit buttonXPressed();      break;
-                    case ButtonY:     emit buttonYPressed();      break;
-                    case ButtonStart: emit startButtonPressed();  break;
-                    case ButtonBack:  emit backButtonPressed();   break;
-                    case ButtonL1:    emit L1Pressed();           break;
-                    case ButtonR1:    emit R1Pressed();           break;
-                    case ButtonL3:    emit L3Pressed();           break;
-                    case ButtonR3:    emit R3Pressed();           break;
-                    case Button11:    emit button11Pressed();     break;  // новое
-                    case Button12:    emit button12Pressed();     break;  // новое
-                    default: break;
+                if (pressed)
+                {
+                    switch (btn)
+                    {
+                    case ButtonA:
+                        emit buttonAPressed();
+                        break;
+                    case ButtonB:
+                        emit buttonBPressed();
+                        break;
+                    case ButtonX:
+                        emit buttonXPressed();
+                        break;
+                    case ButtonY:
+                        emit buttonYPressed();
+                        break;
+                    case ButtonStart:
+                        emit startButtonPressed();
+                        break;
+                    case ButtonBack:
+                        emit backButtonPressed();
+                        break;
+                    case ButtonL1:
+                        emit L1Pressed();
+                        break;
+                    case ButtonR1:
+                        emit R1Pressed();
+                        break;
+                    case ButtonL3:
+                        emit L3Pressed();
+                        break;
+                    case ButtonR3:
+                        emit R3Pressed();
+                        break;
+                    case Button11:
+                        emit button11Pressed();
+                        break; // новое
+                    case Button12:
+                        emit button12Pressed();
+                        break; // новое
+                    default:
+                        break;
                     }
-                } else {
-                    switch (btn) {
-                    case ButtonA:     emit buttonAReleased();      break;
-                    case ButtonB:     emit buttonBReleased();      break;
-                    case ButtonX:     emit buttonXReleased();      break;
-                    case ButtonY:     emit buttonYReleased();      break;
-                    case ButtonStart: emit startButtonReleased();  break;
-                    case ButtonBack:  emit backButtonReleased();   break;
-                    case ButtonL1:    emit L1Released();           break;
-                    case ButtonR1:    emit R1Released();           break;
-                    case ButtonL3:    emit L3Released();           break;
-                    case ButtonR3:    emit R3Released();           break;
-                    case Button11:    emit button11Released();     break;  // новое
-                    case Button12:    emit button12Released();     break;  // новое
-                    default: break;
+                }
+                else
+                {
+                    switch (btn)
+                    {
+                    case ButtonA:
+                        emit buttonAReleased();
+                        break;
+                    case ButtonB:
+                        emit buttonBReleased();
+                        break;
+                    case ButtonX:
+                        emit buttonXReleased();
+                        break;
+                    case ButtonY:
+                        emit buttonYReleased();
+                        break;
+                    case ButtonStart:
+                        emit startButtonReleased();
+                        break;
+                    case ButtonBack:
+                        emit backButtonReleased();
+                        break;
+                    case ButtonL1:
+                        emit L1Released();
+                        break;
+                    case ButtonR1:
+                        emit R1Released();
+                        break;
+                    case ButtonL3:
+                        emit L3Released();
+                        break;
+                    case ButtonR3:
+                        emit R3Released();
+                        break;
+                    case Button11:
+                        emit button11Released();
+                        break; // новое
+                    case Button12:
+                        emit button12Released();
+                        break; // новое
+                    default:
+                        break;
                     }
                 }
             }
@@ -241,7 +313,7 @@ QPair<float, float> Gamepad::getRightStickValues() const
 QPair<float, float> Gamepad::getTriggerValues() const
 {
     // Без калибровки: просто clamp значения оси в 0..100
-    float left  = std::clamp(m_axisValues[AxisLeftTrigger],  0.0f, 100.0f);
+    float left = std::clamp(m_axisValues[AxisLeftTrigger], 0.0f, 100.0f);
     float right = std::clamp(m_axisValues[AxisRightTrigger], 0.0f, 100.0f);
     return qMakePair(left, right);
 }

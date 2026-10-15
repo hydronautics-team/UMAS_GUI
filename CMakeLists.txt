@@ -23,6 +23,7 @@ find_package(Qt5 REQUIRED COMPONENTS Core  )
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(ament_cmake REQUIRED)
@@ -64,7 +65,10 @@ include_directories("${PROJECT_SOURCE_DIR}/src/integrations/input")
 include_directories("${PROJECT_SOURCE_DIR}/src/integrations/input/gamepad")
 include_directories("${PROJECT_SOURCE_DIR}/src/integrations/input/legacy")
 include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/attitude")
+include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/battery")
 include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/compass")
+include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/depth")
+include_directories("${PROJECT_SOURCE_DIR}/src/ui/overlays")
 include_directories("${PROJECT_SOURCE_DIR}")
 
 include_directories(${Python3_INCLUDE_DIRS})
@@ -88,9 +92,17 @@ set(PROJECT_SOURCES
         resources/resources.qrc
         src/ui/instruments/attitude/attitudeindicator.h
         src/ui/instruments/attitude/attitudeindicator.cpp
+        src/ui/instruments/battery/battery_status_widget.cpp
+        src/ui/instruments/battery/battery_status_widget.h
+        src/ui/overlays/hud_alert_overlay.cpp
+        src/ui/overlays/hud_alert_overlay.h
+        src/ui/overlays/hud_notification_stack.cpp
+        src/ui/overlays/hud_notification_stack.h
         src/ui/instruments/compass/compass.cpp
         src/ui/instruments/compass/compass.h
         src/ui/instruments/compass/compass.ui
+        src/ui/instruments/depth/depth_gauge.cpp
+        src/ui/instruments/depth/depth_gauge.h
         src/core/telemetry/uv_state.cpp
         src/core/telemetry/uv_state.h
         src/integrations/input/i_input_source.h
@@ -130,7 +142,7 @@ else()
     endif()
 endif()
 
-ament_target_dependencies(UMAS_GUI rclcpp geometry_msgs std_msgs sensor_msgs nav_msgs)
+ament_target_dependencies(UMAS_GUI rclcpp geometry_msgs std_msgs std_srvs sensor_msgs nav_msgs)
 
 target_link_libraries(UMAS_GUI
     ${GST_LIBRARIES}                           # <-- ДОБАВЛЕНО

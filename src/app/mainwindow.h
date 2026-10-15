@@ -1,30 +1,33 @@
 #pragma once
 
-#include <QMainWindow>
-#include <QTimer>
-#include <QDebug>
-#include <QProcess>
-#include <QTime>
 #include <QButtonGroup>
-#include <QString>
+#include <QDebug>
 #include <QKeyEvent>
-#include <memory>
+#include <QMainWindow>
+#include <QProcess>
 #include <QSettings>
 #include <QSpinBox>
+#include <QString>
+#include <QTime>
+#include <QTimer>
+#include <memory>
 
+#include "control_service.h"
+#include "fullscreen_video_window.h"
+#include "gamepad.h"
+#include "gamepad_input_source.h"
+#include "i_input_source.h"
 #include "joy_stick.h"
 #include "key_board.h"
-#include "i_input_source.h"
-#include "gamepad_input_source.h"
-#include "control_service.h"
 #include "ros2_bridge.h"
 #include "uv_state.h"
 #include "video_player_widget.h"
-#include "fullscreen_video_window.h"
-#include "gamepad.h"
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+namespace Ui
+{
+class MainWindow;
+}
 QT_END_NAMESPACE
 
 class VideoPlayerWidget;
@@ -43,13 +46,18 @@ private:
     Gamepad *gamepad = nullptr;
     std::unique_ptr<GamepadInputSource> gamepadInput;
 
-    FullscreenVideoWindow* fullscreenWindow_ = nullptr;
+    FullscreenVideoWindow *fullscreenWindow_ = nullptr;
 
-    enum class SpeedMode : uint8_t { Slow = 0, Medium = 1, Fast = 2 };
+    enum class SpeedMode : uint8_t
+    {
+        Slow = 0,
+        Medium = 1,
+        Fast = 2
+    };
     SpeedMode currentMode;
 
     QMap<int, QMap<QString, double>> speedModeGains;
-    QVector<QSpinBox*> gainSpinBoxes;
+    QVector<QSpinBox *> gainSpinBoxes;
     QStringList gainNames = {"surge", "sway", "depth", "yaw", "pitch", "roll"};
 
     void saveCurrentModeGains();
@@ -73,8 +81,8 @@ private:
     void updateTelemetryFromState();
     bool isConnected = false;
 
-    void setTurnState(const QString& state);
-    void setGripState(const QString& state);
+    void setTurnState(const QString &state);
+    void setGripState(const QString &state);
 
     bool m_l1Pressed = false;
     bool m_r1Pressed = false;
@@ -82,9 +90,9 @@ private:
 
     bool status_keyboard = false;
 
-    RosBridge           *rosBridge;
-    UVState             *uvState;
-    VideoPlayerWidget   *videoPlayer_ = nullptr;
+    RosBridge *rosBridge;
+    UVState *uvState;
+    VideoPlayerWidget *videoPlayer_ = nullptr;
 
 private slots:
     void setSpeedMode(SpeedMode mode);
@@ -112,22 +120,21 @@ private:
 
 signals:
     void updateCompass(float yaw);
-    void publishTwistRequested(double x, double y, double z,
-                               double angular_x, double angular_y, double angular_z);
+    void publishTwistRequested(double x, double y, double z, double angular_x, double angular_y,
+                               double angular_z);
     void controlFlagRequested(uint8_t bit, bool value);
 
 protected:
     Ui::MainWindow *ui;
     QTimer *updateTimer = nullptr;
-    
 
     std::unique_ptr<JoyStick> joyStick;
     std::unique_ptr<KeyBoard> keyBoard;
     umas::input::IInputSource *activeInput = nullptr;
     umas::control::ControlService controlService;
 
-    umas::input::ControlCommand applyGains(const umas::input::ControlCommand& raw) const;
-    void updateControlLabels(const umas::input::ControlCommand& scaled);
+    umas::input::ControlCommand applyGains(const umas::input::ControlCommand &raw) const;
+    void updateControlLabels(const umas::input::ControlCommand &scaled);
 
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);

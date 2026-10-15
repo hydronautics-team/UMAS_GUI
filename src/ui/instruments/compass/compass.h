@@ -22,7 +22,7 @@ private:
     float m_yaw = 0.0f;
     float m_targetBearing = 0.0f;
     float m_cog = 0.0f;
-    bool  m_targetValid = false;
-    bool  m_cogValid = false;
-    bool  m_lightTheme = false;
+    bool m_targetValid = false;
+    bool m_cogValid = false;
+    bool m_lightTheme = false;
 };
