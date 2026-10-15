@@ -14,6 +14,9 @@ class DepthGauge;
 class BatteryStatusWidget;
 class HudAlertOverlay;
 class HudNotificationStack;
+class QFrame;
+class QPushButton;
+class VideoPlayerWidget;
 
 class FullscreenVideoWindow : public QWidget
 {
@@ -38,11 +41,16 @@ protected:
 
 private slots:
     void updateHudData();
+    void setSecondaryCameraEnabled(bool enabled);
 
 private:
     UVState *uvState_;
     QLabel *fullscreenVideoLabel_;   // Холст для видео
     QWidget *videoPlayer_ = nullptr; // Указатель на видео-плеер
+    QFrame *secondaryCameraFrame_;
+    QLabel *secondaryCameraTitle_;
+    VideoPlayerWidget *secondaryVideoPlayer_;
+    QPushButton *secondaryCameraButton_;
 
     QLabel *motionLabel_;
     Compass *compass_;

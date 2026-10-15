@@ -9,7 +9,9 @@
 #include <QCloseEvent>
 #include <QDateTime>
 #include <QDebug>
+#include <QFrame>
 #include <QPalette>
+#include <QPushButton>
 #include <QResizeEvent>
 #include <cmath>
 
@@ -43,6 +45,33 @@ FullscreenVideoWindow::FullscreenVideoWindow(UVState *uvState, QWidget *parent)
     orientationLabel_->setStyleSheet(
         "color: white; font-size: 18px; font-weight: bold;"
         "background-color: rgba(5, 12, 18, 170); border-radius: 6px; padding: 4px;");
+
+    secondaryCameraFrame_ = new QFrame(fullscreenVideoLabel_);
+    secondaryCameraFrame_->setObjectName("secondaryCameraFrame");
+    secondaryCameraFrame_->setStyleSheet(
+        "QFrame#secondaryCameraFrame { background-color: rgba(3, 20, 25, 235);"
+        "border: 2px solid rgba(32, 199, 184, 210); border-radius: 10px; }");
+    secondaryCameraTitle_ = new QLabel("КАМЕРА 2  ·  UDP 5001", secondaryCameraFrame_);
+    secondaryCameraTitle_->setAlignment(Qt::AlignCenter);
+    secondaryCameraTitle_->setStyleSheet("color: #dffffb; font-size: 13px; font-weight: 700; "
+                                         "background: transparent; border: none;");
+    secondaryVideoPlayer_ = new VideoPlayerWidget(secondaryCameraFrame_);
+    secondaryVideoPlayer_->setFullscreenPresentation(true);
+    secondaryCameraFrame_->hide();
+
+    secondaryCameraButton_ = new QPushButton("КАМЕРА 2", fullscreenVideoLabel_);
+    secondaryCameraButton_->setCheckable(true);
+    secondaryCameraButton_->setFocusPolicy(Qt::NoFocus);
+    secondaryCameraButton_->setCursor(Qt::PointingHandCursor);
+    secondaryCameraButton_->setStyleSheet(
+        "QPushButton { color: #dffffb; font-size: 13px; font-weight: 700;"
+        "background-color: rgba(3, 20, 25, 220); border: 1px solid rgba(93, 226, 215, 150);"
+        "border-radius: 8px; padding: 7px 14px; }"
+        "QPushButton:hover { background-color: rgba(13, 75, 76, 230); border-color: #5de2d7; }"
+        "QPushButton:checked { color: #061d20; background-color: #5de2d7; border-color: #9ffff7; "
+        "}");
+    connect(secondaryCameraButton_, &QPushButton::toggled, this,
+            &FullscreenVideoWindow::setSecondaryCameraEnabled);
 
     hudTimer_ = new QTimer(this);
     connect(hudTimer_, &QTimer::timeout, this, &FullscreenVideoWindow::updateHudData);
@@ -163,6 +192,28 @@ void FullscreenVideoWindow::updateHudData()
     wasStable_ = stable;
 }
 
+void FullscreenVideoWindow::setSecondaryCameraEnabled(bool enabled)
+{
+    if (enabled)
+    {
+        secondaryVideoPlayer_->startStream("5001");
+        secondaryCameraFrame_->show();
+        secondaryCameraButton_->setText("СКРЫТЬ");
+    }
+    else
+    {
+        secondaryVideoPlayer_->stopStream();
+        secondaryCameraFrame_->hide();
+        secondaryCameraButton_->setText("КАМЕРА 2");
+    }
+
+    secondaryCameraFrame_->raise();
+    secondaryCameraButton_->raise();
+    const int notificationBottom = enabled ? secondaryCameraFrame_->y() - 16 : height() - 138;
+    notificationStack_->setGeometry(30, 30, qBound(300, width() / 4, 430),
+                                    qMax(120, notificationBottom - 30));
+}
+
 void FullscreenVideoWindow::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape)
@@ -201,8 +252,25 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
         batteryStatusWidget_->setGeometry(w - 280, h - 146, 250, 110);
     if (alertOverlay_)
         alertOverlay_->setGeometry(0, 0, w, h);
+
+    const int secondaryWidth = qBound(300, w / 4, 420);
+    const int secondaryHeight = secondaryWidth * 9 / 16 + 34;
+    const int secondaryTop = h - secondaryHeight - 94;
+    if (secondaryCameraFrame_)
+    {
+        secondaryCameraFrame_->setGeometry(30, secondaryTop, secondaryWidth, secondaryHeight);
+        secondaryCameraTitle_->setGeometry(10, 5, secondaryWidth - 20, 24);
+        secondaryVideoPlayer_->setGeometry(4, 32, secondaryWidth - 8, secondaryHeight - 36);
+    }
+    if (secondaryCameraButton_)
+        secondaryCameraButton_->setGeometry(30, h - 60, 110, 24);
     if (notificationStack_)
-        notificationStack_->setGeometry(30, 30, qBound(300, w / 4, 430), qMax(120, h - 168));
+    {
+        const int notificationBottom =
+            secondaryCameraFrame_->isVisible() ? secondaryTop - 16 : h - 138;
+        notificationStack_->setGeometry(30, 30, qBound(300, w / 4, 430),
+                                        qMax(120, notificationBottom - 30));
+    }
 
     const int instrumentSize = qBound(140, qMin(w, h) / 5, 240);
     const int margin = 30;
@@ -235,6 +303,10 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
         batteryStatusWidget_->raise();
     if (notificationStack_)
         notificationStack_->raise();
+    if (secondaryCameraFrame_)
+        secondaryCameraFrame_->raise();
+    if (secondaryCameraButton_)
+        secondaryCameraButton_->raise();
     if (compass_)
         compass_->raise();
     if (depthGauge_)
@@ -247,6 +319,7 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
 
 void FullscreenVideoWindow::closeEvent(QCloseEvent *event)
 {
+    secondaryVideoPlayer_->stopStream();
     if (auto *player = qobject_cast<VideoPlayerWidget *>(videoPlayer_))
         player->setFullscreenPresentation(false);
     emit windowClosed();
