@@ -773,6 +773,10 @@ void MainWindow::setBottom()
 {
     setBottom_mode();
 
+    // Кнопка временно отключается на время запроса. Если она принимает фокус,
+    // Qt передаёт его следующему виджету — полю коэффициента марша.
+    ui->pushButton_resetDvlOrigin->setFocusPolicy(Qt::NoFocus);
+
     if (ui->pushButton_speedFast)
     {
         connect(ui->pushButton_speedFast, &QPushButton::clicked, this,
