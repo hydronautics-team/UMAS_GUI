@@ -24,7 +24,10 @@ SHORTCUT="$DESKTOP_DIR/umas-gui.desktop"
 chmod +x "$SHORTCUT"
 
 if command -v gio >/dev/null 2>&1; then
-    gio set "$SHORTCUT" metadata::trusted true >/dev/null 2>&1 || true
+    if ! gio set "$SHORTCUT" metadata::trusted true; then
+        echo "Warning: GNOME could not mark the shortcut as trusted." >&2
+        echo "Right-click it and select 'Allow Launching'." >&2
+    fi
 fi
 
 echo "Installed desktop shortcut: $SHORTCUT"
