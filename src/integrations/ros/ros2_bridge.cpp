@@ -116,6 +116,7 @@ void RosBridge::run()
                                                   [this]() { updateManipulatorCommand(); });
 
     is_ready_ = true;
+    emit readyChanged(true);
 
     while (rclcpp::ok() && !isInterruptionRequested())
     {
@@ -123,6 +124,8 @@ void RosBridge::run()
         QThread::msleep(1);
     }
 
+    is_ready_ = false;
+    emit readyChanged(false);
     rclcpp::shutdown();
 }
 

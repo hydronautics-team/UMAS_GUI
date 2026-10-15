@@ -599,6 +599,8 @@ static const QString DARK_THEME =
     "QLabel[telemetryTitle='true'] { color: #91bbd0; font-size: 11px; font-weight: 500; }"
     "QLabel[telemetryValue='true'] { color: #e3f6ff; font-family: 'Exo 2', 'Segoe UI', sans-serif; "
     "font-size: 20px; font-weight: 600; background: transparent; border: none; padding: 0; }"
+    "QLabel[telemetryValue='true'][telemetryStale='true'], "
+    "QPushButton[telemetryValue='true'][telemetryStale='true'] { color: #668a9b; }"
     "QLabel[dashboardPanelTitle='true'] { color: #55e9ed; font-size: 12px; font-weight: 700; "
     "letter-spacing: 0.5px; padding: 0 0 2px 1px; }"
     "QLabel[emptyInstrument='true'] { color: #668a9b; border: 1px solid #0c5269; "
@@ -686,6 +688,10 @@ static const QString DARK_THEME =
     "QScrollBar::handle:vertical:hover { background: #20c7b8; }"
     "QMenuBar { background-color: #04161c; border: none; }"
     "QLabel#headerConnection { color: #74eee3; font-weight: 700; padding: 5px 9px; }"
+    "QLabel#headerConnection[connectionState='waiting'] { color: #f0b44d; }"
+    "QLabel#headerConnection[connectionState='online'] { color: #17f49a; }"
+    "QLabel#headerConnection[connectionState='stale'] { color: #ff8a2a; }"
+    "QLabel#headerConnection[connectionState='offline'] { color: #f05268; }"
     "QLabel#headerClock { color: #c9e7e5; font-family: 'JetBrains Mono', 'Consolas', monospace; "
     "font-weight: 600; padding: 3px 8px; }"
     "QStatusBar { background-color: #04161c; color: #7faaa9; border: none; }"
@@ -814,6 +820,7 @@ static void setupTelemetryCards(MainWindow *window)
         textLayout->setSpacing(1);
         title->setProperty("telemetryTitle", true);
         value->setProperty("telemetryValue", true);
+        value->setProperty("telemetryStale", true);
         title->setStyleSheet(QString());
         value->setStyleSheet(QString());
         textLayout->addWidget(title);
@@ -1253,6 +1260,16 @@ static void setupDashboardGrid(MainWindow *window)
     rootLayout->setStretch(2, 3);
 }
 
+static void setDynamicProperty(QWidget *widget, const char *name, const QVariant &value)
+{
+    if (!widget || widget->property(name) == value)
+        return;
+    widget->setProperty(name, value);
+    widget->style()->unpolish(widget);
+    widget->style()->polish(widget);
+    widget->update();
+}
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -1298,7 +1315,78 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
     rosBridge = new RosBridge(this);
-    rosBridge->start();
+
+    struct ConnectionFreshness
+    {
+        bool rosReady = false;
+        qint64 poseMs = 0;
+        qint64 imuMs = 0;
+        qint64 batteryMs = 0;
+    };
+    const auto freshness = std::make_shared<ConnectionFreshness>();
+    auto *headerConnection = findChild<QLabel *>(QStringLiteral("headerConnection"));
+    connect(rosBridge, &RosBridge::readyChanged, this,
+            [freshness](bool ready) { freshness->rosReady = ready; });
+    connect(rosBridge, &RosBridge::poseReceived, this,
+            [freshness](const UVState::Pose &)
+            { freshness->poseMs = QDateTime::currentMSecsSinceEpoch(); });
+    connect(rosBridge, &RosBridge::imuReceived, this,
+            [freshness](const UVState::ImuData &)
+            { freshness->imuMs = QDateTime::currentMSecsSinceEpoch(); });
+    connect(rosBridge, &RosBridge::batteryReceived, this,
+            [freshness](const UVState::BatteryData &)
+            { freshness->batteryMs = QDateTime::currentMSecsSinceEpoch(); });
+
+    auto *connectionWatchdog = new QTimer(this);
+    connectionWatchdog->setInterval(500);
+    connect(connectionWatchdog, &QTimer::timeout, this,
+            [this, freshness, headerConnection]()
+            {
+                constexpr qint64 staleAfterMs = 2500;
+                const qint64 now = QDateTime::currentMSecsSinceEpoch();
+                const qint64 newestTelemetry =
+                    qMax(freshness->poseMs, qMax(freshness->imuMs, freshness->batteryMs));
+                QString state;
+                QString text;
+                if (!freshness->rosReady)
+                {
+                    state = QStringLiteral("offline");
+                    text = QStringLiteral("ROS НЕДОСТУПЕН");
+                }
+                else if (newestTelemetry == 0)
+                {
+                    state = QStringLiteral("waiting");
+                    text = QStringLiteral("ROS ГОТОВ · НЕТ ТЕЛЕМЕТРИИ");
+                }
+                else if (now - newestTelemetry > staleAfterMs)
+                {
+                    state = QStringLiteral("stale");
+                    text = QStringLiteral("ТЕЛЕМЕТРИЯ УСТАРЕЛА · %1 с")
+                               .arg((now - newestTelemetry) / 1000);
+                }
+                else
+                {
+                    state = QStringLiteral("online");
+                    text = QStringLiteral("ТЕЛЕМЕТРИЯ ONLINE");
+                }
+                if (headerConnection)
+                {
+                    headerConnection->setText(
+                        QStringLiteral("%1 · DOMAIN %2")
+                            .arg(text, qEnvironmentVariable("ROS_DOMAIN_ID", "—")));
+                    setDynamicProperty(headerConnection, "connectionState", state);
+                }
+
+                const bool poseStale =
+                    freshness->poseMs == 0 || now - freshness->poseMs > staleAfterMs;
+                setDynamicProperty(ui->lbl_depth_value, "telemetryStale", poseStale);
+                setDynamicProperty(ui->lbl_speed_value, "telemetryStale", poseStale);
+                const bool batteryStale =
+                    freshness->batteryMs == 0 || now - freshness->batteryMs > staleAfterMs;
+                setDynamicProperty(ui->lbl_voltage_value, "telemetryStale", batteryStale);
+                setDynamicProperty(ui->lbl_voltage2_value, "telemetryStale", batteryStale);
+            });
+    connectionWatchdog->start();
 
     connect(this, &MainWindow::publishTwistRequested, rosBridge, &RosBridge::publishTwistInternal,
             Qt::QueuedConnection);
@@ -1311,6 +1399,28 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     connect(rosBridge, &RosBridge::batteryReceived, uvState, &UVState::setBattery,
             Qt::QueuedConnection);
+    connect(
+        uvState, &UVState::batteryUpdated, this,
+        [this](const UVState::BatteryData &battery)
+        {
+            const auto percentageText = [](float percentage, float voltage, std::uint64_t timestamp)
+            {
+                if (timestamp == 0)
+                    return QStringLiteral("—");
+                if (percentage >= 0.0f)
+                {
+                    const float normalized = percentage <= 1.0f ? percentage * 100.0f : percentage;
+                    return QStringLiteral("%1%").arg(qBound(0, qRound(normalized), 100));
+                }
+                if (voltage > 0.0f)
+                    return QStringLiteral("%1 В").arg(voltage, 0, 'f', 1);
+                return QStringLiteral("—");
+            };
+            ui->lbl_voltage_value->setText(
+                percentageText(battery.percentage_1, battery.voltage_1, battery.timestamp_1_ms));
+            ui->lbl_voltage2_value->setText(
+                percentageText(battery.percentage_2, battery.voltage_2, battery.timestamp_2_ms));
+        });
 
     connect(
         rosBridge, &RosBridge::dvlOriginResetFinished, this,
@@ -1335,6 +1445,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     connect(rosBridge, &RosBridge::controlFlagsPublished, uvState, &UVState::setControlFlags,
             Qt::QueuedConnection);
+
+    rosBridge->start();
 
     setWidget();
     setConsole();
@@ -1493,10 +1605,11 @@ void MainWindow::setupBrandHeader()
     actionsLayout->setContentsMargins(8, 5, 14, 5);
     actionsLayout->setSpacing(10);
 
-    auto *connection = new QLabel(
-        QStringLiteral("ROS 2  ·  DOMAIN %1").arg(qEnvironmentVariable("ROS_DOMAIN_ID", "—")),
-        headerActions);
+    auto *connection = new QLabel(QStringLiteral("ROS ЗАПУСКАЕТСЯ  ·  DOMAIN %1")
+                                      .arg(qEnvironmentVariable("ROS_DOMAIN_ID", "—")),
+                                  headerActions);
     connection->setObjectName(QStringLiteral("headerConnection"));
+    connection->setProperty("connectionState", QStringLiteral("waiting"));
     connection->setToolTip(QStringLiteral("Состояние канала связи ROS 2"));
 
     auto *clock = new QLabel(headerActions);

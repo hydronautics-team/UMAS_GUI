@@ -36,6 +36,7 @@ public:
 private:
     float turn_speed_ = 0.0f;
 signals:
+    void readyChanged(bool ready);
     void poseUpdated(double x, double y, double z);
     void poseReceived(const UVState::Pose &pose);
     void imuReceived(const UVState::ImuData &imu);
