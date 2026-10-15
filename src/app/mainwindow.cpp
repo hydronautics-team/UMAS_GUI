@@ -412,12 +412,6 @@ void MainWindow::ensureInteractiveTextFits()
 
 void MainWindow::setWidget()
 {
-    // powerSystem = new PowerSystem(this);
-    // ui->horizontalLayout_for_powerSystem->addWidget(powerSystem);
-    // checkMsg = new CheckMsg(this);
-    // ui->horizontalLayout_for_checkMsg->addWidget(checkMsg);
-    // modeAutomatic = new ModeAutomatic(this);
-    // ui->verticalLayout_modeAutomatic->addWidget(modeAutomatic);
     videoPlayer_ = new VideoPlayerWidget(this);
 
     if (!ui->tab_video->layout()) {
