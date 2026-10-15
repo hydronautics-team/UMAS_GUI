@@ -6,18 +6,19 @@
     "C_Cpp.formatting.provider": "disabled",
     "[cpp]": {
         "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file"
     },
     "[c]": {
         "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file"
     },
-    "clangd.path": "/usr/bin/clangd",
     "clangd.arguments": [
         "--background-index",
         "--clang-tidy",
         "--completion-style=detailed",
-        "--compile-commands-dir=${workspaceFolder}/build",
+        "--compile-commands-dir=/tmp/umas-gui-build",
         "--header-insertion=iwyu",
         "--query-driver=/usr/bin/clang,/usr/bin/clang++,/usr/bin/gcc,/usr/bin/g++"
     ],

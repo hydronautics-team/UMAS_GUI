@@ -24,6 +24,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
+# Пользователь для VS Code Dev Containers. Основные CLI-команды по-прежнему
+# запускают образ от root, поэтому существующий сценарий сборки не меняется.
+ARG DEV_USER=vscode
+ARG DEV_UID=1000
+ARG DEV_GID=1000
+RUN groupadd --gid ${DEV_GID} ${DEV_USER} \
+    && useradd --uid ${DEV_UID} --gid ${DEV_GID} --create-home --shell /bin/bash ${DEV_USER} \
+    && usermod --append --groups dialout,video ${DEV_USER}
+
 RUN locale-gen en_US en_US.UTF-8
 
 # colcon и утилиты через pip
