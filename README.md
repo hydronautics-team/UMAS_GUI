@@ -1,66 +1,14 @@
-# UMAS_GUI
+# UMAS GUI
 
-Проект — операторский пульт управления подводными аппаратами. Qt-приложение, которое взаимодействует с бортовой системой через ROS 2: получает телеметрию/видео, визуализирует состояние и отправляет управляющие команды.
+Операторский пульт управления подводными аппаратами. Qt-приложение получает телеметрию и видео через ROS 2, отображает состояние аппарата и отправляет управляющие команды.
 
-Пример GUI при планировании миссии
-![mission_planning_example](gui.png)
+![Пример интерфейса UMAS GUI](resources/images/gui.png)
 
-Архитектура взаимодействия с ROS 2
-- RosBridge (`src/integrations/ros`) работает в отдельном QThread и инициализирует rclcpp::Node с namespace "qt_controller".
-- Публикации:
-  - geometry_msgs::msg::Twist → /control/data (управляющие команды)
-  - std_msgs::msg::UInt8 → /control/loop_flags (флаги режимов управления)
+## Документация
 
-Сборка и запуск
-Рекомендуется использовать контейнеры, скрипты уже подготовлены в ./docker:
+- [Сборка и запуск](docs/build-and-run.md)
+- [Архитектура и структура проекта](docs/architecture.md)
+- [Правила разработки](docs/contributing.md)
+- [Содержание документации](docs/README.md)
 
-1) Собрать образ:
-```bash
-# Bash
-./docker/build_docker.sh
-```
-
-2) Запустить контейнер (среда выполнения):
-```bash
-# Bash
-./docker/run_docker.sh
-```
-
-3) Скомпилировать приложение (в контейнере ):
-```bash
-# Bash
-./docker/compile_app.sh
-```
-
-4) Запустить приложение:
-```bash
-# Bash
-./docker/run_app.sh
-```
-
-Альтернативно (локально, при наличии ROS 2 и Qt):
-- В рабочей директории ROS 2 workspace:
-```bash
-# Bash
-colcon build --packages-select UMAS_GUI
-source install/setup.bash
-# или стандартный CMake-подход:
-mkdir build && cd build
-cmake .. && make -j$(nproc)
-```
-
-Структура проекта (ключевые папки/файлы)
-- CMakeLists.txt, package.xml — сборка и зависимости
-- docker/ — скрипты сборки и запуска
-- main.cpp, mainwindow.* — точка входа и главный UI
-- `src/app/` — точка входа и главное окно
-- `src/core/` — состояние телеметрии и логика управления
-- `src/integrations/ros/` — мост между rclcpp и Qt
-- `src/integrations/video/` — видеопоток и полноэкранный HUD
-- `src/integrations/input/` — источники ввода и драйвер gamepad
-- `src/ui/instruments/` — компас и авиагоризонт
-- `src/ui/panels/` — панели интерфейса
-- `src/features/` — отдельные функции, включая карту и автоматические режимы
-- `resources/` — изображения и Qt-ресурсы
-- `Diagnostic_bord_UI/`, `algorithm_cpp/` — внешние submodule
-
+Основная разработка ведётся в отдельных ветках с последующим Pull Request в `develop`.
