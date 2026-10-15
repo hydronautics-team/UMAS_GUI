@@ -12,11 +12,17 @@
 - [Стиль кода](docs/coding-style.md)
 - [Содержание документации](docs/README.md)
 
-Основная разработка ведётся в отдельных ветках с последующим Pull Request в `develop`.
+Основная разработка ведётся в отдельных ветках с последующим Pull Request в
+`umas-gui_2.0`.
 
-После установки локальной команды приложение собирается и запускается так:
+Первоначальная настройка, сборка и создание ярлыка:
 
 ```bash
+./scripts/install-cli.sh
+umas-gui docker-build
 umas-gui build
-umas-gui run
+./scripts/install-desktop-shortcut.sh
 ```
+
+После этого приложение можно запускать ярлыком `UMAS GUI` или командой
+`umas-gui run`.

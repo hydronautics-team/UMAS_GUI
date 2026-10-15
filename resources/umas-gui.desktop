@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=UMAS GUI
+Comment=Запустить пульт управления UMAS
+Exec=/bin/false
+Icon=applications-engineering
+Terminal=false
+Categories=Utility;Engineering;
+StartupNotify=true
