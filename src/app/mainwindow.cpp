@@ -429,6 +429,16 @@ static const QString DARK_THEME =
     "HudPanel#positionPanel QPushButton { padding: 2px 6px; min-height: 20px; font-size: 10px; }"
     "QWidget#dashboardBottomRow, QWidget#dashboardInstrumentColumn { background: transparent; }"
     "HudPanel#movementControlPanel QStackedWidget { background: transparent; border: none; }"
+    "QLabel[controlSectionTitle='true'] { color: #779dad; font-size: 10px; font-weight: 600; }"
+    "QPushButton[primaryMode='true'] { padding: 3px 5px; min-height: 25px; font-size: 11px; }"
+    "QPushButton[speedChoice='true'] { padding: 2px 5px; min-height: 22px; font-size: 10px; }"
+    "QPushButton[motionPad='true'] { padding: 2px; min-width: 0; min-height: 0; border-radius: "
+    "7px; "
+    "font-size: 13px; font-weight: 700; }"
+    "QPushButton[axisMode='true'] { padding: 2px 3px; min-height: 23px; min-width: 0; "
+    "font-size: 9px; }"
+    "QLabel[depthCommand='true'] { color: #e3f6ff; font-family: 'IBM Plex Mono', monospace; "
+    "font-size: 13px; font-weight: 600; }"
     "QPushButton[dashboardNav='true'] { text-align: left; padding: 11px 13px; border: none; "
     "border-left: 3px solid transparent; background: transparent; color: #7faaa9; }"
     "QPushButton[dashboardNav='true']:hover { color: #c4e9e6; background-color: #0d3540; }"
@@ -623,6 +633,27 @@ static HudPanel *makeDashboardPanel(const QString &name, const QString &titleTex
     return panel;
 }
 
+static QPushButton *makeMotionButton(const QString &text, int key, QWidget *window, QWidget *parent)
+{
+    auto *button = new QPushButton(text, parent);
+    button->setProperty("motionPad", true);
+    button->setFocusPolicy(Qt::NoFocus);
+    button->setFixedSize(38, 34);
+    QObject::connect(button, &QPushButton::pressed, window,
+                     [window, key]()
+                     {
+                         QKeyEvent event(QEvent::KeyPress, key, Qt::NoModifier);
+                         QApplication::sendEvent(window, &event);
+                     });
+    QObject::connect(button, &QPushButton::released, window,
+                     [window, key]()
+                     {
+                         QKeyEvent event(QEvent::KeyRelease, key, Qt::NoModifier);
+                         QApplication::sendEvent(window, &event);
+                     });
+    return button;
+}
+
 static void setupDashboardGrid(MainWindow *window)
 {
     auto *rootLayout = window->findChild<QVBoxLayout *>(QStringLiteral("mainWorkspaceLayout"));
@@ -759,10 +790,128 @@ static void setupDashboardGrid(MainWindow *window)
     HudPanel *controlPanel =
         makeDashboardPanel(QStringLiteral("movementControlPanel"),
                            QStringLiteral("УПРАВЛЕНИЕ ДВИЖЕНИЕМ"), &controlLayout, bottomRow);
+
+    auto *manualMode = window->findChild<QPushButton *>(QStringLiteral("pushButton_modeManual"));
+    auto *stabilizationMode =
+        window->findChild<QPushButton *>(QStringLiteral("pushButton_modeAutomated"));
+    auto *automaticMode =
+        window->findChild<QPushButton *>(QStringLiteral("pushButton_modeAutomatic"));
+    auto *modeRow = new QHBoxLayout();
+    modeRow->setSpacing(7);
+    if (manualMode && stabilizationMode && automaticMode)
+    {
+        manualMode->setText(QStringLiteral("Ручной"));
+        stabilizationMode->setText(QStringLiteral("Стабилизация"));
+        automaticMode->setText(QStringLiteral("Автоматический"));
+        for (QPushButton *button : {manualMode, stabilizationMode, automaticMode})
+        {
+            button->setProperty("primaryMode", true);
+            button->setMinimumSize(0, 32);
+            button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            modeRow->addWidget(button);
+        }
+    }
+    controlLayout->addLayout(modeRow);
+
+    auto *movementBody = new QHBoxLayout();
+    movementBody->setSpacing(10);
+    auto *speedColumn = new QVBoxLayout();
+    speedColumn->setSpacing(3);
+    auto *speedTitle = new QLabel(QStringLiteral("СКОРОСТЬ"), controlPanel);
+    speedTitle->setProperty("controlSectionTitle", true);
+    speedColumn->addWidget(speedTitle);
+    const QList<QPair<QString, QString>> speedButtons = {
+        {QStringLiteral("pushButton_speedSlow"), QStringLiteral("Медленно")},
+        {QStringLiteral("pushButton_speedMedium"), QStringLiteral("Средняя")},
+        {QStringLiteral("pushButton_speedFast"), QStringLiteral("Быстро")}};
+    for (const auto &descriptor : speedButtons)
+    {
+        if (auto *button = window->findChild<QPushButton *>(descriptor.first))
+        {
+            button->setText(descriptor.second);
+            button->setProperty("speedChoice", true);
+            button->setMinimumSize(86, 27);
+            speedColumn->addWidget(button);
+        }
+    }
+    speedColumn->addStretch();
+    movementBody->addLayout(speedColumn, 25);
+
+    auto *motionPad = new QGridLayout();
+    motionPad->setSpacing(3);
+    auto *forward = makeMotionButton(QStringLiteral("▲"), Qt::Key_O, window, controlPanel);
+    auto *backward = makeMotionButton(QStringLiteral("▼"), Qt::Key_L, window, controlPanel);
+    auto *left = makeMotionButton(QStringLiteral("◀"), Qt::Key_A, window, controlPanel);
+    auto *right = makeMotionButton(QStringLiteral("▶"), Qt::Key_D, window, controlPanel);
+    auto *stop = new QPushButton(QStringLiteral("■"), controlPanel);
+    stop->setProperty("motionPad", true);
+    stop->setFocusPolicy(Qt::NoFocus);
+    stop->setFixedSize(38, 34);
+    QObject::connect(stop, &QPushButton::clicked, window,
+                     [window]()
+                     {
+                         for (int key : {Qt::Key_O, Qt::Key_L, Qt::Key_A, Qt::Key_D})
+                         {
+                             QKeyEvent event(QEvent::KeyRelease, key, Qt::NoModifier);
+                             QApplication::sendEvent(window, &event);
+                         }
+                     });
+    motionPad->addWidget(forward, 0, 1);
+    motionPad->addWidget(left, 1, 0);
+    motionPad->addWidget(stop, 1, 1);
+    motionPad->addWidget(right, 1, 2);
+    motionPad->addWidget(backward, 2, 1);
+    movementBody->addLayout(motionPad, 35);
+
+    auto *depthColumn = new QVBoxLayout();
+    depthColumn->setSpacing(4);
+    auto *depthTitle = new QLabel(QStringLiteral("ГЛУБИНА"), controlPanel);
+    depthTitle->setProperty("controlSectionTitle", true);
+    depthColumn->addWidget(depthTitle);
+    auto *up = makeMotionButton(QStringLiteral("Вверх  ▲"), Qt::Key_V, window, controlPanel);
+    auto *down = makeMotionButton(QStringLiteral("Вниз  ▼"), Qt::Key_C, window, controlPanel);
+    for (QPushButton *button : {up, down})
+    {
+        button->setFixedHeight(35);
+        button->setMaximumWidth(QWIDGETSIZE_MAX);
+        button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        depthColumn->addWidget(button);
+    }
+    if (auto *depthValue = window->findChild<QLabel *>(QStringLiteral("label_controlDepth")))
+    {
+        depthValue->setProperty("depthCommand", true);
+        depthValue->setAlignment(Qt::AlignCenter);
+        depthColumn->addWidget(depthValue);
+    }
+    depthColumn->addStretch();
+    movementBody->addLayout(depthColumn, 28);
+    controlLayout->addLayout(movementBody, 1);
+
+    auto *axisRow = new QHBoxLayout();
+    axisRow->setSpacing(4);
+    const QStringList axisNames = {QStringLiteral("pushButton_modeAutomated_surge"),
+                                   QStringLiteral("pushButton_modeAutomated_sway"),
+                                   QStringLiteral("pushButton_modeAutomated_depth"),
+                                   QStringLiteral("pushButton_modeAutomated_yaw"),
+                                   QStringLiteral("pushButton_modeAutomated_pitch"),
+                                   QStringLiteral("pushButton_modeAutomated_roll")};
+    for (const QString &name : axisNames)
+    {
+        if (auto *button = window->findChild<QPushButton *>(name))
+        {
+            button->setProperty("axisMode", true);
+            button->setMinimumSize(0, 29);
+            button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            axisRow->addWidget(button);
+        }
+    }
+    controlLayout->addLayout(axisRow);
+
     controlStack->setMinimumWidth(0);
     controlStack->setMaximumWidth(QWIDGETSIZE_MAX);
-    controlStack->setStyleSheet(QStringLiteral("background: transparent; border: none;"));
-    controlLayout->addWidget(controlStack, 1);
+    controlStack->setStyleSheet(QString());
+    if (auto *debugLayout = window->findChild<QVBoxLayout *>(QStringLiteral("verticalLayout_10")))
+        debugLayout->addWidget(controlStack);
 
     QVBoxLayout *eventsLayout = nullptr;
     HudPanel *eventsPanel =
