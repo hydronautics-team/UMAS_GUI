@@ -7,12 +7,15 @@
 #include <QDateTime>
 #include <QFontMetrics>
 #include <QFrame>
+#include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLineEdit>
 #include <QMenuBar>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPixmap>
+#include <QProgressBar>
 #include <QPushButton>
 #include <QStackedWidget>
 #include <QTabBar>
@@ -20,6 +23,149 @@
 #include <QVBoxLayout>
 #include <QtMath>
 #include <cmath>
+
+class ManipulatorPreview final : public QWidget
+{
+public:
+    explicit ManipulatorPreview(QWidget *parent = nullptr) : QWidget(parent)
+    {
+        setMinimumSize(190, 115);
+        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    }
+
+protected:
+    void paintEvent(QPaintEvent *) override
+    {
+        QPainter painter(this);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.translate(width() * 0.04, height() * 0.86);
+        painter.rotate(-18.0);
+
+        const QColor primary(0, 188, 232, 210);
+        const QColor secondary(7, 109, 144, 145);
+        painter.setBrush(Qt::NoBrush);
+        painter.setPen(QPen(secondary, 1, Qt::DashLine));
+        painter.drawEllipse(QPointF(70, -28), 34, 34);
+        painter.drawEllipse(QPointF(146, -42), 25, 25);
+
+        painter.setPen(QPen(primary, 1.2));
+        painter.drawRoundedRect(QRectF(-28, -24, 75, 39), 7, 7);
+        painter.drawEllipse(QPointF(46, -5), 18, 18);
+        QPolygonF forearm;
+        forearm << QPointF(57, -14) << QPointF(129, -57) << QPointF(143, -37) << QPointF(67, 4);
+        painter.drawPolygon(forearm);
+        painter.drawEllipse(QPointF(142, -47), 15, 15);
+        QPolygonF wristBody;
+        wristBody << QPointF(154, -54) << QPointF(192, -73) << QPointF(199, -61)
+                  << QPointF(157, -39);
+        painter.drawPolygon(wristBody);
+
+        const QPointF wrist(198, -67);
+        painter.drawEllipse(wrist, 10, 10);
+        painter.drawLine(wrist + QPointF(8, -3), wrist + QPointF(34, -23));
+        painter.drawLine(wrist + QPointF(8, 3), wrist + QPointF(36, 18));
+        painter.drawLine(wrist + QPointF(34, -23), wrist + QPointF(49, -18));
+        painter.drawLine(wrist + QPointF(36, 18), wrist + QPointF(50, 11));
+
+        painter.setPen(QPen(QColor(63, 223, 255, 110), 1));
+        painter.drawLine(QPointF(-20, -4), QPointF(228, -66));
+        painter.drawLine(QPointF(45, -5), QPointF(142, -47));
+    }
+};
+
+class BathymetryMapPreview final : public QWidget
+{
+public:
+    explicit BathymetryMapPreview(QWidget *parent = nullptr) : QWidget(parent)
+    {
+        setObjectName(QStringLiteral("bathymetryMap"));
+        setMinimumHeight(125);
+        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    }
+
+    void setPosition(double x, double y)
+    {
+        const QPointF point(x, y);
+        if (trail_.isEmpty() || QLineF(trail_.last(), point).length() > 0.02)
+        {
+            trail_.append(point);
+            if (trail_.size() > 160)
+                trail_.removeFirst();
+        }
+        position_ = point;
+        hasPosition_ = true;
+        update();
+    }
+
+protected:
+    void paintEvent(QPaintEvent *) override
+    {
+        QPainter painter(this);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.fillRect(rect(), QColor("#00111d"));
+
+        painter.setPen(QPen(QColor(6, 71, 92, 95), 1));
+        for (int x = 0; x < width(); x += 24)
+            painter.drawLine(x, 0, x, height());
+        for (int y = 0; y < height(); y += 24)
+            painter.drawLine(0, y, width(), y);
+
+        painter.setBrush(Qt::NoBrush);
+        for (int contour = 0; contour < 7; ++contour)
+        {
+            QPainterPath line;
+            const qreal offset = contour * 13.0;
+            line.moveTo(-15, height() * 0.28 + offset);
+            line.cubicTo(width() * 0.24, height() * 0.02 + offset, width() * 0.48,
+                         height() * 0.74 + offset * 0.2, width() + 15,
+                         height() * 0.30 + offset * 0.55);
+            painter.setPen(QPen(QColor(8, 124, 151, 70 + contour * 8), 1));
+            painter.drawPath(line);
+        }
+
+        painter.setPen(QPen(QColor("#6fb7d2"), 1));
+        painter.drawText(QRect(9, height() - 25, 55, 17), Qt::AlignLeft | Qt::AlignVCenter,
+                         QStringLiteral("20 м"));
+        painter.drawLine(9, height() - 9, 48, height() - 9);
+        painter.drawLine(9, height() - 13, 9, height() - 5);
+        painter.drawLine(48, height() - 13, 48, height() - 5);
+
+        painter.drawEllipse(QPointF(width() - 20, 20), 13, 13);
+        painter.drawText(QRect(width() - 33, 7, 26, 26), Qt::AlignCenter, QStringLiteral("N"));
+
+        if (!hasPosition_)
+        {
+            painter.setPen(QColor("#668a9b"));
+            painter.drawText(rect().adjusted(12, 12, -12, -12), Qt::AlignCenter,
+                             QStringLiteral("НЕТ НАВИГАЦИОННЫХ ДАННЫХ"));
+            return;
+        }
+
+        const QPointF center(width() * 0.48, height() * 0.58);
+        QPainterPath track;
+        for (int index = 0; index < trail_.size(); ++index)
+        {
+            const QPointF screen = center + (trail_.at(index) - position_) * 2.5;
+            if (index == 0)
+                track.moveTo(screen);
+            else
+                track.lineTo(screen);
+        }
+        painter.setPen(QPen(QColor("#00d9e6"), 2, Qt::DashLine));
+        painter.drawPath(track);
+        painter.setBrush(QColor("#56ecff"));
+        painter.setPen(QPen(QColor("#c9fbff"), 1));
+        QPolygonF vehicle;
+        vehicle << center + QPointF(0, -9) << center + QPointF(7, 7) << center + QPointF(0, 4)
+                << center + QPointF(-7, 7);
+        painter.drawPolygon(vehicle);
+    }
+
+private:
+    QVector<QPointF> trail_;
+    QPointF position_;
+    bool hasPosition_ = false;
+};
 
 class DepthSonarPreview final : public QWidget
 {
@@ -270,6 +416,17 @@ static const QString DARK_THEME =
     "letter-spacing: 0.5px; padding: 0 0 2px 1px; }"
     "QLabel[emptyInstrument='true'] { color: #668a9b; border: 1px solid #0c5269; "
     "background-color: #021522; font-family: 'IBM Plex Mono', monospace; font-size: 10px; }"
+    "QWidget[manipulatorMetric='true'] { border-bottom: 1px solid #164456; background: "
+    "transparent; }"
+    "QLabel[metricLabel='true'], QLabel[coordinateLabel='true'] { color: #779dad; font-size: 10px; "
+    "}"
+    "QLabel[metricValue='true'] { color: #e3f6ff; font-size: 13px; font-weight: 600; }"
+    "QProgressBar[mechanismState='true'] { min-height: 0; max-height: 7px; border-radius: 3px; "
+    "background-color: #082738; border-color: #0b526b; }"
+    "QProgressBar[mechanismState='true']::chunk { background-color: #20d9d4; border-radius: 3px; }"
+    "QWidget#bathymetryMap { border: 1px solid #07516b; border-radius: 6px; }"
+    "HudPanel#positionPanel QLineEdit { padding: 2px 4px; min-height: 18px; font-size: 10px; }"
+    "HudPanel#positionPanel QPushButton { padding: 2px 6px; min-height: 20px; font-size: 10px; }"
     "QWidget#dashboardBottomRow, QWidget#dashboardInstrumentColumn { background: transparent; }"
     "HudPanel#movementControlPanel QStackedWidget { background: transparent; border: none; }"
     "QPushButton[dashboardNav='true'] { text-align: left; padding: 11px 13px; border: none; "
@@ -471,14 +628,18 @@ static void setupDashboardGrid(MainWindow *window)
     auto *rootLayout = window->findChild<QVBoxLayout *>(QStringLiteral("mainWorkspaceLayout"));
     auto *centerLayout = window->findChild<QHBoxLayout *>(QStringLiteral("horizontalLayout_2"));
     auto *workspaceLayout = window->findChild<QVBoxLayout *>(QStringLiteral("verticalLayout_4"));
+    auto *contentColumn = window->findChild<QVBoxLayout *>(QStringLiteral("verticalLayout_5"));
+    auto *legacyBottomLayout =
+        window->findChild<QHBoxLayout *>(QStringLiteral("horizontalLayout_4"));
     auto *controlStack = window->findChild<QStackedWidget *>(QStringLiteral("stackedWidget_mode"));
     auto *orientation = window->findChild<QGroupBox *>(QStringLiteral("groupBox_info"));
     auto *quickActions = window->findChild<QFrame *>(QStringLiteral("frame_quickActions"));
     auto *console = window->findChild<QTextEdit *>(QStringLiteral("textEdit_console"));
-    if (!rootLayout || !centerLayout || !workspaceLayout || !controlStack || !orientation ||
-        !quickActions || !console)
+    if (!rootLayout || !centerLayout || !workspaceLayout || !contentColumn || !legacyBottomLayout ||
+        !controlStack || !orientation || !quickActions || !console)
         return;
 
+    contentColumn->removeItem(legacyBottomLayout);
     workspaceLayout->removeWidget(quickActions);
     centerLayout->removeWidget(controlStack);
     if (orientation->parentWidget() && orientation->parentWidget()->layout())
@@ -524,12 +685,74 @@ static void setupDashboardGrid(MainWindow *window)
     quickActions->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     if (auto *manipulatorLayout =
             window->findChild<QHBoxLayout *>(QStringLiteral("horizontalLayout_manipulator")))
-        manipulatorLayout->setAlignment(Qt::AlignTop);
-    if (auto *manipulatorTitle = window->findChild<QLabel *>(QStringLiteral("lbl_manip_title")))
     {
+        auto *manipulatorTitle = window->findChild<QLabel *>(QStringLiteral("lbl_manip_title"));
+        const QList<QPushButton *> manipulatorButtons = {
+            window->findChild<QPushButton *>(QStringLiteral("btn_manip_compress")),
+            window->findChild<QPushButton *>(QStringLiteral("btn_manip_release")),
+            window->findChild<QPushButton *>(QStringLiteral("btn_manip_rotate_ccw")),
+            window->findChild<QPushButton *>(QStringLiteral("btn_manip_rotate_cw")),
+            window->findChild<QPushButton *>(QStringLiteral("btn_manip_stop"))};
+        while (QLayoutItem *item = manipulatorLayout->takeAt(0))
+            delete item;
+        manipulatorLayout->setDirection(QBoxLayout::TopToBottom);
+        manipulatorLayout->setContentsMargins(13, 10, 13, 12);
+        manipulatorLayout->setSpacing(7);
+
         manipulatorTitle->setText(QStringLiteral("МАНИПУЛЯТОР"));
         manipulatorTitle->setProperty("dashboardPanelTitle", true);
         manipulatorTitle->setStyleSheet(QString());
+        manipulatorLayout->addWidget(manipulatorTitle);
+
+        auto *buttonRow = new QHBoxLayout();
+        buttonRow->setSpacing(6);
+        for (QPushButton *button : manipulatorButtons)
+        {
+            if (!button)
+                continue;
+            button->setMinimumSize(0, 34);
+            button->setMaximumWidth(QWIDGETSIZE_MAX);
+            button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            buttonRow->addWidget(button);
+        }
+        manipulatorLayout->addLayout(buttonRow);
+
+        auto *body = new QHBoxLayout();
+        body->setSpacing(10);
+        body->addWidget(new ManipulatorPreview(quickActions), 2);
+        auto *metrics = new QVBoxLayout();
+        metrics->setSpacing(3);
+        const auto addMetric = [metrics, quickActions](const QString &name)
+        {
+            auto *row = new QWidget(quickActions);
+            row->setProperty("manipulatorMetric", true);
+            auto *rowLayout = new QHBoxLayout(row);
+            rowLayout->setContentsMargins(5, 3, 5, 3);
+            auto *label = new QLabel(name, row);
+            label->setProperty("metricLabel", true);
+            auto *value = new QLabel(QStringLiteral("—"), row);
+            value->setProperty("metricValue", true);
+            rowLayout->addWidget(label);
+            rowLayout->addStretch();
+            rowLayout->addWidget(value);
+            metrics->addWidget(row);
+        };
+        addMetric(QStringLiteral("Угол"));
+        addMetric(QStringLiteral("Вращение"));
+        addMetric(QStringLiteral("Раскрытие"));
+        for (int index = 0; index < 2; ++index)
+        {
+            auto *state = new QProgressBar(quickActions);
+            state->setRange(0, 100);
+            state->setValue(0);
+            state->setTextVisible(false);
+            state->setFixedHeight(7);
+            state->setProperty("mechanismState", true);
+            metrics->addWidget(state);
+        }
+        metrics->addStretch();
+        body->addLayout(metrics, 1);
+        manipulatorLayout->addLayout(body, 1);
     }
 
     QVBoxLayout *controlLayout = nullptr;
@@ -551,21 +774,39 @@ static void setupDashboardGrid(MainWindow *window)
     QVBoxLayout *mapLayout = nullptr;
     HudPanel *mapPanel = makeDashboardPanel(
         QStringLiteral("positionPanel"), QStringLiteral("КАРТА И ПОЗИЦИЯ"), &mapLayout, bottomRow);
-    auto *positionState =
-        new QLabel(QStringLiteral("КАРТОГРАФИЧЕСКИЕ ДАННЫЕ\nНЕ ПОЛУЧЕНЫ"), mapPanel);
-    positionState->setProperty("emptyInstrument", true);
-    positionState->setAlignment(Qt::AlignCenter);
-    positionState->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    mapLayout->addWidget(positionState, 1);
-
-    const QStringList positionControls = {
-        QStringLiteral("pushButton_sendReper_map_onoff"), QStringLiteral("lineEdit_reper_latitude"),
-        QStringLiteral("lineEdit_reper_longitude"), QStringLiteral("pushButton_sendReper")};
-    for (const QString &objectName : positionControls)
+    mapLayout->addWidget(new BathymetryMapPreview(mapPanel), 1);
+    auto *coordinateRow = new QGridLayout();
+    coordinateRow->setHorizontalSpacing(5);
+    coordinateRow->setVerticalSpacing(2);
+    auto *latitude = window->findChild<QLineEdit *>(QStringLiteral("lineEdit_reper_latitude"));
+    auto *longitude = window->findChild<QLineEdit *>(QStringLiteral("lineEdit_reper_longitude"));
+    if (latitude && longitude)
     {
-        if (QWidget *control = window->findChild<QWidget *>(objectName))
-            mapLayout->addWidget(control);
+        auto *latitudeLabel = new QLabel(QStringLiteral("Широта"), mapPanel);
+        auto *longitudeLabel = new QLabel(QStringLiteral("Долгота"), mapPanel);
+        latitudeLabel->setProperty("coordinateLabel", true);
+        longitudeLabel->setProperty("coordinateLabel", true);
+        coordinateRow->addWidget(latitudeLabel, 0, 0);
+        coordinateRow->addWidget(longitudeLabel, 0, 1);
+        coordinateRow->addWidget(latitude, 1, 0);
+        coordinateRow->addWidget(longitude, 1, 1);
     }
+    mapLayout->addLayout(coordinateRow);
+
+    auto *mapActions = new QHBoxLayout();
+    mapActions->setSpacing(5);
+    if (auto *pick =
+            window->findChild<QPushButton *>(QStringLiteral("pushButton_sendReper_map_onoff")))
+    {
+        pick->setText(QStringLiteral("Выбрать"));
+        mapActions->addWidget(pick);
+    }
+    if (auto *send = window->findChild<QPushButton *>(QStringLiteral("pushButton_sendReper")))
+    {
+        send->setText(QStringLiteral("Установить"));
+        mapActions->addWidget(send);
+    }
+    mapLayout->addLayout(mapActions);
 
     bottomLayout->addWidget(quickActions, 27);
     bottomLayout->addWidget(controlPanel, 29);
@@ -592,6 +833,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     qRegisterMetaType<UVState::BatteryData>("UVState::BatteryData");
 
     uvState = new UVState(this);
+    if (auto *mapPreview = findChild<BathymetryMapPreview *>(QStringLiteral("bathymetryMap")))
+    {
+        connect(uvState, &UVState::poseUpdated, mapPreview,
+                [mapPreview](const UVState::Pose &pose)
+                { mapPreview->setPosition(pose.x, pose.y); });
+    }
 
     rosBridge = new RosBridge(this);
     rosBridge->start();
