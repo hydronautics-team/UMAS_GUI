@@ -1,11 +1,8 @@
 #include "uv_state.h"
 
-UVState::UVState(QObject* parent)
-    : QObject(parent)
-{
-}
+UVState::UVState(QObject *parent) : QObject(parent) {}
 
-void UVState::setImu(const UVState::ImuData& imu)
+void UVState::setImu(const UVState::ImuData &imu)
 {
     imu_ = imu;
     emit imuUpdated(imu_);
@@ -19,19 +16,19 @@ void UVState::setPose(double x, double y, double z)
     emit poseUpdated(pose_);
 }
 
-void UVState::setPose(const UVState::Pose& pose)
+void UVState::setPose(const UVState::Pose &pose)
 {
     pose_ = pose;
     emit poseUpdated(pose_);
 }
 
-void UVState::setBattery(const UVState::BatteryData& battery)
+void UVState::setBattery(const UVState::BatteryData &battery)
 {
     battery_ = battery;
     emit batteryUpdated(battery_);
 }
 
-void UVState::setDiagnostics(const UVState::Diagnostics& diagnostics)
+void UVState::setDiagnostics(const UVState::Diagnostics &diagnostics)
 {
     diagnostics_ = diagnostics;
     emit diagnosticsUpdated(diagnostics_);
@@ -43,7 +40,8 @@ void UVState::setControlFlags(std::uint8_t flags)
     emit controlFlagsUpdated(control_flags_);
 }
 
-ControlData::ControlData() {
+ControlData::ControlData()
+{
     yaw = 0;
     pitch = 0;
     roll = 0;
@@ -52,7 +50,8 @@ ControlData::ControlData() {
     lag = 0;
 }
 
-ControlContoursFlags::ControlContoursFlags() {
+ControlContoursFlags::ControlContoursFlags()
+{
     yaw = 1;
     pitch = 1;
     roll = 1;
@@ -60,5 +59,3 @@ ControlContoursFlags::ControlContoursFlags() {
     depth = 1;
     lag = 1;
 }
-
-

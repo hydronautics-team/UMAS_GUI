@@ -23,11 +23,11 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
-    void paintOverlay(QPainter& painter);
+    void paintOverlay(QPainter &painter);
 
     float m_pitch = 0.0f;
-    float m_roll  = 0.0f;
-    float m_vs    = 0.0f;
+    float m_roll = 0.0f;
+    float m_vs = 0.0f;
     bool m_lightTheme = false;
     bool m_overlayMode = false;
 };

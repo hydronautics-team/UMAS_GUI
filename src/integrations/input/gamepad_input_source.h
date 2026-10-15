@@ -14,7 +14,7 @@ class GamepadInputSource final : public QObject, public umas::input::IInputSourc
     Q_OBJECT
 
 public:
-    explicit GamepadInputSource(Gamepad* gamepad, QObject* parent = nullptr);
+    explicit GamepadInputSource(Gamepad *gamepad, QObject *parent = nullptr);
     ~GamepadInputSource() override = default;
 
     std::optional<umas::input::ControlCommand> poll() override;
@@ -23,15 +23,15 @@ public:
 private:
     void markDirty();
 
-    Gamepad* gamepad_ = nullptr; // не владеем
+    Gamepad *gamepad_ = nullptr; // не владеем
 
     // Текущее состояние (нормировано примерно к -1..1 для стиков и к шагам для кнопок).
     float march_ = 0.f; // surge
-    float yaw_   = 0.f;
+    float yaw_ = 0.f;
     float pitch_ = 0.f;
-    float roll_  = 0.f;
+    float roll_ = 0.f;
     float depth_ = 0.f;
-    float lag_   = 0.f;
+    float lag_ = 0.f;
 
     bool dirty_ = true;
 };

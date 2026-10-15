@@ -3,9 +3,11 @@
 #include <cstdint>
 #include <optional>
 
-namespace umas::input {
+namespace umas::input
+{
 
-struct ControlCommand {
+struct ControlCommand
+{
     double march = 0.0;
     double lag = 0.0;
     double depth = 0.0;
@@ -17,7 +19,8 @@ struct ControlCommand {
     std::uint64_t timestamp_ms = 0;
 };
 
-class IInputSource {
+class IInputSource
+{
 public:
     virtual ~IInputSource() = default;
     virtual std::optional<ControlCommand> poll() = 0;

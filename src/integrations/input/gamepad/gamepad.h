@@ -2,14 +2,14 @@
 #define GAMEPAD_H
 
 #include <QObject>
-#include <QTimer>
 #include <QPair>
 #include <QSocketNotifier>
-#include <linux/joystick.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <cmath>
+#include <QTimer>
 #include <algorithm>
+#include <cmath>
+#include <fcntl.h>
+#include <linux/joystick.h>
+#include <unistd.h>
 
 class Gamepad : public QObject
 {
@@ -27,8 +27,8 @@ public:
 
 signals:
     // Левый стик (оси X и Y)
-    void leftStickXMoved(float value);   // курс
-    void leftStickYMoved(float value);   // марш
+    void leftStickXMoved(float value); // курс
+    void leftStickYMoved(float value); // марш
 
     // Правый стик
     void rightStickXMoved(float value);
@@ -77,34 +77,33 @@ signals:
     void button12Pressed();
     void button12Released();
 
-
-
-
 private slots:
-    void onJoystickEvent();   // слот для чтения событий
+    void onJoystickEvent(); // слот для чтения событий
 
 private:
     void calibrateTriggers();
-    float normalizeAxis(int value) const;   // -32767..32767 -> -100..100
-    int m_fd;                                // файловый дескриптор устройства
-    QSocketNotifier *m_notifier;             // уведомитель о появлении данных
+    float normalizeAxis(int value) const; // -32767..32767 -> -100..100
+    int m_fd;                    // файловый дескриптор устройства
+    QSocketNotifier *m_notifier; // уведомитель о появлении данных
     bool m_connected;
 
     // Индексы осей (предполагаем стандартный Xbox-подобный геймпад)
     // Возможно, потребуется настройка под конкретный геймпад.
-    enum AxisIndex {
+    enum AxisIndex
+    {
         AxisLeftStickX = 0,
         AxisLeftStickY = 1,
-        AxisLeftTrigger = 2,      // иногда L2
+        AxisLeftTrigger = 2, // иногда L2
         AxisRightStickX = 3,
         AxisRightStickY = 4,
-        AxisRightTrigger = 5,     // иногда R2
-        AxisDPadX = 6,             // крестовина по горизонтали
-        AxisDPadY = 7              // крестовина по вертикали
+        AxisRightTrigger = 5, // иногда R2
+        AxisDPadX = 6,        // крестовина по горизонтали
+        AxisDPadY = 7         // крестовина по вертикали
     };
 
     // Индексы кнопок (стандартный маппинг Xbox)
-    enum ButtonIndex {
+    enum ButtonIndex
+    {
         ButtonA = 0,
         ButtonB = 1,
         ButtonX = 2,
@@ -113,27 +112,27 @@ private:
         ButtonR1 = 5,
         ButtonBack = 6,
         ButtonStart = 7,
-        ButtonL3 = 9,              // нажатие левого стика
-        ButtonR3 = 10,             // нажатие правого стика
-        Button11 = 11,             // новое
-        Button12 = 12              // новое
+        ButtonL3 = 9,  // нажатие левого стика
+        ButtonR3 = 10, // нажатие правого стика
+        Button11 = 11, // новое
+        Button12 = 12  // новое
     };
 
     // Текущие состояния
-    float m_axisValues[8];          // значения осей в диапазоне -100..100 (для триггеров 0..100)
-    bool m_buttonStates[13];         // состояния кнопок
+    float m_axisValues[8]; // значения осей в диапазоне -100..100 (для триггеров 0..100)
+    bool m_buttonStates[13]; // состояния кнопок
 
     // Для калибровки триггеров
     float m_triggerLeftZero;
     float m_triggerRightZero;
     bool m_triggersCalibrated;
-    int m_calibrationFrames;        // счётчик пропущенных кадров при калибровке
-    static constexpr int CALIBRATION_SKIP = 3;   // сколько событий пропустить перед калибровкой
+    int m_calibrationFrames; // счётчик пропущенных кадров при калибровке
+    static constexpr int CALIBRATION_SKIP = 3; // сколько событий пропустить перед калибровкой
 
     bool m_prevDPadUp;
-bool m_prevDPadDown;
-bool m_prevDPadLeft;
-bool m_prevDPadRight;
+    bool m_prevDPadDown;
+    bool m_prevDPadLeft;
+    bool m_prevDPadRight;
 };
 
 #endif // GAMEPAD_H
