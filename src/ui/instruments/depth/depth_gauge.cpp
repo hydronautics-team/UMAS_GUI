@@ -14,6 +14,7 @@ void DepthGauge::setTelemetry(float depthMeters, float verticalSpeed, bool valid
     depthMeters_ = qMax(0.0f, depthMeters);
     verticalSpeed_ = verticalSpeed;
     valid_ = valid;
+    setVisible(valid_);
     update();
 }
 
@@ -27,26 +28,15 @@ void DepthGauge::paintEvent(QPaintEvent *event)
     const QRectF tapeRect(4.0, 6.0, width() - 8.0, height() - 66.0);
 
     if (!valid_)
-    {
-        QFont unavailableFont = painter.font();
-        unavailableFont.setPixelSize(18);
-        unavailableFont.setBold(true);
-        painter.setFont(unavailableFont);
-        painter.setPen(QColor(255, 232, 236));
-        painter.drawText(tapeRect, Qt::AlignCenter, QStringLiteral("N/A"));
-        painter.setPen(QColor(116, 238, 227));
-        painter.drawText(QRectF(0.0, height() - 52.0, width(), 34.0), Qt::AlignCenter,
-                         QStringLiteral("VZ  N/A"));
         return;
-    }
 
     const qreal centerY = tapeRect.center().y();
     const qreal pixelsPerMeter = qMax(24.0, tapeRect.height() / 10.0);
     const qreal firstTick = qFloor(depthMeters_ * 2.0f) / 2.0;
 
     QFont scaleFont = painter.font();
-    scaleFont.setPixelSize(13);
-    scaleFont.setWeight(QFont::DemiBold);
+    scaleFont.setPixelSize(17);
+    scaleFont.setWeight(QFont::Bold);
     painter.setFont(scaleFont);
 
     for (qreal value = firstTick - 6.0; value <= firstTick + 6.0; value += 0.5)
@@ -61,10 +51,11 @@ void DepthGauge::paintEvent(QPaintEvent *event)
         const bool major = qAbs(value - qRound(value)) < 0.01;
         const qreal tickStart = major ? tapeRect.right() - 34.0 : tapeRect.right() - 22.0;
         painter.setPen(
-            QPen(major ? QColor(178, 255, 248) : QColor(93, 226, 215, 185), major ? 2.6 : 1.7));
+            QPen(major ? QColor(178, 255, 248) : QColor(93, 226, 215, 200), major ? 3.4 : 2.2));
         painter.drawLine(QPointF(tickStart, y), QPointF(tapeRect.right() - 8.0, y));
 
-        if (major)
+        const bool coveredByCurrentValue = qAbs(value - depthMeters_) < 0.26;
+        if (major && !coveredByCurrentValue)
         {
             painter.drawText(QRectF(tapeRect.left() + 5.0, y - 10.0, tapeRect.width() - 47.0, 20.0),
                              Qt::AlignRight | Qt::AlignVCenter, QString::number(value, 'f', 0));
@@ -72,18 +63,19 @@ void DepthGauge::paintEvent(QPaintEvent *event)
     }
 
     const QColor accent(32, 199, 184);
-    painter.setPen(QPen(accent, 3.0));
-    painter.setBrush(accent);
-    QPolygonF pointer;
-    pointer << QPointF(tapeRect.left() + 3.0, centerY)
-            << QPointF(tapeRect.left() + 14.0, centerY - 8.0)
-            << QPointF(tapeRect.left() + 14.0, centerY + 8.0);
-    painter.drawPolygon(pointer);
-
-    const QRectF valueRect(tapeRect.left() + 15.0, centerY - 21.0, tapeRect.width() - 23.0, 42.0);
+    const QRectF valueRect(tapeRect.left() + 3.0, centerY - 21.0, tapeRect.width() - 47.0, 42.0);
     painter.setPen(QPen(accent, 2.0));
     painter.setBrush(QColor(7, 70, 72, 235));
     painter.drawRoundedRect(valueRect, 7.0, 7.0);
+
+    painter.setPen(QPen(accent, 2.0));
+    painter.setBrush(QColor(7, 70, 72, 235));
+    QPolygonF pointer;
+    pointer << QPointF(valueRect.right() + 14.0, centerY)
+            << QPointF(valueRect.right(), centerY - 8.0)
+            << QPointF(valueRect.right(), centerY + 8.0);
+    painter.drawPolygon(pointer);
+
     QFont valueFont = painter.font();
     valueFont.setPixelSize(19);
     valueFont.setBold(true);
@@ -102,6 +94,6 @@ void DepthGauge::paintEvent(QPaintEvent *event)
             ? QStringLiteral("↑")
             : (verticalSpeed_ < -0.01f ? QStringLiteral("↓") : QStringLiteral("•"));
     painter.drawText(
-        QRectF(0.0, height() - 52.0, width(), 34.0), Qt::AlignCenter,
-        QStringLiteral("VZ %1 %2 м/с").arg(direction).arg(qAbs(verticalSpeed_), 0, 'f', 2));
+        QRectF(0.0, height() - 52.0, width() - 2.0, 34.0), Qt::AlignRight | Qt::AlignVCenter,
+        QStringLiteral("%1 %2 м/с").arg(direction).arg(qAbs(verticalSpeed_), 0, 'f', 2));
 }

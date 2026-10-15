@@ -64,6 +64,7 @@ include_directories("${PROJECT_SOURCE_DIR}/src/integrations/input")
 include_directories("${PROJECT_SOURCE_DIR}/src/integrations/input/gamepad")
 include_directories("${PROJECT_SOURCE_DIR}/src/integrations/input/legacy")
 include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/attitude")
+include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/battery")
 include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/compass")
 include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/depth")
 include_directories("${PROJECT_SOURCE_DIR}")
@@ -89,6 +90,8 @@ set(PROJECT_SOURCES
         resources/resources.qrc
         src/ui/instruments/attitude/attitudeindicator.h
         src/ui/instruments/attitude/attitudeindicator.cpp
+        src/ui/instruments/battery/battery_status_widget.cpp
+        src/ui/instruments/battery/battery_status_widget.h
         src/ui/instruments/compass/compass.cpp
         src/ui/instruments/compass/compass.h
         src/ui/instruments/compass/compass.ui

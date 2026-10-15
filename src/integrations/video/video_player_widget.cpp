@@ -1,13 +1,13 @@
 #include "video_player_widget.h"
-#include <QVBoxLayout>
-#include <QResizeEvent>
 #include <QDebug>
+#include <QResizeEvent>
+#include <QVBoxLayout>
 
-VideoPlayerWidget::VideoPlayerWidget(QWidget *parent)
-    : QWidget(parent)
+VideoPlayerWidget::VideoPlayerWidget(QWidget *parent) : QWidget(parent)
 {
     static bool gstInit = false;
-    if (!gstInit) {
+    if (!gstInit)
+    {
         gst_init(nullptr, nullptr);
         gstInit = true;
     }
@@ -33,14 +33,13 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget *parent)
     layout->addWidget(imageLabel_, 1);
     layout->addWidget(statusLabel_);
 
-    connect(this, &VideoPlayerWidget::frameReceived,
-            this, [this](const QPixmap &pix) {
-                if (!pix.isNull()) {
-                    imageLabel_->setPixmap(pix.scaled(
-                        imageLabel_->size(),
-                        Qt::KeepAspectRatio,
-                        Qt::SmoothTransformation
-                    ));
+    connect(this, &VideoPlayerWidget::frameReceived, this,
+            [this](const QPixmap &pix)
+            {
+                if (!pix.isNull())
+                {
+                    imageLabel_->setPixmap(pix.scaled(imageLabel_->size(), Qt::KeepAspectRatio,
+                                                      Qt::SmoothTransformation));
                     currentPixmap_ = pix;
                 }
             });
@@ -48,28 +47,35 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget *parent)
     qDebug() << "VideoPlayerWidget (GStreamer) создан";
 }
 
-VideoPlayerWidget::~VideoPlayerWidget()
+VideoPlayerWidget::~VideoPlayerWidget() { stopStream(); }
+
+void VideoPlayerWidget::setFullscreenPresentation(bool fullscreen)
 {
-    stopStream();
+    titleLabel_->setVisible(!fullscreen);
+    statusLabel_->setVisible(!fullscreen);
+    imageLabel_->setStyleSheet(fullscreen ? "background-color: black; border: none;"
+                                          : "background-color: #1a1a1a; border: 1px solid #444;");
 }
 
 void VideoPlayerWidget::startStream(const QString &portStr)
 {
-    if (gstPipeline_) {
+    if (gstPipeline_)
+    {
         qDebug() << "Поток уже запущен";
         return;
     }
 
-    QString pipeline = QString(
-        "udpsrc port=%1 caps=\"application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)JPEG\" ! "
-        "rtpjpegdepay ! jpegdec ! videoconvert ! video/x-raw, format=RGB ! "
-        "appsink name=my_sink emit-signals=true sync=false"
-    ).arg(portStr);
+    QString pipeline = QString("udpsrc port=%1 caps=\"application/x-rtp, media=(string)video, "
+                               "clock-rate=(int)90000, encoding-name=(string)JPEG\" ! "
+                               "rtpjpegdepay ! jpegdec ! videoconvert ! video/x-raw, format=RGB ! "
+                               "appsink name=my_sink emit-signals=true sync=false")
+                           .arg(portStr);
 
     GError *error = nullptr;
     gstPipeline_ = gst_parse_launch(pipeline.toUtf8().constData(), &error);
 
-    if (error) {
+    if (error)
+    {
         qCritical() << "GStreamer error:" << error->message;
         g_error_free(error);
         statusLabel_->setText("Ошибка запуска GStreamer");
@@ -77,11 +83,15 @@ void VideoPlayerWidget::startStream(const QString &portStr)
     }
 
     GstElement *sink = gst_bin_get_by_name(GST_BIN(gstPipeline_), "my_sink");
-    if (sink) {
-        GstAppSinkCallbacks callbacks = {nullptr, nullptr, &VideoPlayerWidget::newSampleCallback, nullptr};
+    if (sink)
+    {
+        GstAppSinkCallbacks callbacks = {nullptr, nullptr, &VideoPlayerWidget::newSampleCallback,
+                                         nullptr};
         gst_app_sink_set_callbacks(GST_APP_SINK(sink), &callbacks, this, nullptr);
         gst_object_unref(sink);
-    } else {
+    }
+    else
+    {
         statusLabel_->setText("Ошибка: appsink не найден");
         return;
     }
@@ -93,7 +103,8 @@ void VideoPlayerWidget::startStream(const QString &portStr)
 
 void VideoPlayerWidget::stopStream()
 {
-    if (gstPipeline_) {
+    if (gstPipeline_)
+    {
         gst_element_set_state(gstPipeline_, GST_STATE_NULL);
         gst_object_unref(gstPipeline_);
         gstPipeline_ = nullptr;
@@ -105,7 +116,8 @@ void VideoPlayerWidget::stopStream()
 GstFlowReturn VideoPlayerWidget::newSampleCallback(GstAppSink *appsink, gpointer userData)
 {
     GstSample *sample = gst_app_sink_pull_sample(appsink);
-    if (!sample) return GST_FLOW_OK;
+    if (!sample)
+        return GST_FLOW_OK;
 
     GstBuffer *buffer = gst_sample_get_buffer(sample);
     GstCaps *caps = gst_sample_get_caps(sample);
@@ -116,11 +128,12 @@ GstFlowReturn VideoPlayerWidget::newSampleCallback(GstAppSink *appsink, gpointer
     gst_structure_get_int(structure, "height", &height);
 
     GstMapInfo map;
-    if (gst_buffer_map(buffer, &map, GST_MAP_READ)) {
+    if (gst_buffer_map(buffer, &map, GST_MAP_READ))
+    {
         QImage img(map.data, width, height, width * 3, QImage::Format_RGB888);
         QPixmap pix = QPixmap::fromImage(img.copy());
 
-        auto *self = static_cast<VideoPlayerWidget*>(userData);
+        auto *self = static_cast<VideoPlayerWidget *>(userData);
         QMetaObject::invokeMethod(self, "frameReceived", Qt::QueuedConnection, Q_ARG(QPixmap, pix));
 
         gst_buffer_unmap(buffer, &map);
@@ -133,11 +146,9 @@ GstFlowReturn VideoPlayerWidget::newSampleCallback(GstAppSink *appsink, gpointer
 void VideoPlayerWidget::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
-    if (!currentPixmap_.isNull()) {
-        imageLabel_->setPixmap(currentPixmap_.scaled(
-            imageLabel_->size(),
-            Qt::KeepAspectRatio,
-            Qt::SmoothTransformation
-        ));
+    if (!currentPixmap_.isNull())
+    {
+        imageLabel_->setPixmap(currentPixmap_.scaled(imageLabel_->size(), Qt::KeepAspectRatio,
+                                                     Qt::SmoothTransformation));
     }
 }

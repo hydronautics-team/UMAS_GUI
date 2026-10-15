@@ -1,7 +1,9 @@
 #include "fullscreen_video_window.h"
 #include "attitudeindicator.h"
+#include "battery_status_widget.h"
 #include "compass.h"
 #include "depth_gauge.h"
+#include "video_player_widget.h"
 #include <QCloseEvent>
 #include <QDateTime>
 #include <QDebug>
@@ -21,6 +23,7 @@ FullscreenVideoWindow::FullscreenVideoWindow(UVState *uvState, QWidget *parent)
     fullscreenVideoLabel_->setStyleSheet("background-color: black;");
 
     alarmLabel_ = new QLabel("СВЯЗЬ С РОБОТОМ ОК", fullscreenVideoLabel_);
+    alarmLabel_->setAlignment(Qt::AlignCenter);
     alarmLabel_->setStyleSheet(
         "color: #dffffb; font-size: 17px; font-weight: 600; background-color: rgba(18, 102, 95, "
         "210); border: 1px solid #20c7b8; border-radius: 8px; padding: 5px 12px;");
@@ -31,13 +34,12 @@ FullscreenVideoWindow::FullscreenVideoWindow(UVState *uvState, QWidget *parent)
                                    "border-radius: 8px; padding: 7px 12px;";
     motionLabel_ = new QLabel("СКОРОСТЬ: N/A", fullscreenVideoLabel_);
     motionLabel_->setStyleSheet(dataPanelStyle);
-    batteryLabel_ = new QLabel("АКБ: N/A", fullscreenVideoLabel_);
-    batteryLabel_->setStyleSheet(dataPanelStyle);
     coreStatusLabel_ = new QLabel("CORE: НЕТ ДАННЫХ", fullscreenVideoLabel_);
 
     compass_ = new Compass(fullscreenVideoLabel_);
     attitudeIndicator_ = new AttitudeIndicator(fullscreenVideoLabel_);
     depthGauge_ = new DepthGauge(fullscreenVideoLabel_);
+    batteryStatusWidget_ = new BatteryStatusWidget(fullscreenVideoLabel_);
     attitudeIndicator_->setOverlayMode(true);
     orientationLabel_ = new QLabel(fullscreenVideoLabel_);
     orientationLabel_->setAlignment(Qt::AlignCenter);
@@ -65,6 +67,8 @@ void FullscreenVideoWindow::setVideoWidget(QWidget *widget)
 
     videoPlayer_ = widget;
     videoPlayer_->setParent(fullscreenVideoLabel_);
+    if (auto *player = qobject_cast<VideoPlayerWidget *>(videoPlayer_))
+        player->setFullscreenPresentation(true);
 
     if (fullscreenVideoLabel_)
     {
@@ -123,15 +127,8 @@ void FullscreenVideoWindow::updateHudData()
         depthGauge_->setTelemetry(0.0f, 0.0f, false);
     }
 
-    const QString battery1Text = battery1Fresh ? QStringLiteral("АКБ 1  %1 В  %2%")
-                                                     .arg(battery.voltage_1, 0, 'f', 1)
-                                                     .arg(battery.percentage_1, 0, 'f', 0)
-                                               : QStringLiteral("АКБ 1  N/A");
-    const QString battery2Text = battery2Fresh ? QStringLiteral("АКБ 2  %1 В  %2%")
-                                                     .arg(battery.voltage_2, 0, 'f', 1)
-                                                     .arg(battery.percentage_2, 0, 'f', 0)
-                                               : QStringLiteral("АКБ 2  N/A");
-    batteryLabel_->setText(battery1Text + "\n" + battery2Text);
+    batteryStatusWidget_->setBatteries(battery.percentage_1, battery1Fresh, battery.percentage_2,
+                                       battery2Fresh);
 
     coreStatusLabel_->setText(coreFresh ? "● STINGRAY CORE" : "● CORE НЕТ ДАННЫХ");
     coreStatusLabel_->setStyleSheet(
@@ -207,8 +204,8 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
     // Выставляем точные координаты для надписей телеметрии
     if (motionLabel_)
         motionLabel_->setGeometry(30, 30, 310, 48);
-    if (batteryLabel_)
-        batteryLabel_->setGeometry(w - 310, h - 120, 280, 88);
+    if (batteryStatusWidget_)
+        batteryStatusWidget_->setGeometry(w - 230, h - 122, 200, 86);
     if (coreStatusLabel_)
         coreStatusLabel_->setGeometry(30, h - 108, 260, 38);
     if (alarmLabel_)
@@ -241,8 +238,8 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
         alarmLabel_->raise();
     if (motionLabel_)
         motionLabel_->raise();
-    if (batteryLabel_)
-        batteryLabel_->raise();
+    if (batteryStatusWidget_)
+        batteryStatusWidget_->raise();
     if (coreStatusLabel_)
         coreStatusLabel_->raise();
     if (compass_)
@@ -257,6 +254,8 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
 
 void FullscreenVideoWindow::closeEvent(QCloseEvent *event)
 {
+    if (auto *player = qobject_cast<VideoPlayerWidget *>(videoPlayer_))
+        player->setFullscreenPresentation(false);
     emit windowClosed();
     QWidget::closeEvent(event);
 }
