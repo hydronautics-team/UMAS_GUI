@@ -26,6 +26,7 @@
 #include <QTextCursor>
 #include <QVBoxLayout>
 #include <QtMath>
+#include <algorithm>
 #include <cmath>
 
 enum EventCategory
@@ -220,8 +221,23 @@ class DepthSonarPreview final : public QWidget
 public:
     explicit DepthSonarPreview(QWidget *parent = nullptr) : QWidget(parent)
     {
+        setObjectName(QStringLiteral("depthSonarPreview"));
         setMinimumHeight(145);
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    }
+
+    void setPose(double z, double verticalSpeed)
+    {
+        depth_ = std::abs(z);
+        verticalSpeed_ = verticalSpeed;
+        hasPose_ = true;
+        if (depthHistory_.isEmpty() || std::abs(depthHistory_.last() - depth_) > 0.002)
+        {
+            depthHistory_.append(depth_);
+            if (depthHistory_.size() > 120)
+                depthHistory_.removeFirst();
+        }
+        update();
     }
 
 protected:
@@ -233,8 +249,26 @@ protected:
         const QColor grid(12, 82, 105, 120);
         const QColor accent("#18d8de");
         const QColor muted("#668a9b");
-        const QRectF profile = rect().adjusted(12, 12, -width() * 0.43, -14);
+        const QRectF metrics(12, 5, width() * 0.54, 39);
+        const QRectF profile(12, 49, width() * 0.54, height() - 60);
         const QRectF sonar(width() * 0.62, 12, width() * 0.34, height() - 26);
+
+        painter.setFont(QFont(QStringLiteral("Roboto Condensed"), 8));
+        painter.setPen(muted);
+        painter.drawText(QRectF(metrics.left(), metrics.top(), metrics.width() * 0.5, 14),
+                         Qt::AlignLeft, QStringLiteral("ГЛУБИНА"));
+        painter.drawText(QRectF(metrics.center().x(), metrics.top(), metrics.width() * 0.5, 14),
+                         Qt::AlignLeft, QStringLiteral("ДО ДНА"));
+        painter.setFont(QFont(QStringLiteral("Exo 2"), 15, QFont::DemiBold));
+        painter.setPen(accent);
+        painter.drawText(QRectF(metrics.left(), metrics.top() + 14, metrics.width() * 0.5, 24),
+                         Qt::AlignLeft | Qt::AlignVCenter,
+                         hasPose_ ? QStringLiteral("%1 м").arg(depth_, 0, 'f', 1)
+                                  : QStringLiteral("—"));
+        painter.setPen(QColor(QStringLiteral("#ff8a2a")));
+        painter.drawText(
+            QRectF(metrics.center().x(), metrics.top() + 14, metrics.width() * 0.5, 24),
+            Qt::AlignLeft | Qt::AlignVCenter, QStringLiteral("—"));
 
         painter.setPen(QPen(grid, 1));
         for (int column = 0; column <= 8; ++column)
@@ -248,18 +282,38 @@ protected:
             painter.drawLine(QPointF(profile.left(), y), QPointF(profile.right(), y));
         }
 
-        QPainterPath seabed;
-        seabed.moveTo(profile.left(), profile.top() + profile.height() * 0.58);
-        seabed.cubicTo(profile.left() + profile.width() * 0.23, profile.bottom() * 0.78,
-                       profile.left() + profile.width() * 0.45, profile.top() * 1.65,
-                       profile.left() + profile.width() * 0.64,
-                       profile.top() + profile.height() * 0.72);
-        seabed.cubicTo(profile.left() + profile.width() * 0.78, profile.bottom() * 0.87,
-                       profile.right() - profile.width() * 0.08,
-                       profile.top() + profile.height() * 0.52, profile.right(),
-                       profile.top() + profile.height() * 0.61);
-        painter.setPen(QPen(accent, 1.4));
-        painter.drawPath(seabed);
+        if (hasPose_ && !depthHistory_.isEmpty())
+        {
+            const auto bounds = std::minmax_element(depthHistory_.cbegin(), depthHistory_.cend());
+            const double minimum = *bounds.first;
+            const double maximum = *bounds.second;
+            const double span = qMax(1.0, maximum - minimum);
+            QPainterPath depthTrack;
+            for (int index = 0; index < depthHistory_.size(); ++index)
+            {
+                const qreal x =
+                    profile.left() + profile.width() * index / qMax(1, depthHistory_.size() - 1);
+                const qreal y =
+                    profile.top() + 5 +
+                    (depthHistory_.at(index) - minimum) / span * (profile.height() - 10);
+                if (index == 0)
+                    depthTrack.moveTo(x, y);
+                else
+                    depthTrack.lineTo(x, y);
+            }
+            painter.setPen(QPen(accent, 1.6));
+            painter.drawPath(depthTrack);
+            painter.setFont(QFont(QStringLiteral("IBM Plex Mono"), 7));
+            painter.setPen(muted);
+            painter.drawText(profile.adjusted(5, 3, -5, -3), Qt::AlignLeft | Qt::AlignBottom,
+                             QStringLiteral("VZ %1 м/с").arg(verticalSpeed_, 0, 'f', 2));
+        }
+        else
+        {
+            painter.setPen(muted);
+            painter.setFont(QFont(QStringLiteral("Roboto Condensed"), 8));
+            painter.drawText(profile, Qt::AlignCenter, QStringLiteral("НЕТ ДАННЫХ DVL"));
+        }
 
         const QPointF center = sonar.center();
         const qreal radius = qMin(sonar.width(), sonar.height()) * 0.46;
@@ -274,9 +328,14 @@ protected:
 
         painter.setPen(muted);
         painter.setFont(QFont(QStringLiteral("Roboto Condensed"), 9));
-        painter.drawText(profile, Qt::AlignCenter, QStringLiteral("ПРОФИЛЬ ДНА\nНЕТ ДАННЫХ"));
         painter.drawText(sonar, Qt::AlignCenter, QStringLiteral("СОНАР\nНЕТ ДАННЫХ"));
     }
+
+private:
+    QVector<double> depthHistory_;
+    double depth_ = 0.0;
+    double verticalSpeed_ = 0.0;
+    bool hasPose_ = false;
 };
 
 static QIcon makeSunIcon()
@@ -511,6 +570,9 @@ static const QString DARK_THEME =
     "border: 1px solid #19485d; border-radius: 6px; font-size: 10px; }"
     "QPushButton[cameraThumbnail='true'][activeCamera='true'] { color: #ffffff; "
     "border: 2px solid #00d9e6; background-color: rgba(3, 53, 65, 220); }"
+    "QLabel[orientationMetric='true'] { color: #dceff7; background-color: #031722; "
+    "border: 1px solid #0b526b; border-radius: 5px; padding: 5px 6px; "
+    "font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; }"
     "QPushButton[dashboardNav='true'] { text-align: left; padding: 11px 13px; border: none; "
     "border-left: 3px solid transparent; background: transparent; color: #7faaa9; }"
     "QPushButton[dashboardNav='true']:hover { color: #c4e9e6; background-color: #0d3540; }"
@@ -762,6 +824,36 @@ static void setupDashboardGrid(MainWindow *window)
     orientation->setTitle(QString());
     orientation->setStyleSheet(QStringLiteral(
         "QGroupBox { border: none; margin: 0; padding: 0; background: transparent; }"));
+    if (auto *orientationContent =
+            window->findChild<QHBoxLayout *>(QStringLiteral("horizontalLayout_info")))
+    {
+        auto *compass = window->findChild<QWidget *>(QStringLiteral("compass"));
+        auto *attitude = window->findChild<QWidget *>(QStringLiteral("attitudeIndicator"));
+        if (compass && attitude)
+        {
+            orientationContent->removeWidget(compass);
+            orientationContent->removeWidget(attitude);
+            orientationContent->insertWidget(0, attitude, 3);
+            orientationContent->addWidget(compass, 3);
+        }
+    }
+    for (const QString &labelName :
+         {QStringLiteral("lbl_heading"), QStringLiteral("lbl_pitch"), QStringLiteral("lbl_roll")})
+    {
+        if (auto *label = window->findChild<QLabel *>(labelName))
+        {
+            if (labelName == QStringLiteral("lbl_heading"))
+                label->setText(QStringLiteral("HDG  —"));
+            else if (labelName == QStringLiteral("lbl_pitch"))
+                label->setText(QStringLiteral("PITCH  —"));
+            else
+                label->setText(QStringLiteral("ROLL  —"));
+            label->setProperty("orientationMetric", true);
+            label->setStyleSheet(QString());
+            label->setAlignment(Qt::AlignCenter);
+            label->setMinimumWidth(88);
+        }
+    }
     orientationLayout->addWidget(orientation, 1);
 
     QVBoxLayout *depthLayout = nullptr;
@@ -1099,6 +1191,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                 [mapPreview](const UVState::Pose &pose)
                 { mapPreview->setPosition(pose.x, pose.y); });
     }
+    if (auto *depthPreview = findChild<DepthSonarPreview *>(QStringLiteral("depthSonarPreview")))
+    {
+        connect(uvState, &UVState::poseUpdated, depthPreview,
+                [this, depthPreview](const UVState::Pose &pose)
+                {
+                    depthPreview->setPose(pose.z, pose.velocity_z);
+                    const double speed = std::sqrt(pose.velocity_x * pose.velocity_x +
+                                                   pose.velocity_y * pose.velocity_y +
+                                                   pose.velocity_z * pose.velocity_z);
+                    ui->lbl_depth_value->setText(
+                        QStringLiteral("%1 м").arg(std::abs(pose.z), 0, 'f', 1));
+                    ui->lbl_speed_value->setText(QStringLiteral("%1 м/с").arg(speed, 0, 'f', 2));
+                });
+    }
 
     rosBridge = new RosBridge(this);
     rosBridge->start();
@@ -1129,11 +1235,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             {
                 ui->compass->setYaw(imu.yaw);
                 ui->attitudeIndicator->setAttitude(imu.pitch, imu.roll);
-                ui->lbl_heading->setText(QStringLiteral("КУРС: %1°")
+                ui->lbl_heading->setText(QStringLiteral("HDG  %1°")
                                              .arg(static_cast<int>(qRound(imu.yaw + 360.0f)) % 360,
                                                   3, 10, QLatin1Char('0')));
-                ui->lbl_pitch->setText(QStringLiteral("ДИФФЕРЕНТ: %1°").arg(imu.pitch, 0, 'f', 1));
-                ui->lbl_roll->setText(QStringLiteral("КРЕН: %1°").arg(imu.roll, 0, 'f', 1));
+                ui->lbl_pitch->setText(QStringLiteral("PITCH  %1°").arg(imu.pitch, 0, 'f', 1));
+                ui->lbl_roll->setText(QStringLiteral("ROLL  %1°").arg(imu.roll, 0, 'f', 1));
             });
 
     connect(rosBridge, &RosBridge::controlFlagsPublished, uvState, &UVState::setControlFlags,
