@@ -8,6 +8,9 @@ ENV LC_ALL=en_US.UTF-8
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
+    clang-format \
+    clang-tidy \
+    clangd \
     git \
     wget \
     curl \
