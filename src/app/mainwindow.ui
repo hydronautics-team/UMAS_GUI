@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1480</width>
-    <height>900</height>
+    <width>1672</width>
+    <height>941</height>
    </rect>
   </property>
   <property name="minimumSize"><size><width>1280</width><height>720</height></size></property>
@@ -306,7 +306,7 @@ QSlider:disabled::handle:horizontal {
     <property name="bottomMargin"><number>8</number></property>
       <!-- ПОСТОЯННАЯ СТРОКА СОСТОЯНИЯ АППАРАТА -->
       <item>
-       <widget class="QFrame" name="frame_telemetry">
+       <widget class="HudPanel" name="frame_telemetry">
         <property name="minimumSize"><size><width>0</width><height>78</height></size></property>
         <property name="maximumSize"><size><width>16777215</width><height>96</height></size></property>
         <property name="styleSheet">
@@ -527,7 +527,7 @@ QSlider:disabled::handle:horizontal {
        <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,1">
       <!-- ПАНЕЛЬ БЫСТРЫХ ДЕЙСТВИЙ -->
       <item>
-       <widget class="QFrame" name="frame_quickActions">
+       <widget class="HudPanel" name="frame_quickActions">
         <property name="frameShape"><enum>QFrame::NoFrame</enum></property>
         <layout class="QHBoxLayout" name="horizontalLayout_manipulator">
          <property name="leftMargin"><number>12</number></property>
@@ -1196,7 +1196,7 @@ QSlider:disabled::handle:horizontal {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1480</width>
+     <width>1672</width>
      <height>24</height>
     </rect>
    </property>
@@ -1204,6 +1204,11 @@ QSlider:disabled::handle:horizontal {
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>HudPanel</class>
+   <extends>QFrame</extends>
+   <header>hud_panel.h</header>
+  </customwidget>
   <customwidget>
    <class>Compass</class>
    <extends>QWidget</extends>

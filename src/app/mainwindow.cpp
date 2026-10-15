@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "hud_panel.h"
 #include <QAbstractButton>
 #include <QApplication>
 #include <QButtonGroup>
@@ -145,11 +146,11 @@ static const QString LIGHT_THEME =
     "5px; border-radius: 4px; }";
 
 static const QString DARK_THEME =
-    "QMainWindow { background-color: #031419; color: #d7f3f1; font-family: 'Inter', 'Segoe UI', "
-    "sans-serif; font-size: 13px; }"
-    "QWidget#centralwidget { background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #041820, "
-    "stop:0.55 #06232b, stop:1 #082d34); color: #d7f3f1; font-family: 'Inter', 'Segoe UI', "
-    "sans-serif; font-size: 13px; }"
+    "QMainWindow { background-color: #000c17; color: #e3f6ff; font-family: 'Roboto Condensed', "
+    "'Arial Narrow', 'Segoe UI', sans-serif; font-size: 13px; }"
+    "QWidget#centralwidget { background: qradialgradient(cx:0.5, cy:0.35, radius:0.9, stop:0 "
+    "#031726, stop:0.65 #000c17, stop:1 #000a14); color: #e3f6ff; font-family: 'Roboto "
+    "Condensed', 'Arial Narrow', 'Segoe UI', sans-serif; font-size: 13px; }"
     "QWidget { outline: none; }"
     "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #124653, stop:1 "
     "#0a303a); border: 1px solid #236574; border-radius: 8px; padding: 6px 13px; color: #d7f3f1; "
@@ -244,7 +245,7 @@ static void setupDashboardNavigation(MainWindow *window)
     tabs->tabBar()->hide();
     tabs->setDocumentMode(true);
 
-    auto *navigation = new QFrame(window);
+    auto *navigation = new HudPanel(window);
     navigation->setObjectName(QStringLiteral("dashboardNavigation"));
     navigation->setMinimumWidth(150);
     navigation->setMaximumWidth(180);
@@ -291,6 +292,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     harmonizeLegacyStyles();
     setupBrandHeader();
     setupDashboardNavigation(this);
+    ui->btn_theme_toggle->hide();
 
     qRegisterMetaType<UVState::ImuData>("UVState::ImuData");
     qRegisterMetaType<UVState::Pose>("UVState::Pose");

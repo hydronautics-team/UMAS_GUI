@@ -69,6 +69,7 @@ include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/battery")
 include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/compass")
 include_directories("${PROJECT_SOURCE_DIR}/src/ui/instruments/depth")
 include_directories("${PROJECT_SOURCE_DIR}/src/ui/overlays")
+include_directories("${PROJECT_SOURCE_DIR}/src/ui/components")
 include_directories("${PROJECT_SOURCE_DIR}")
 
 include_directories(${Python3_INCLUDE_DIRS})
@@ -98,6 +99,8 @@ set(PROJECT_SOURCES
         src/ui/overlays/hud_alert_overlay.h
         src/ui/overlays/hud_notification_stack.cpp
         src/ui/overlays/hud_notification_stack.h
+        src/ui/components/hud_panel.cpp
+        src/ui/components/hud_panel.h
         src/ui/instruments/compass/compass.cpp
         src/ui/instruments/compass/compass.h
         src/ui/instruments/compass/compass.ui
