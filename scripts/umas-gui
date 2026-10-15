@@ -3,7 +3,7 @@ set -euo pipefail
 
 CLI_PATH="$(realpath "${BASH_SOURCE[0]}")"
 PROJECT_ROOT="$(realpath "$(dirname "$CLI_PATH")/..")"
-IMAGE_NAME="${UMAS_GUI_IMAGE:-qt-ros2}"
+IMAGE_NAME="${UMAS_GUI_IMAGE:-umas-gui}"
 ROS_DOMAIN="${ROS_DOMAIN_ID:-1}"
 
 usage()
