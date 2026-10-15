@@ -235,6 +235,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(rosBridge, &RosBridge::batteryReceived, uvState, &UVState::setBattery,
             Qt::QueuedConnection);
 
+    connect(rosBridge, &RosBridge::dvlOriginResetFinished, this,
+            [this](bool success, const QString &message)
+            {
+                ui->pushButton_resetDvlOrigin->setEnabled(true);
+                displayText((success ? "DVL: " : "Ошибка DVL: ") + message);
+            },
+            Qt::QueuedConnection);
+
     connect(uvState, &UVState::imuUpdated, this,
             [this](const UVState::ImuData &imu)
             {
@@ -803,6 +811,14 @@ void MainWindow::setBottom()
 
     connect(ui->pushButton_zeroYaw, &QPushButton::clicked, rosBridge, &RosBridge::zeroYawInternal,
             Qt::QueuedConnection);
+    connect(ui->pushButton_resetDvlOrigin, &QPushButton::clicked, this,
+            [this]()
+            {
+                ui->pushButton_resetDvlOrigin->setEnabled(false);
+                displayText("Запрошен сброс положения DVL...");
+                QMetaObject::invokeMethod(rosBridge, "resetDvlOriginInternal",
+                                          Qt::QueuedConnection);
+            });
 }
 
 void MainWindow::setBottom_mode()

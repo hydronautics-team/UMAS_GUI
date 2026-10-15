@@ -1072,6 +1072,12 @@ QSlider:disabled::handle:horizontal {
               <property name="text"><string>Выставка курса</string></property>
              </widget>
             </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_resetDvlOrigin">
+              <property name="toolTip"><string>Сбросить начало координат DVL после погружения аппарата</string></property>
+              <property name="text"><string>Сброс положения DVL</string></property>
+             </widget>
+            </item>
            </layout>
           </item>
           <item>

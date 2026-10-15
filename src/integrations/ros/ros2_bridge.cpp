@@ -102,6 +102,8 @@ void RosBridge::run()
     control_flags_pub_ = node_->create_publisher<std_msgs::msg::UInt8>("/control/loop_flags", 10);
 
     zero_yaw_pub_ = node_->create_publisher<std_msgs::msg::Bool>("/imu/zero_yaw", 10);
+    reset_dvl_origin_client_ =
+        node_->create_client<std_srvs::srv::Trigger>("/core/localization/reset_origin");
 
     lights_mode_pub_ = node_->create_publisher<std_msgs::msg::Int32>("/lights/mode", 10);
     lights_brightness_pub_ =
@@ -150,6 +152,39 @@ void RosBridge::zeroYawInternal()
     zero_yaw_pub_->publish(msg);
 
     qDebug() << "Published yaw zero signal";
+}
+
+void RosBridge::resetDvlOriginInternal()
+{
+    if (!is_ready_ || !reset_dvl_origin_client_)
+    {
+        emit dvlOriginResetFinished(false, "ROS-мост ещё не готов");
+        return;
+    }
+
+    if (!reset_dvl_origin_client_->service_is_ready())
+    {
+        emit dvlOriginResetFinished(false, "Сервис сброса положения DVL недоступен");
+        return;
+    }
+
+    auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
+    reset_dvl_origin_client_->async_send_request(
+        request,
+        [this](rclcpp::Client<std_srvs::srv::Trigger>::SharedFuture future)
+        {
+            try
+            {
+                const auto response = future.get();
+                emit dvlOriginResetFinished(
+                    response->success, QString::fromStdString(response->message));
+            }
+            catch (const std::exception &error)
+            {
+                emit dvlOriginResetFinished(
+                    false, QString("Ошибка вызова сервиса: %1").arg(error.what()));
+            }
+        });
 }
 
 void RosBridge::setControlFlagInternal(uint8_t bit, bool value)

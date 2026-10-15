@@ -12,6 +12,7 @@
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/int32.hpp>
 #include <std_msgs/msg/u_int8.hpp>
+#include <std_srvs/srv/trigger.hpp>
 
 class RosBridge : public QThread
 {
@@ -40,11 +41,13 @@ signals:
     void imuReceived(const UVState::ImuData &imu);
     void batteryReceived(const UVState::BatteryData &battery);
     void controlFlagsPublished(std::uint8_t flags);
+    void dvlOriginResetFinished(bool success, const QString &message);
 
 public slots:
     void publishTwistInternal(double x, double y, double z, double angular_x, double angular_y,
                               double angular_z);
     void zeroYawInternal();
+    void resetDvlOriginInternal();
     void setControlFlagInternal(uint8_t bit, bool value);
     void publishLightsMode(unsigned mode);
     void publishLightsBrightness(unsigned value);
@@ -57,6 +60,7 @@ private:
     UVState::BatteryData battery_data_{};
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr control_flags_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr zero_yaw_pub_;
+    rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr reset_dvl_origin_client_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr lights_mode_pub_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr lights_brightness_pub_;
 
