@@ -14,7 +14,6 @@ void DepthGauge::setTelemetry(float depthMeters, float verticalSpeed, bool valid
     depthMeters_ = qMax(0.0f, depthMeters);
     verticalSpeed_ = verticalSpeed;
     valid_ = valid;
-    setVisible(valid_);
     update();
 }
 
@@ -27,12 +26,10 @@ void DepthGauge::paintEvent(QPaintEvent *event)
 
     const QRectF tapeRect(4.0, 6.0, width() - 8.0, height() - 66.0);
 
-    if (!valid_)
-        return;
-
     const qreal centerY = tapeRect.center().y();
     const qreal pixelsPerMeter = qMax(24.0, tapeRect.height() / 10.0);
-    const qreal firstTick = qFloor(depthMeters_ * 2.0f) / 2.0;
+    const qreal displayedDepth = valid_ ? depthMeters_ : 5.0;
+    const qreal firstTick = qFloor(displayedDepth * 2.0f) / 2.0;
 
     QFont scaleFont = painter.font();
     scaleFont.setPixelSize(17);
@@ -44,7 +41,7 @@ void DepthGauge::paintEvent(QPaintEvent *event)
         if (value < 0.0)
             continue;
 
-        const qreal y = centerY + (value - depthMeters_) * pixelsPerMeter;
+        const qreal y = centerY + (value - displayedDepth) * pixelsPerMeter;
         if (y < tapeRect.top() + 8.0 || y > tapeRect.bottom() - 8.0)
             continue;
 
@@ -54,13 +51,16 @@ void DepthGauge::paintEvent(QPaintEvent *event)
             QPen(major ? QColor(178, 255, 248) : QColor(93, 226, 215, 200), major ? 3.4 : 2.2));
         painter.drawLine(QPointF(tickStart, y), QPointF(tapeRect.right() - 8.0, y));
 
-        const bool coveredByCurrentValue = qAbs(value - depthMeters_) < 0.26;
+        const bool coveredByCurrentValue = valid_ && qAbs(value - depthMeters_) < 0.26;
         if (major && !coveredByCurrentValue)
         {
             painter.drawText(QRectF(tapeRect.left() + 5.0, y - 10.0, tapeRect.width() - 47.0, 20.0),
                              Qt::AlignRight | Qt::AlignVCenter, QString::number(value, 'f', 0));
         }
     }
+
+    if (!valid_)
+        return;
 
     const QColor accent(32, 199, 184);
     const QRectF valueRect(tapeRect.left() + 3.0, centerY - 21.0, tapeRect.width() - 47.0, 42.0);

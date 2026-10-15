@@ -1,5 +1,6 @@
 #include "fullscreen_video_window.h"
 #include "attitudeindicator.h"
+#include "battery_alert_overlay.h"
 #include "battery_status_widget.h"
 #include "compass.h"
 #include "depth_gauge.h"
@@ -40,6 +41,7 @@ FullscreenVideoWindow::FullscreenVideoWindow(UVState *uvState, QWidget *parent)
     attitudeIndicator_ = new AttitudeIndicator(fullscreenVideoLabel_);
     depthGauge_ = new DepthGauge(fullscreenVideoLabel_);
     batteryStatusWidget_ = new BatteryStatusWidget(fullscreenVideoLabel_);
+    batteryAlertOverlay_ = new BatteryAlertOverlay(fullscreenVideoLabel_);
     attitudeIndicator_->setOverlayMode(true);
     orientationLabel_ = new QLabel(fullscreenVideoLabel_);
     orientationLabel_->setAlignment(Qt::AlignCenter);
@@ -129,6 +131,14 @@ void FullscreenVideoWindow::updateHudData()
 
     batteryStatusWidget_->setBatteries(battery.percentage_1, battery1Fresh, battery.percentage_2,
                                        battery2Fresh);
+    const bool criticalBattery = (battery1Fresh && battery.percentage_1 <= 15.0f) ||
+                                 (battery2Fresh && battery.percentage_2 <= 15.0f);
+    const bool warningBattery = (battery1Fresh && battery.percentage_1 <= 25.0f) ||
+                                (battery2Fresh && battery.percentage_2 <= 25.0f);
+    batteryAlertOverlay_->setLevel(criticalBattery
+                                       ? BatteryAlertOverlay::Level::Critical
+                                       : (warningBattery ? BatteryAlertOverlay::Level::Warning
+                                                         : BatteryAlertOverlay::Level::None));
 
     coreStatusLabel_->setText(coreFresh ? "● STINGRAY CORE" : "● CORE НЕТ ДАННЫХ");
     coreStatusLabel_->setStyleSheet(
@@ -205,7 +215,9 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
     if (motionLabel_)
         motionLabel_->setGeometry(30, 30, 310, 48);
     if (batteryStatusWidget_)
-        batteryStatusWidget_->setGeometry(w - 230, h - 122, 200, 86);
+        batteryStatusWidget_->setGeometry(w - 280, h - 146, 250, 110);
+    if (batteryAlertOverlay_)
+        batteryAlertOverlay_->setGeometry(0, 0, w, h);
     if (coreStatusLabel_)
         coreStatusLabel_->setGeometry(30, h - 108, 260, 38);
     if (alarmLabel_)
@@ -234,6 +246,8 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
         orientationLabel_->setGeometry((w - 560) / 2, margin, 560, 42);
 
     // Выводим надписи на передний план
+    if (batteryAlertOverlay_)
+        batteryAlertOverlay_->raise();
     if (alarmLabel_)
         alarmLabel_->raise();
     if (motionLabel_)

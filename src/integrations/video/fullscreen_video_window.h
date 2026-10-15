@@ -12,6 +12,7 @@ class Compass;
 class AttitudeIndicator;
 class DepthGauge;
 class BatteryStatusWidget;
+class BatteryAlertOverlay;
 
 class FullscreenVideoWindow : public QWidget
 {
@@ -49,6 +50,7 @@ private:
     AttitudeIndicator *attitudeIndicator_;
     DepthGauge *depthGauge_;
     BatteryStatusWidget *batteryStatusWidget_;
+    BatteryAlertOverlay *batteryAlertOverlay_;
     QLabel *orientationLabel_;
     QTimer *hudTimer_;
 };
