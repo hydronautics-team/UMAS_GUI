@@ -194,6 +194,13 @@ static const QString DARK_THEME =
     "10px; padding: 5px; }"
     "QFrame#frame_quickActions, QFrame#dashboardNavigation { background-color: #071f27; border: "
     "1px solid #174a56; border-radius: 9px; }"
+    "HudPanel[telemetryCard='true'] { background: transparent; }"
+    "QLabel[telemetryIcon='true'] { color: #55f5f0; background-color: #021825; border: 1px solid "
+    "#07516b; border-radius: 5px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; "
+    "font-weight: 600; padding: 3px; }"
+    "QLabel[telemetryTitle='true'] { color: #91bbd0; font-size: 11px; font-weight: 500; }"
+    "QLabel[telemetryValue='true'] { color: #e3f6ff; font-family: 'Exo 2', 'Segoe UI', sans-serif; "
+    "font-size: 20px; font-weight: 600; background: transparent; border: none; padding: 0; }"
     "QPushButton[dashboardNav='true'] { text-align: left; padding: 11px 13px; border: none; "
     "border-left: 3px solid transparent; background: transparent; color: #7faaa9; }"
     "QPushButton[dashboardNav='true']:hover { color: #c4e9e6; background-color: #0d3540; }"
@@ -285,6 +292,88 @@ static void setupDashboardNavigation(MainWindow *window)
     workspaceLayout->addWidget(quickActions);
 }
 
+static void setupTelemetryCards(MainWindow *window)
+{
+    auto *telemetryLayout =
+        window->findChild<QHBoxLayout *>(QStringLiteral("horizontalLayout_telemetry"));
+    if (!telemetryLayout)
+        return;
+
+    struct TelemetryDescriptor
+    {
+        const char *titleName;
+        const char *valueName;
+        const char *iconText;
+        int width;
+    };
+
+    const TelemetryDescriptor descriptors[] = {
+        {"lbl_depth_title", "lbl_depth_value", "DEP", 160},
+        {"lbl_bottom_title", "lbl_bottom_value", "ALT", 136},
+        {"lbl_speed_title", "lbl_speed_value", "SPD", 175},
+        {"lbl_temp_title", "lbl_temp_value", "TMP", 137},
+        {"lbl_leak_title", "lbl_leak_value", "LEK", 141},
+        {"lbl_voltage_title", "lbl_voltage_value", "B1", 129},
+        {"lbl_voltage2_title", "lbl_voltage2_value", "B2", 130},
+        {"lbl_kill_title", "btn_killswitch_status", "KIL", 163},
+        {"lbl_ping_title", "lbl_ping_value", "PNG", 140},
+    };
+
+    while (QLayoutItem *item = telemetryLayout->takeAt(0))
+    {
+        if (QLayout *nestedLayout = item->layout())
+        {
+            while (QLayoutItem *nestedItem = nestedLayout->takeAt(0))
+                delete nestedItem;
+            delete nestedLayout;
+        }
+        else
+        {
+            delete item;
+        }
+    }
+
+    telemetryLayout->setContentsMargins(0, 0, 0, 0);
+    telemetryLayout->setSpacing(9);
+
+    for (const TelemetryDescriptor &descriptor : descriptors)
+    {
+        auto *title = window->findChild<QLabel *>(QString::fromLatin1(descriptor.titleName));
+        auto *value = window->findChild<QWidget *>(QString::fromLatin1(descriptor.valueName));
+        if (!title || !value)
+            continue;
+
+        auto *card = new HudPanel(window);
+        card->setProperty("telemetryCard", true);
+        card->setAccentVisible(false);
+        card->setFixedSize(descriptor.width, 64);
+
+        auto *cardLayout = new QHBoxLayout(card);
+        cardLayout->setContentsMargins(11, 8, 11, 8);
+        cardLayout->setSpacing(9);
+
+        auto *icon = new QLabel(QString::fromLatin1(descriptor.iconText), card);
+        icon->setProperty("telemetryIcon", true);
+        icon->setAlignment(Qt::AlignCenter);
+        icon->setFixedSize(31, 31);
+
+        auto *textLayout = new QVBoxLayout();
+        textLayout->setContentsMargins(0, 0, 0, 0);
+        textLayout->setSpacing(1);
+        title->setProperty("telemetryTitle", true);
+        value->setProperty("telemetryValue", true);
+        title->setStyleSheet(QString());
+        value->setStyleSheet(QString());
+        textLayout->addWidget(title);
+        textLayout->addWidget(value);
+
+        cardLayout->addWidget(icon);
+        cardLayout->addLayout(textLayout, 1);
+        telemetryLayout->addWidget(card);
+    }
+    telemetryLayout->addStretch(1);
+}
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -292,6 +381,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     harmonizeLegacyStyles();
     setupBrandHeader();
     setupDashboardNavigation(this);
+    setupTelemetryCards(this);
     ui->btn_theme_toggle->hide();
 
     qRegisterMetaType<UVState::ImuData>("UVState::ImuData");
