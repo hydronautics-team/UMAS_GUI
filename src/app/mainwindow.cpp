@@ -18,6 +18,7 @@
 #include <QPixmap>
 #include <QProgressBar>
 #include <QPushButton>
+#include <QResizeEvent>
 #include <QStackedWidget>
 #include <QTabBar>
 #include <QTabWidget>
@@ -656,6 +657,10 @@ static const QString DARK_THEME =
     "QLabel[orientationMetric='true'] { color: #dceff7; background-color: #031722; "
     "border: 1px solid #0b526b; border-radius: 5px; padding: 5px 6px; "
     "font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; }"
+    "QWidget#centralwidget[compactMode='true'] QLabel[telemetryTitle='true'] { font-size: 9px; }"
+    "QWidget#centralwidget[compactMode='true'] QLabel[telemetryValue='true'] { font-size: 17px; }"
+    "QWidget#centralwidget[compactMode='true'] QPushButton[axisMode='true'] { font-size: 8px; "
+    "padding-left: 1px; padding-right: 1px; }"
     "QPushButton[dashboardNav='true'] { text-align: left; padding: 11px 13px; border: none; "
     "border-left: 3px solid transparent; background: transparent; color: #7faaa9; }"
     "QPushButton[dashboardNav='true']:hover { color: #c4e9e6; background-color: #0d3540; }"
@@ -2380,6 +2385,50 @@ void MainWindow::toggleTheme()
 {
     isDark_ = !isDark_;
     applyTheme(isDark_);
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    QMainWindow::resizeEvent(event);
+    if (!ui || !ui->centralwidget)
+        return;
+
+    const bool compact = event->size().width() < 1500 || event->size().height() < 850;
+    setDynamicProperty(ui->centralwidget, "compactMode", compact);
+
+    if (auto *navigation = findChild<QWidget *>(QStringLiteral("dashboardNavigation")))
+    {
+        navigation->setMinimumWidth(compact ? 126 : 150);
+        navigation->setMaximumWidth(compact ? 132 : 180);
+    }
+    if (auto *instruments = findChild<QWidget *>(QStringLiteral("dashboardInstrumentColumn")))
+        instruments->setMinimumWidth(compact ? 350 : 430);
+
+    const QList<QPair<QString, QStringList>> axisLabels = {
+        {QStringLiteral("pushButton_modeAutomated_surge"),
+         {QStringLiteral("Марш"), QStringLiteral("Марш")}},
+        {QStringLiteral("pushButton_modeAutomated_sway"),
+         {QStringLiteral("Лаг"), QStringLiteral("Лаг")}},
+        {QStringLiteral("pushButton_modeAutomated_depth"),
+         {QStringLiteral("Глубина"), QStringLiteral("Глуб.")}},
+        {QStringLiteral("pushButton_modeAutomated_yaw"),
+         {QStringLiteral("Курс"), QStringLiteral("Курс")}},
+        {QStringLiteral("pushButton_modeAutomated_pitch"),
+         {QStringLiteral("Дифферент"), QStringLiteral("Дифф.")}},
+        {QStringLiteral("pushButton_modeAutomated_roll"),
+         {QStringLiteral("Крен"), QStringLiteral("Крен")}}};
+    for (const auto &axis : axisLabels)
+    {
+        if (auto *button = findChild<QPushButton *>(axis.first))
+            button->setText(axis.second.at(compact ? 1 : 0));
+    }
+
+    if (auto *filter = findChild<QComboBox *>(QStringLiteral("eventLogFilter")))
+    {
+        filter->setItemText(0, compact ? QStringLiteral("Все") : QStringLiteral("Все сообщения"));
+        filter->setMinimumWidth(compact ? 88 : 112);
+        filter->setMaximumWidth(compact ? 100 : QWIDGETSIZE_MAX);
+    }
 }
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)

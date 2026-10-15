@@ -125,6 +125,7 @@ signals:
     void controlFlagRequested(uint8_t bit, bool value);
 
 protected:
+    void resizeEvent(QResizeEvent *event) override;
     Ui::MainWindow *ui;
     QTimer *updateTimer = nullptr;
 
