@@ -59,6 +59,7 @@ include_directories("${PROJECT_SOURCE_DIR}/src/app")
 include_directories("${PROJECT_SOURCE_DIR}/src/core/telemetry")
 include_directories("${PROJECT_SOURCE_DIR}/src/core/control")
 include_directories("${PROJECT_SOURCE_DIR}/src/integrations/ros")
+include_directories("${PROJECT_SOURCE_DIR}/src/integrations/rosbag")
 include_directories("${PROJECT_SOURCE_DIR}/src/integrations/video")
 include_directories("${PROJECT_SOURCE_DIR}/src/integrations/input")
 include_directories("${PROJECT_SOURCE_DIR}/src/integrations/input/gamepad")
@@ -99,6 +100,8 @@ set(PROJECT_SOURCES
         src/integrations/input/legacy/joy_stick.h src/integrations/input/legacy/joy_stick.cpp
         src/integrations/ros/ros2_bridge.h
         src/integrations/ros/ros2_bridge.cpp
+        src/integrations/rosbag/rosbag_recorder.h
+        src/integrations/rosbag/rosbag_recorder.cpp
         src/integrations/video/video_player_widget.h
         src/integrations/video/video_player_widget.cpp
         src/integrations/video/fullscreen_video_window.cpp

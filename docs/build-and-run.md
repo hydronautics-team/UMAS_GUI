@@ -61,6 +61,9 @@ umas-gui check         # проверить форматирование
 Образ по умолчанию называется `umas-gui`, а `ROS_DOMAIN_ID` равен `1`. Значения можно
 переопределить переменными `UMAS_GUI_IMAGE` и `ROS_DOMAIN_ID`.
 
+Записи rosbag сохраняются в каталоге `bags` в корне репозитория UMAS GUI. Этот
+каталог исключён из Git.
+
 ## Docker
 
 Команда `umas-gui docker-build` собирает образ из `docker/Dockerfile`. Команды

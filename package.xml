@@ -15,6 +15,8 @@
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>nav_msgs</depend>
+  <exec_depend>ros2bag</exec_depend>
+  <exec_depend>rosbag2_storage_default_plugins</exec_depend>
 
   <!-- optional: if используешь Python3 в CMake -->
   <build_depend>python3</build_depend>

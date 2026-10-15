@@ -1,13 +1,19 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "rosbag_recorder.h"
+#include <QAction>
 #include <QtMath>
+#include <QDir>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPixmap>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMenuBar>
+#include <QMenu>
 #include <QPushButton>
+#include <QStandardPaths>
+#include <QStatusBar>
 #include <QFontMetrics>
 #include <QTabBar>
 #include <QApplication>
@@ -139,6 +145,73 @@ static const QString DARK_THEME =
 "QStatusBar { background-color: #04161c; color: #7faaa9; border: none; }"
 "QToolTip { background-color: #0d3540; color: #efffff; border: 1px solid #5de2d7; padding: 5px; border-radius: 4px; }";
 
+static void setupRosbagRecording(MainWindow *window)
+{
+    auto *recorder = new RosbagRecorder(window);
+    QMenu *recordingMenu = window->menuBar()->addMenu(QStringLiteral("Запись"));
+    QAction *startAction = recordingMenu->addAction(QStringLiteral("Начать запись rosbag"));
+    QAction *stopAction = recordingMenu->addAction(QStringLiteral("Остановить запись rosbag"));
+    stopAction->setEnabled(false);
+
+    auto *statusLabel = new QLabel(QStringLiteral("ROSBAG: ВЫКЛ"), window);
+    statusLabel->setToolTip(QStringLiteral("Состояние локальной записи ROS 2 topics"));
+    window->statusBar()->addPermanentWidget(statusLabel);
+
+    const QString configuredRoot = qEnvironmentVariable("UMAS_ROSBAG_DIR").trimmed();
+    const QString defaultRoot =
+        QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation))
+            .filePath(QStringLiteral("UMAS/bags"));
+    const QString outputRoot = configuredRoot.isEmpty() ? defaultRoot : configuredRoot;
+
+    const QStringList topics = {QStringLiteral("/vectornav/raw/common"),
+                                QStringLiteral("/vectornav/imu"),
+                                QStringLiteral("/dvl/data"),
+                                QStringLiteral("/dvl/position"),
+                                QStringLiteral("/stingray_core/pressure_sensor/depth"),
+                                QStringLiteral("/stingray_core/battery/state"),
+                                QStringLiteral("/core/state/odometry"),
+                                QStringLiteral("/control/data"),
+                                QStringLiteral("/control/loop_flags"),
+                                QStringLiteral("/thruster/cmd"),
+                                QStringLiteral("/diagnostics"),
+                                QStringLiteral("/tf"),
+                                QStringLiteral("/tf_static"),
+                                QStringLiteral("/parameter_events")};
+
+    QObject::connect(startAction, &QAction::triggered, window,
+                     [recorder, outputRoot, topics]()
+                     { recorder->startRecording(outputRoot, topics); });
+    QObject::connect(stopAction, &QAction::triggered, recorder, &RosbagRecorder::stopRecording);
+
+    QObject::connect(recorder, &RosbagRecorder::recordingStarted, window,
+                     [startAction, stopAction, statusLabel](const QString &path)
+                     {
+                         startAction->setEnabled(false);
+                         stopAction->setEnabled(true);
+                         statusLabel->setText(QStringLiteral("ROSBAG: ЗАПИСЬ"));
+                         statusLabel->setToolTip(path);
+                     });
+
+    QObject::connect(recorder, &RosbagRecorder::recordingStopped, window,
+                     [startAction, stopAction, statusLabel](const QString &path)
+                     {
+                         startAction->setEnabled(true);
+                         stopAction->setEnabled(false);
+                         statusLabel->setText(QStringLiteral("ROSBAG: ВЫКЛ"));
+                         statusLabel->setToolTip(path);
+                     });
+
+    QObject::connect(recorder, &RosbagRecorder::recordingError, window,
+                     [recorder, startAction, stopAction, statusLabel](const QString &message)
+                     {
+                         startAction->setEnabled(!recorder->isRecording());
+                         stopAction->setEnabled(recorder->isRecording());
+                         statusLabel->setText(QStringLiteral("ROSBAG: ОШИБКА"));
+                         statusLabel->setToolTip(message);
+                         qWarning() << "Rosbag recording error:" << message;
+                     });
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -147,6 +220,7 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle(QStringLiteral("Hydronautics • UMAS Control Station"));
     harmonizeLegacyStyles();
     setupBrandHeader();
+    setupRosbagRecording(this);
 
     qRegisterMetaType<UVState::ImuData>("UVState::ImuData");
     qRegisterMetaType<UVState::Pose>("UVState::Pose");

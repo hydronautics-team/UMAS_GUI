@@ -297,7 +297,19 @@ QSlider:disabled::handle:horizontal {
    </string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,4,2">
+   <layout class="QVBoxLayout" name="workspaceLayout">
+    <property name="spacing"><number>6</number></property>
+    <property name="leftMargin"><number>8</number></property>
+    <property name="topMargin"><number>8</number></property>
+    <property name="rightMargin"><number>8</number></property>
+    <property name="bottomMargin"><number>8</number></property>
+    <item>
+     <widget class="QTabWidget" name="workspaceTabs">
+      <property name="currentIndex"><number>0</number></property>
+      <property name="documentMode"><bool>true</bool></property>
+      <widget class="QWidget" name="workspaceControl">
+       <attribute name="title"><string>Управление</string></attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,4,2">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0,1">
       <!-- ПАНЕЛЬ ТЕЛЕМЕТРИИ (возвращена) -->
@@ -1152,6 +1164,121 @@ QSlider:disabled::handle:horizontal {
        <layout class="QGridLayout" name="gridLayout_7">
         <item row="0" column="0">
          <layout class="QVBoxLayout" name="verticalLayout_modeAutomatic"/>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="workspaceMission">
+       <attribute name="title"><string>Автономная миссия</string></attribute>
+       <layout class="QVBoxLayout" name="missionWorkspaceLayout">
+        <item>
+         <layout class="QHBoxLayout" name="missionHeaderLayout">
+          <item>
+           <widget class="QGroupBox" name="missionStateGroup">
+            <property name="title"><string>Состояние миссии</string></property>
+            <layout class="QGridLayout" name="missionStateLayout">
+             <item row="0" column="0"><widget class="QLabel" name="missionStateTitle"><property name="text"><string>Статус</string></property></widget></item>
+             <item row="0" column="1"><widget class="QLabel" name="missionStateValue"><property name="text"><string>Миссия не загружена</string></property><property name="styleSheet"><string notr="true">font-weight: bold; color: #8a99a8;</string></property></widget></item>
+             <item row="1" column="0"><widget class="QLabel" name="missionProgressTitle"><property name="text"><string>Прогресс</string></property></widget></item>
+             <item row="1" column="1"><widget class="QProgressBar" name="missionProgress"><property name="value"><number>0</number></property><property name="textVisible"><bool>true</bool></property></widget></item>
+             <item row="2" column="0"><widget class="QLabel" name="missionElapsedTitle"><property name="text"><string>Время выполнения</string></property></widget></item>
+             <item row="2" column="1"><widget class="QLabel" name="missionElapsedValue"><property name="text"><string>00:00:00</string></property></widget></item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="missionActionsGroup">
+            <property name="title"><string>Управление миссией</string></property>
+            <layout class="QGridLayout" name="missionActionsLayout">
+             <item row="0" column="0"><widget class="QPushButton" name="missionLoadButton"><property name="enabled"><bool>false</bool></property><property name="text"><string>Загрузить план</string></property><property name="toolTip"><string>Будет доступно после подключения сервиса автономной миссии</string></property></widget></item>
+             <item row="0" column="1"><widget class="QPushButton" name="missionStartButton"><property name="enabled"><bool>false</bool></property><property name="text"><string>Запустить</string></property></widget></item>
+             <item row="1" column="0"><widget class="QPushButton" name="missionPauseButton"><property name="enabled"><bool>false</bool></property><property name="text"><string>Пауза</string></property></widget></item>
+             <item row="1" column="1"><widget class="QPushButton" name="missionAbortButton"><property name="enabled"><bool>false</bool></property><property name="text"><string>Прервать</string></property><property name="styleSheet"><string notr="true">font-weight: bold; color: #ff6b6b;</string></property></widget></item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QSplitter" name="missionSplitter">
+          <property name="orientation"><enum>Qt::Horizontal</enum></property>
+          <widget class="QGroupBox" name="missionMapGroup">
+           <property name="title"><string>Маршрут и положение аппарата</string></property>
+           <layout class="QVBoxLayout" name="missionMapLayout">
+            <item><widget class="QLabel" name="missionMapPlaceholder"><property name="text"><string>Область карты и траектории миссии</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="styleSheet"><string notr="true">border: 1px dashed #557b7d; border-radius: 8px; color: #8a99a8; min-height: 320px;</string></property></widget></item>
+           </layout>
+          </widget>
+          <widget class="QGroupBox" name="missionStepsGroup">
+           <property name="title"><string>Этапы миссии</string></property>
+           <layout class="QVBoxLayout" name="missionStepsLayout">
+            <item>
+             <widget class="QTreeWidget" name="missionStepsTree">
+              <property name="alternatingRowColors"><bool>true</bool></property>
+              <column><property name="text"><string>Этап</string></property></column>
+              <column><property name="text"><string>Состояние</string></property></column>
+              <column><property name="text"><string>Время</string></property></column>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="missionEventsGroup">
+          <property name="title"><string>События миссии</string></property>
+          <layout class="QVBoxLayout" name="missionEventsLayout">
+           <item><widget class="QPlainTextEdit" name="missionEventsLog"><property name="readOnly"><bool>true</bool></property><property name="placeholderText"><string>Здесь появятся переходы между этапами, предупреждения и причины остановки миссии</string></property></widget></item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="workspaceDiagnostics">
+       <attribute name="title"><string>Диагностика</string></attribute>
+       <layout class="QVBoxLayout" name="diagnosticsWorkspaceLayout">
+        <item>
+         <layout class="QHBoxLayout" name="diagnosticsSummaryLayout">
+          <item><widget class="QGroupBox" name="diagnosticsReadyGroup"><property name="title"><string>Готовность аппарата</string></property><layout class="QVBoxLayout" name="diagnosticsReadyLayout"><item><widget class="QLabel" name="diagnosticsReadyValue"><property name="text"><string>НЕ ПРОВЕРЕНО</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="styleSheet"><string notr="true">font-size: 18px; font-weight: bold; color: #8a99a8;</string></property></widget></item></layout></widget></item>
+          <item><widget class="QGroupBox" name="diagnosticsConnectionGroup"><property name="title"><string>Связь с аппаратом</string></property><layout class="QVBoxLayout" name="diagnosticsConnectionLayout"><item><widget class="QLabel" name="diagnosticsConnectionValue"><property name="text"><string>НЕТ ДАННЫХ</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="styleSheet"><string notr="true">font-size: 18px; font-weight: bold; color: #8a99a8;</string></property></widget></item></layout></widget></item>
+          <item><widget class="QGroupBox" name="diagnosticsFaultsGroup"><property name="title"><string>Активные неисправности</string></property><layout class="QVBoxLayout" name="diagnosticsFaultsLayout"><item><widget class="QLabel" name="diagnosticsFaultsValue"><property name="text"><string>—</string></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="styleSheet"><string notr="true">font-size: 18px; font-weight: bold; color: #8a99a8;</string></property></widget></item></layout></widget></item>
+          <item><widget class="QPushButton" name="diagnosticsPreflightButton"><property name="enabled"><bool>false</bool></property><property name="text"><string>Запустить проверку готовности</string></property><property name="toolTip"><string>Будет доступно после подключения stingray_core_doctor</string></property></widget></item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QSplitter" name="diagnosticsSplitter">
+          <property name="orientation"><enum>Qt::Horizontal</enum></property>
+          <widget class="QGroupBox" name="diagnosticsComponentsGroup">
+           <property name="title"><string>Компоненты и подсистемы</string></property>
+           <layout class="QVBoxLayout" name="diagnosticsComponentsLayout">
+            <item>
+             <widget class="QTreeWidget" name="diagnosticsComponentsTree">
+              <property name="alternatingRowColors"><bool>true</bool></property>
+              <column><property name="text"><string>Подсистема</string></property></column>
+              <column><property name="text"><string>Состояние</string></property></column>
+              <column><property name="text"><string>Обновлено</string></property></column>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QGroupBox" name="diagnosticsDetailsGroup">
+           <property name="title"><string>Подробности проверки</string></property>
+           <layout class="QVBoxLayout" name="diagnosticsDetailsLayout">
+            <item><widget class="QLabel" name="diagnosticsDetailsHint"><property name="text"><string>Выберите компонент слева, чтобы увидеть измерения, ожидаемые значения и рекомендации.</string></property><property name="wordWrap"><bool>true</bool></property></widget></item>
+            <item><widget class="QPlainTextEdit" name="diagnosticsDetailsText"><property name="readOnly"><bool>true</bool></property></widget></item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="diagnosticsEventsGroup">
+          <property name="title"><string>Журнал диагностики</string></property>
+          <layout class="QVBoxLayout" name="diagnosticsEventsLayout">
+           <item><widget class="QPlainTextEdit" name="diagnosticsEventsLog"><property name="readOnly"><bool>true</bool></property><property name="placeholderText"><string>Ошибки, предупреждения и результаты проверок будут отображаться здесь</string></property></widget></item>
+          </layout>
+         </widget>
         </item>
        </layout>
       </widget>
