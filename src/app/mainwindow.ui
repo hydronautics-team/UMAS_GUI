@@ -7,9 +7,10 @@
     <x>0</x>
     <y>0</y>
     <width>1480</width>
-    <height>2076</height>
+    <height>900</height>
    </rect>
   </property>
+  <property name="minimumSize"><size><width>1280</width><height>720</height></size></property>
   <property name="windowTitle">
    <string>UMAS GUI</string>
   </property>
@@ -297,23 +298,28 @@ QSlider:disabled::handle:horizontal {
    </string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,4,2">
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0,1">
-      <!-- ПАНЕЛЬ ТЕЛЕМЕТРИИ (возвращена) -->
+   <layout class="QVBoxLayout" name="mainWorkspaceLayout" stretch="0,1">
+    <property name="spacing"><number>10</number></property>
+    <property name="leftMargin"><number>12</number></property>
+    <property name="topMargin"><number>8</number></property>
+    <property name="rightMargin"><number>12</number></property>
+    <property name="bottomMargin"><number>8</number></property>
+      <!-- ПОСТОЯННАЯ СТРОКА СОСТОЯНИЯ АППАРАТА -->
       <item>
        <widget class="QFrame" name="frame_telemetry">
+        <property name="minimumSize"><size><width>0</width><height>78</height></size></property>
+        <property name="maximumSize"><size><width>16777215</width><height>96</height></size></property>
         <property name="styleSheet">
-         <string notr="true">background: transparent; border: none; padding: 0px;</string>
+         <string notr="true">padding: 0px;</string>
         </property>
         <property name="frameShape">
          <enum>QFrame::Shape::NoFrame</enum>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_telemetry">
-         <property name="leftMargin"><number>0</number></property>
-         <property name="topMargin"><number>0</number></property>
-         <property name="rightMargin"><number>0</number></property>
-         <property name="bottomMargin"><number>0</number></property>
+         <property name="leftMargin"><number>12</number></property>
+         <property name="topMargin"><number>8</number></property>
+         <property name="rightMargin"><number>12</number></property>
+         <property name="bottomMargin"><number>8</number></property>
          <item>
           <widget class="QPushButton" name="btn_theme_toggle">
            <property name="minimumSize">
@@ -510,9 +516,24 @@ QSlider:disabled::handle:horizontal {
         </layout>
        </widget>
       </item>
-      <!-- ЧЕКБОКСЫ (от коллеги) -->
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="7,3">
+      <property name="spacing"><number>10</number></property>
+      <property name="leftMargin"><number>0</number></property>
+      <property name="topMargin"><number>0</number></property>
+      <property name="rightMargin"><number>0</number></property>
+      <property name="bottomMargin"><number>0</number></property>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_manipulator">
+       <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,1">
+      <!-- ПАНЕЛЬ БЫСТРЫХ ДЕЙСТВИЙ -->
+      <item>
+       <widget class="QFrame" name="frame_quickActions">
+        <property name="frameShape"><enum>QFrame::NoFrame</enum></property>
+        <layout class="QHBoxLayout" name="horizontalLayout_manipulator">
+         <property name="leftMargin"><number>12</number></property>
+         <property name="topMargin"><number>7</number></property>
+         <property name="rightMargin"><number>12</number></property>
+         <property name="bottomMargin"><number>7</number></property>
         <item>
          <widget class="QLabel" name="lbl_manip_title">
           <property name="styleSheet">
@@ -614,15 +635,17 @@ QSlider:disabled::handle:horizontal {
           </property>
          </widget>
         </item>
-       </layout>
+        </layout>
+       </widget>
       </item>
       <!-- ОСНОВНОЙ БЛОК (кнопка агента + вкладки + консоль) -->
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,20">
+       <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,1">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_7" stretch="1,20">
           <item>
            <widget class="QPushButton" name="pushButton_selectAgent1">
+            <property name="visible"><bool>false</bool></property>
             <property name="enabled"><bool>true</bool></property>
             <property name="sizePolicy"><sizepolicy hsizetype="Preferred" vsizetype="Minimum"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
             <property name="minimumSize"><size><width>50</width><height>50</height></size></property>
@@ -763,6 +786,7 @@ QSlider:disabled::handle:horizontal {
            <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="5,1">
             <item>
              <widget class="QTextEdit" name="textEdit_console">
+              <property name="maximumSize"><size><width>16777215</width><height>180</height></size></property>
               <property name="readOnly"><bool>true</bool></property>
               <property name="overwriteMode"><bool>false</bool></property>
              </widget>
@@ -814,13 +838,13 @@ QSlider:disabled::handle:horizontal {
      <widget class="QStackedWidget" name="stackedWidget_mode">
       <property name="minimumSize">
        <size>
-        <width>480</width>
+        <width>380</width>
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>560</width>
+        <width>480</width>
         <height>16777215</height>
        </size>
       </property>
@@ -1162,6 +1186,8 @@ QSlider:disabled::handle:horizontal {
        </layout>
       </widget>
      </widget>
+    </item>
+     </layout>
     </item>
    </layout>
   </widget>

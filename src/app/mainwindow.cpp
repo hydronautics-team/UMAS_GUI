@@ -1,7 +1,11 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include <QAbstractButton>
 #include <QApplication>
+#include <QButtonGroup>
+#include <QDateTime>
 #include <QFontMetrics>
+#include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMenuBar>
@@ -10,6 +14,8 @@
 #include <QPixmap>
 #include <QPushButton>
 #include <QTabBar>
+#include <QTabWidget>
+#include <QVBoxLayout>
 #include <QtMath>
 #include <cmath>
 
@@ -99,6 +105,12 @@ static const QString LIGHT_THEME =
     "QLabel { color: #23474c; background: transparent; }"
     "QFrame#frame_telemetry { background-color: #edf5f4; border: 1px solid #b5d2d0; border-radius: "
     "10px; padding: 5px; }"
+    "QFrame#frame_quickActions, QFrame#dashboardNavigation { background-color: #edf5f4; border: "
+    "1px solid #b5d2d0; border-radius: 9px; }"
+    "QPushButton[dashboardNav='true'] { text-align: left; padding: 11px 13px; border: none; "
+    "border-left: 3px solid transparent; background: transparent; color: #557b7d; }"
+    "QPushButton[dashboardNav='true']:checked { color: #087f77; background-color: #dcefed; "
+    "border-left-color: #15a99f; font-weight: 700; }"
     "QLabel[hudValue='true'], QPushButton[hudValue='true'] { background-color: #e0f2f0; color: "
     "#087f77; border: 1px solid #abd2cf; border-radius: 7px; padding: 4px 9px; font-weight: 600; }"
     "QPushButton#btn_killswitch_status { min-height: 0px; padding: 4px 10px; margin: 0px; }"
@@ -126,6 +138,9 @@ static const QString LIGHT_THEME =
     "QScrollBar::handle:vertical:hover { background: #159d93; }"
     "QMenuBar { background-color: #eef8f7; border: none; } QStatusBar { background-color: #eef8f7; "
     "color: #557b7d; border: none; }"
+    "QLabel#headerConnection { color: #087f77; font-weight: 700; padding: 5px 9px; }"
+    "QLabel#headerClock { color: #16383d; font-family: 'JetBrains Mono', 'Consolas', monospace; "
+    "font-weight: 600; padding: 3px 8px; }"
     "QToolTip { background-color: #f2f8f7; color: #16383d; border: 1px solid #159d93; padding: "
     "5px; border-radius: 4px; }";
 
@@ -176,6 +191,13 @@ static const QString DARK_THEME =
     "QLabel { color: #c9e7e5; background: transparent; }"
     "QFrame#frame_telemetry { background-color: #09262e; border: 1px solid #174a56; border-radius: "
     "10px; padding: 5px; }"
+    "QFrame#frame_quickActions, QFrame#dashboardNavigation { background-color: #071f27; border: "
+    "1px solid #174a56; border-radius: 9px; }"
+    "QPushButton[dashboardNav='true'] { text-align: left; padding: 11px 13px; border: none; "
+    "border-left: 3px solid transparent; background: transparent; color: #7faaa9; }"
+    "QPushButton[dashboardNav='true']:hover { color: #c4e9e6; background-color: #0d3540; }"
+    "QPushButton[dashboardNav='true']:checked { color: #74eee3; background-color: #0d3540; "
+    "border-left-color: #20c7b8; font-weight: 700; }"
     "QLabel[hudValue='true'], QPushButton[hudValue='true'] { background-color: #0b3039; color: "
     "#74eee3; border: 1px solid #1d5965; border-radius: 7px; padding: 4px 9px; font-weight: 600; }"
     "QPushButton#btn_killswitch_status { min-height: 0px; padding: 4px 10px; margin: 0px; }"
@@ -203,9 +225,64 @@ static const QString DARK_THEME =
     "QScrollBar::handle:vertical { background: #226674; min-height: 24px; border-radius: 4px; }"
     "QScrollBar::handle:vertical:hover { background: #20c7b8; }"
     "QMenuBar { background-color: #04161c; border: none; }"
+    "QLabel#headerConnection { color: #74eee3; font-weight: 700; padding: 5px 9px; }"
+    "QLabel#headerClock { color: #c9e7e5; font-family: 'JetBrains Mono', 'Consolas', monospace; "
+    "font-weight: 600; padding: 3px 8px; }"
     "QStatusBar { background-color: #04161c; color: #7faaa9; border: none; }"
     "QToolTip { background-color: #0d3540; color: #efffff; border: 1px solid #5de2d7; padding: "
     "5px; border-radius: 4px; }";
+
+static void setupDashboardNavigation(MainWindow *window)
+{
+    auto *tabs = window->findChild<QTabWidget *>(QStringLiteral("tabWidget"));
+    auto *contentLayout = window->findChild<QHBoxLayout *>(QStringLiteral("horizontalLayout_6"));
+    auto *workspaceLayout = window->findChild<QVBoxLayout *>(QStringLiteral("verticalLayout_4"));
+    auto *quickActions = window->findChild<QFrame *>(QStringLiteral("frame_quickActions"));
+    if (!tabs || !contentLayout || !workspaceLayout || !quickActions)
+        return;
+
+    tabs->tabBar()->hide();
+    tabs->setDocumentMode(true);
+
+    auto *navigation = new QFrame(window);
+    navigation->setObjectName(QStringLiteral("dashboardNavigation"));
+    navigation->setMinimumWidth(150);
+    navigation->setMaximumWidth(180);
+
+    auto *navigationLayout = new QVBoxLayout(navigation);
+    navigationLayout->setContentsMargins(0, 8, 0, 8);
+    navigationLayout->setSpacing(2);
+
+    auto *navigationGroup = new QButtonGroup(navigation);
+    navigationGroup->setExclusive(true);
+    const QStringList labels = {QStringLiteral("▣  Камера"), QStringLiteral("◉  БСО"),
+                                QStringLiteral("▤  Сообщения"), QStringLiteral("▥  Питание"),
+                                QStringLiteral("⌘  Устройства"), QStringLiteral("◇  Отладка")};
+    for (int index = 0; index < tabs->count() && index < labels.size(); ++index)
+    {
+        auto *button = new QPushButton(labels.at(index), navigation);
+        button->setProperty("dashboardNav", true);
+        button->setCheckable(true);
+        button->setChecked(index == tabs->currentIndex());
+        button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        navigationGroup->addButton(button, index);
+        navigationLayout->addWidget(button);
+    }
+    navigationLayout->addStretch(1);
+
+    QObject::connect(navigationGroup, QOverload<int>::of(&QButtonGroup::idClicked), tabs,
+                     &QTabWidget::setCurrentIndex);
+    QObject::connect(tabs, &QTabWidget::currentChanged, navigation,
+                     [navigationGroup](int index)
+                     {
+                         if (QAbstractButton *button = navigationGroup->button(index))
+                             button->setChecked(true);
+                     });
+
+    contentLayout->insertWidget(0, navigation);
+    workspaceLayout->removeWidget(quickActions);
+    workspaceLayout->addWidget(quickActions);
+}
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
@@ -213,6 +290,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     setWindowTitle(QStringLiteral("Hydronautics • UMAS Control Station"));
     harmonizeLegacyStyles();
     setupBrandHeader();
+    setupDashboardNavigation(this);
 
     qRegisterMetaType<UVState::ImuData>("UVState::ImuData");
     qRegisterMetaType<UVState::Pose>("UVState::Pose");
@@ -406,6 +484,39 @@ void MainWindow::setupBrandHeader()
     layout->addWidget(logo);
     layout->addWidget(title);
     menuBar()->setCornerWidget(brand, Qt::TopLeftCorner);
+
+    ui->horizontalLayout_telemetry->removeWidget(ui->btn_theme_toggle);
+    ui->horizontalLayout_manipulator->removeWidget(ui->full_screen);
+
+    auto *headerActions = new QWidget(menuBar());
+    auto *actionsLayout = new QHBoxLayout(headerActions);
+    actionsLayout->setContentsMargins(8, 5, 14, 5);
+    actionsLayout->setSpacing(10);
+
+    auto *connection = new QLabel(
+        QStringLiteral("ROS 2  ·  DOMAIN %1").arg(qEnvironmentVariable("ROS_DOMAIN_ID", "—")),
+        headerActions);
+    connection->setObjectName(QStringLiteral("headerConnection"));
+    connection->setToolTip(QStringLiteral("Состояние канала связи ROS 2"));
+
+    auto *clock = new QLabel(headerActions);
+    clock->setObjectName(QStringLiteral("headerClock"));
+    clock->setAlignment(Qt::AlignCenter);
+    auto updateClock = [clock]()
+    {
+        clock->setText(QDateTime::currentDateTime().toString(QStringLiteral("dd MMM yyyy\nHH:mm:ss"))
+                           .toUpper());
+    };
+    updateClock();
+    auto *clockTimer = new QTimer(headerActions);
+    connect(clockTimer, &QTimer::timeout, headerActions, updateClock);
+    clockTimer->start(1000);
+
+    actionsLayout->addWidget(connection);
+    actionsLayout->addWidget(ui->btn_theme_toggle);
+    actionsLayout->addWidget(ui->full_screen);
+    actionsLayout->addWidget(clock);
+    menuBar()->setCornerWidget(headerActions, Qt::TopRightCorner);
 }
 
 void MainWindow::harmonizeLegacyStyles()
@@ -449,9 +560,12 @@ void MainWindow::harmonizeLegacyStyles()
     for (QFrame *separator : {ui->line_separator1, ui->line_separator_light, ui->line_separator2})
         separator->hide();
 
-    ui->horizontalLayout_2->setContentsMargins(12, 10, 12, 10);
+    ui->horizontalLayout_2->setContentsMargins(0, 0, 0, 0);
     ui->horizontalLayout_2->setSpacing(12);
     ui->horizontalLayout_telemetry->setSpacing(8);
+    ui->verticalLayout_4->setSpacing(8);
+    ui->horizontalLayout_manipulator->setSpacing(8);
+    ui->textEdit_console->setPlaceholderText(QStringLiteral("Журнал событий пульта"));
 }
 
 void MainWindow::ensureInteractiveTextFits()
