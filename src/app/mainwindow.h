@@ -112,7 +112,7 @@ private slots:
 private:
     void applyTheme(bool dark);
     void setupActuators();
-    void setCommandLinkAvailable(bool available);
+    void setCommandLinkAvailable(bool available, const QString &reason = QString());
     void stopControlInput(const QString &reason);
     QTimer *brightnessTimer_ = nullptr;
     int brightnessStep_ = 0;

@@ -29,6 +29,10 @@ void RosBridge::run()
         node_->declare_parameter<std::string>("temperature_topic", "/ms5837/temperature");
     const auto bottomDistanceTopic = node_->declare_parameter<std::string>(
         "bottom_distance_topic", "/stingray_core/sensors/dvl/altitude");
+    const auto leakStateTopic =
+        node_->declare_parameter<std::string>("leak_state_topic", "/stingray_core/safety/leak");
+    const auto killSwitchStateTopic = node_->declare_parameter<std::string>(
+        "kill_switch_state_topic", "/stingray_core/safety/kill_switch");
 
     twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/control/data", 10);
 
@@ -119,6 +123,15 @@ void RosBridge::run()
             if (std::isfinite(msg->data) && msg->data >= 0.0f)
                 emit bottomDistanceReceived(msg->data);
         });
+
+    leak_state_sub_ = node_->create_subscription<std_msgs::msg::Bool>(
+        leakStateTopic, rclcpp::QoS(1).reliable().transient_local(),
+        [this](const std_msgs::msg::Bool::SharedPtr msg) { emit leakStateReceived(msg->data); });
+
+    kill_switch_state_sub_ = node_->create_subscription<std_msgs::msg::Bool>(
+        killSwitchStateTopic, rclcpp::QoS(1).reliable().transient_local(),
+        [this](const std_msgs::msg::Bool::SharedPtr msg)
+        { emit killSwitchStateReceived(msg->data); });
 
     control_flags_pub_ = node_->create_publisher<std_msgs::msg::UInt8>("/control/loop_flags", 10);
 

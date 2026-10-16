@@ -9,6 +9,8 @@ UMAS GUI получает телеметрию через ROS 2. Пульт за
 | --- | --- | --- | --- |
 | `temperature_topic` | `/ms5837/temperature` | `std_msgs/msg/Float32` | Температура воды, °C |
 | `bottom_distance_topic` | `/stingray_core/sensors/dvl/altitude` | `std_msgs/msg/Float32` | Расстояние от DVL до дна, м |
+| `leak_state_topic` | `/stingray_core/safety/leak` | `std_msgs/msg/Bool` | `true`, если обнаружена протечка |
+| `kill_switch_state_topic` | `/stingray_core/safety/kill_switch` | `std_msgs/msg/Bool` | `true`, если аварийная остановка активна |
 
 Имена можно переопределить параметрами узла
 `/qt_controller/qt_controller_node`. Значения `NaN` и бесконечность
@@ -22,3 +24,7 @@ UMAS GUI получает телеметрию через ROS 2. Пульт за
 Если отдельный поток не обновлялся 2,5 секунды, соответствующая карточка
 помечается как содержащая устаревшие данные. Отсутствие температуры или DVL не
 делает остальные потоки телеметрии невалидными.
+
+Топики безопасности используют `reliable + transient local`: новый пульт
+должен сразу получить последнее состояние. Источники этих топиков должны
+публиковать с таким же QoS.

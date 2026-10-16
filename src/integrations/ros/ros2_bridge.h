@@ -44,6 +44,8 @@ signals:
     void batteryReceived(const UVState::BatteryData &battery);
     void temperatureReceived(float temperatureCelsius);
     void bottomDistanceReceived(float distanceMeters);
+    void leakStateReceived(bool leakDetected);
+    void killSwitchStateReceived(bool engaged);
     void controlFlagsPublished(std::uint8_t flags);
     void dvlOriginResetFinished(bool success, const QString &message);
 
@@ -63,6 +65,8 @@ private:
     rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr battery_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr temperature_sub_;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr bottom_distance_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr leak_state_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr kill_switch_state_sub_;
     UVState::BatteryData battery_data_{};
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr control_flags_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr zero_yaw_pub_;
