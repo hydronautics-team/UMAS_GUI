@@ -33,6 +33,8 @@ void RosBridge::run()
         node_->declare_parameter<std::string>("leak_state_topic", "/stingray_core/safety/leak");
     const auto killSwitchStateTopic = node_->declare_parameter<std::string>(
         "kill_switch_state_topic", "/stingray_core/safety/kill_switch");
+    const auto healthPingService =
+        node_->declare_parameter<std::string>("health_ping_service", "/stingray_core/health/ping");
 
     twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/control/data", 10);
 
@@ -138,6 +140,53 @@ void RosBridge::run()
     zero_yaw_pub_ = node_->create_publisher<std_msgs::msg::Bool>("/imu/zero_yaw", 10);
     reset_dvl_origin_client_ =
         node_->create_client<std_srvs::srv::Trigger>("/core/localization/reset_origin");
+
+    health_ping_client_ = node_->create_client<std_srvs::srv::Trigger>(healthPingService);
+    health_ping_timer_ = node_->create_wall_timer(
+        std::chrono::seconds(1),
+        [this]()
+        {
+            constexpr auto requestTimeout = std::chrono::seconds(3);
+            const auto now = std::chrono::steady_clock::now();
+            if (active_health_ping_request_id_ != 0)
+            {
+                if (now - health_ping_started_ <= requestTimeout)
+                    return;
+                active_health_ping_request_id_ = 0;
+                emit pingUpdated(0, false);
+            }
+
+            if (!health_ping_client_->service_is_ready())
+            {
+                emit pingUpdated(0, false);
+                return;
+            }
+
+            const auto requestId = ++health_ping_request_id_;
+            active_health_ping_request_id_ = requestId;
+            health_ping_started_ = now;
+            auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
+            health_ping_client_->async_send_request(
+                request,
+                [this, requestId,
+                 started = now](rclcpp::Client<std_srvs::srv::Trigger>::SharedFuture future)
+                {
+                    if (active_health_ping_request_id_ != requestId)
+                        return;
+                    active_health_ping_request_id_ = 0;
+                    try
+                    {
+                        future.get();
+                        const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                            std::chrono::steady_clock::now() - started);
+                        emit pingUpdated(static_cast<int>(elapsed.count()), true);
+                    }
+                    catch (const std::exception &)
+                    {
+                        emit pingUpdated(0, false);
+                    }
+                });
+        });
 
     lights_mode_pub_ = node_->create_publisher<std_msgs::msg::Int32>("/lights/mode", 10);
     lights_brightness_pub_ =

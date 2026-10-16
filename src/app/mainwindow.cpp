@@ -1496,6 +1496,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         qint64 bottomDistanceMs = 0;
         qint64 leakStateMs = 0;
         qint64 killSwitchStateMs = 0;
+        qint64 pingMs = 0;
         int leakState = -1;
         int killSwitchState = -1;
         int commandAllowed = -1;
@@ -1559,6 +1560,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                                         : QStringLiteral("Kill switch снят"));
                 }
             });
+    connect(rosBridge, &RosBridge::pingUpdated, this,
+            [this, freshness](int latencyMilliseconds, bool available)
+            {
+                if (!available)
+                {
+                    freshness->pingMs = 0;
+                    ui->lbl_ping_value->setText(QStringLiteral("N/A"));
+                    return;
+                }
+                freshness->pingMs = QDateTime::currentMSecsSinceEpoch();
+                ui->lbl_ping_value->setText(QStringLiteral("%1 мс").arg(latencyMilliseconds));
+            });
 
     auto *connectionWatchdog = new QTimer(this);
     connectionWatchdog->setInterval(500);
@@ -1607,12 +1620,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                 headerConnection->setToolTip(
                     QStringLiteral("Состояние ROS 2 · DOMAIN %1\nПоложение: %2\nIMU: %3\n"
                                    "Питание: %4\nТемпература: %5\nДо дна: %6\n"
-                                   "Протечка: %7\nKill switch: %8")
+                                   "Протечка: %7\nKill switch: %8\nPing: %9")
                         .arg(qEnvironmentVariable("ROS_DOMAIN_ID", "—"), ageText(freshness->poseMs),
                              ageText(freshness->imuMs), ageText(freshness->batteryMs),
                              ageText(freshness->temperatureMs),
                              ageText(freshness->bottomDistanceMs), ageText(freshness->leakStateMs),
-                             ageText(freshness->killSwitchStateMs)));
+                             ageText(freshness->killSwitchStateMs), ageText(freshness->pingMs)));
             }
 
             if (freshness->reportedState != state)
@@ -1666,6 +1679,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             const bool killSwitchStateStale = freshness->killSwitchStateMs == 0 ||
                                               now - freshness->killSwitchStateMs > staleAfterMs;
             setDynamicProperty(ui->btn_killswitch_status, "telemetryStale", killSwitchStateStale);
+            const bool pingStale = freshness->pingMs == 0 || now - freshness->pingMs > staleAfterMs;
+            setDynamicProperty(ui->lbl_ping_value, "telemetryStale", pingStale);
         });
     connectionWatchdog->start();
 

@@ -46,6 +46,7 @@ signals:
     void bottomDistanceReceived(float distanceMeters);
     void leakStateReceived(bool leakDetected);
     void killSwitchStateReceived(bool engaged);
+    void pingUpdated(int latencyMilliseconds, bool available);
     void controlFlagsPublished(std::uint8_t flags);
     void dvlOriginResetFinished(bool success, const QString &message);
 
@@ -71,6 +72,8 @@ private:
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr control_flags_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr zero_yaw_pub_;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr reset_dvl_origin_client_;
+    rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr health_ping_client_;
+    rclcpp::TimerBase::SharedPtr health_ping_timer_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr lights_mode_pub_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr lights_brightness_pub_;
 
@@ -82,6 +85,9 @@ private:
     int current_pwm_ = 0;
 
     int last_sent_command_ = -1;
+    std::uint64_t health_ping_request_id_ = 0;
+    std::uint64_t active_health_ping_request_id_ = 0;
+    std::chrono::steady_clock::time_point health_ping_started_{};
     QString target_state_ = "stop";
     QString turn_state_ = "none";
     QString grip_state_ = "stop";

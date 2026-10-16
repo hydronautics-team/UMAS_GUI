@@ -12,6 +12,14 @@ UMAS GUI получает телеметрию через ROS 2. Пульт за
 | `leak_state_topic` | `/stingray_core/safety/leak` | `std_msgs/msg/Bool` | `true`, если обнаружена протечка |
 | `kill_switch_state_topic` | `/stingray_core/safety/kill_switch` | `std_msgs/msg/Bool` | `true`, если аварийная остановка активна |
 
+## Измерение задержки
+
+Параметр `health_ping_service` задаёт health-сервис. По умолчанию это
+`/stingray_core/health/ping` типа `std_srvs/srv/Trigger`. GUI вызывает его раз в
+секунду и показывает время полного цикла запрос–ответ. Тайм-аут одного
+запроса составляет 3 секунды; до ответа новые запросы не накапливаются.
+Сервис должен жить в runtime-узле Core, а не в `stingray_core_doctor`.
+
 Имена можно переопределить параметрами узла
 `/qt_controller/qt_controller_node`. Значения `NaN` и бесконечность
 игнорируются; расстояние до дна также не может быть отрицательным.
