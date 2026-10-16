@@ -10,6 +10,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/battery_state.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/int32.hpp>
 #include <std_msgs/msg/u_int8.hpp>
 #include <std_srvs/srv/trigger.hpp>
@@ -41,6 +42,8 @@ signals:
     void poseReceived(const UVState::Pose &pose);
     void imuReceived(const UVState::ImuData &imu);
     void batteryReceived(const UVState::BatteryData &battery);
+    void temperatureReceived(float temperatureCelsius);
+    void bottomDistanceReceived(float distanceMeters);
     void controlFlagsPublished(std::uint8_t flags);
     void dvlOriginResetFinished(bool success, const QString &message);
 
@@ -58,6 +61,8 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr twist_pub_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_sub_;
     rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr battery_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr temperature_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr bottom_distance_sub_;
     UVState::BatteryData battery_data_{};
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr control_flags_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr zero_yaw_pub_;

@@ -25,6 +25,11 @@ void RosBridge::run()
 
     node_ = rclcpp::Node::make_shared("qt_controller_node", "qt_controller");
 
+    const auto temperatureTopic =
+        node_->declare_parameter<std::string>("temperature_topic", "/ms5837/temperature");
+    const auto bottomDistanceTopic = node_->declare_parameter<std::string>(
+        "bottom_distance_topic", "/stingray_core/sensors/dvl/altitude");
+
     twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/control/data", 10);
 
     odometry_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
@@ -97,6 +102,22 @@ void RosBridge::run()
                 return;
             }
             emit batteryReceived(battery_data_);
+        });
+
+    temperature_sub_ = node_->create_subscription<std_msgs::msg::Float32>(
+        temperatureTopic, rclcpp::SensorDataQoS(),
+        [this](const std_msgs::msg::Float32::SharedPtr msg)
+        {
+            if (std::isfinite(msg->data))
+                emit temperatureReceived(msg->data);
+        });
+
+    bottom_distance_sub_ = node_->create_subscription<std_msgs::msg::Float32>(
+        bottomDistanceTopic, rclcpp::SensorDataQoS(),
+        [this](const std_msgs::msg::Float32::SharedPtr msg)
+        {
+            if (std::isfinite(msg->data) && msg->data >= 0.0f)
+                emit bottomDistanceReceived(msg->data);
         });
 
     control_flags_pub_ = node_->create_publisher<std_msgs::msg::UInt8>("/control/loop_flags", 10);

@@ -321,6 +321,13 @@ public:
         update();
     }
 
+    void setBottomDistance(double distance)
+    {
+        bottomDistance_ = distance;
+        hasBottomDistance_ = true;
+        update();
+    }
+
 protected:
     void paintEvent(QPaintEvent *) override
     {
@@ -349,7 +356,9 @@ protected:
         painter.setPen(QColor(QStringLiteral("#ff8a2a")));
         painter.drawText(
             QRectF(metrics.center().x(), metrics.top() + 14, metrics.width() * 0.5, 24),
-            Qt::AlignLeft | Qt::AlignVCenter, QStringLiteral("—"));
+            Qt::AlignLeft | Qt::AlignVCenter,
+            hasBottomDistance_ ? QStringLiteral("%1 м").arg(bottomDistance_, 0, 'f', 1)
+                               : QStringLiteral("—"));
 
         painter.setPen(QPen(grid, 1));
         for (int column = 0; column <= 8; ++column)
@@ -416,7 +425,9 @@ private:
     QVector<double> depthHistory_;
     double depth_ = 0.0;
     double verticalSpeed_ = 0.0;
+    double bottomDistance_ = 0.0;
     bool hasPose_ = false;
+    bool hasBottomDistance_ = false;
 };
 
 static QIcon makeSunIcon()
@@ -1476,6 +1487,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         qint64 poseMs = 0;
         qint64 imuMs = 0;
         qint64 batteryMs = 0;
+        qint64 temperatureMs = 0;
+        qint64 bottomDistanceMs = 0;
         QString reportedState;
     };
     const auto freshness = std::make_shared<ConnectionFreshness>();
@@ -1491,84 +1504,108 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(rosBridge, &RosBridge::batteryReceived, this,
             [freshness](const UVState::BatteryData &)
             { freshness->batteryMs = QDateTime::currentMSecsSinceEpoch(); });
+    connect(rosBridge, &RosBridge::temperatureReceived, this,
+            [this, freshness](float temperature)
+            {
+                freshness->temperatureMs = QDateTime::currentMSecsSinceEpoch();
+                ui->lbl_temp_value->setText(QStringLiteral("%1 °C").arg(temperature, 0, 'f', 1));
+            });
+    connect(rosBridge, &RosBridge::bottomDistanceReceived, this,
+            [this, freshness](float distance)
+            {
+                freshness->bottomDistanceMs = QDateTime::currentMSecsSinceEpoch();
+                ui->lbl_bottom_value->setText(QStringLiteral("%1 м").arg(distance, 0, 'f', 1));
+                if (auto *preview =
+                        findChild<DepthSonarPreview *>(QStringLiteral("depthSonarPreview")))
+                    preview->setBottomDistance(distance);
+            });
 
     auto *connectionWatchdog = new QTimer(this);
     connectionWatchdog->setInterval(500);
-    connect(
-        connectionWatchdog, &QTimer::timeout, this,
-        [this, freshness, headerConnection]()
-        {
-            constexpr qint64 staleAfterMs = 2500;
-            const qint64 now = QDateTime::currentMSecsSinceEpoch();
-            const qint64 newestTelemetry =
-                qMax(freshness->poseMs, qMax(freshness->imuMs, freshness->batteryMs));
-            QString state;
-            QString text;
-            if (!freshness->rosReady)
+    connect(connectionWatchdog, &QTimer::timeout, this,
+            [this, freshness, headerConnection]()
             {
-                state = QStringLiteral("offline");
-                text = QStringLiteral("×");
-            }
-            else if (newestTelemetry == 0)
-            {
-                state = QStringLiteral("waiting");
-                text = QStringLiteral("●");
-            }
-            else if (now - newestTelemetry > staleAfterMs)
-            {
-                state = QStringLiteral("stale");
-                text = QStringLiteral("!");
-            }
-            else
-            {
-                state = QStringLiteral("online");
-                text = QStringLiteral("●");
-            }
-            if (headerConnection)
-            {
-                headerConnection->setText(text);
-                setDynamicProperty(headerConnection, "connectionState", state);
-
-                const auto ageText = [now](qint64 timestamp)
+                constexpr qint64 staleAfterMs = 2500;
+                const qint64 now = QDateTime::currentMSecsSinceEpoch();
+                const qint64 newestTelemetry =
+                    qMax(freshness->poseMs, qMax(freshness->imuMs, freshness->batteryMs));
+                QString state;
+                QString text;
+                if (!freshness->rosReady)
                 {
-                    if (timestamp == 0)
-                        return QStringLiteral("нет данных");
-                    return QStringLiteral("%1 с назад")
-                        .arg(static_cast<double>(now - timestamp) / 1000.0, 0, 'f', 1);
-                };
-                headerConnection->setToolTip(
-                    QStringLiteral("Состояние ROS 2 · DOMAIN %1\nПоложение: %2\nIMU: %3\n"
-                                   "Питание: %4")
-                        .arg(qEnvironmentVariable("ROS_DOMAIN_ID", "—"), ageText(freshness->poseMs),
-                             ageText(freshness->imuMs), ageText(freshness->batteryMs)));
-            }
-
-            if (freshness->reportedState != state)
-            {
-                freshness->reportedState = state;
-                setCommandLinkAvailable(state == QStringLiteral("online"));
-                if (state == QStringLiteral("online"))
-                    displayText(QStringLiteral("Соединение с аппаратом установлено"));
-                else if (state == QStringLiteral("stale"))
-                    displayText(QStringLiteral("Предупреждение: телеметрия аппарата устарела"));
-                else if (state == QStringLiteral("waiting"))
-                    displayText(QStringLiteral("ROS 2 готов, ожидание телеметрии аппарата"));
+                    state = QStringLiteral("offline");
+                    text = QStringLiteral("×");
+                }
+                else if (newestTelemetry == 0)
+                {
+                    state = QStringLiteral("waiting");
+                    text = QStringLiteral("●");
+                }
+                else if (now - newestTelemetry > staleAfterMs)
+                {
+                    state = QStringLiteral("stale");
+                    text = QStringLiteral("!");
+                }
                 else
-                    displayText(QStringLiteral("Ошибка: соединение с ROS 2 недоступно"));
-            }
+                {
+                    state = QStringLiteral("online");
+                    text = QStringLiteral("●");
+                }
+                if (headerConnection)
+                {
+                    headerConnection->setText(text);
+                    setDynamicProperty(headerConnection, "connectionState", state);
 
-            const bool poseStale = freshness->poseMs == 0 || now - freshness->poseMs > staleAfterMs;
-            setDynamicProperty(ui->lbl_depth_value, "telemetryStale", poseStale);
-            setDynamicProperty(ui->lbl_speed_value, "telemetryStale", poseStale);
-            const bool imuStale = freshness->imuMs == 0 || now - freshness->imuMs > staleAfterMs;
-            setDynamicProperty(ui->lbl_heading, "telemetryStale", imuStale);
-            setDynamicProperty(ui->lbl_pitch, "telemetryStale", imuStale);
-            setDynamicProperty(ui->lbl_roll, "telemetryStale", imuStale);
-            const bool batteryStale =
-                freshness->batteryMs == 0 || now - freshness->batteryMs > staleAfterMs;
-            setDynamicProperty(ui->lbl_voltage_value, "telemetryStale", batteryStale);
-            setDynamicProperty(ui->lbl_voltage2_value, "telemetryStale", batteryStale);
-        });
+                    const auto ageText = [now](qint64 timestamp)
+                    {
+                        if (timestamp == 0)
+                            return QStringLiteral("нет данных");
+                        return QStringLiteral("%1 с назад")
+                            .arg(static_cast<double>(now - timestamp) / 1000.0, 0, 'f', 1);
+                    };
+                    headerConnection->setToolTip(
+                        QStringLiteral("Состояние ROS 2 · DOMAIN %1\nПоложение: %2\nIMU: %3\n"
+                                       "Питание: %4\nТемпература: %5\nДо дна: %6")
+                            .arg(qEnvironmentVariable("ROS_DOMAIN_ID", "—"),
+                                 ageText(freshness->poseMs), ageText(freshness->imuMs),
+                                 ageText(freshness->batteryMs), ageText(freshness->temperatureMs),
+                                 ageText(freshness->bottomDistanceMs)));
+                }
+
+                if (freshness->reportedState != state)
+                {
+                    freshness->reportedState = state;
+                    setCommandLinkAvailable(state == QStringLiteral("online"));
+                    if (state == QStringLiteral("online"))
+                        displayText(QStringLiteral("Соединение с аппаратом установлено"));
+                    else if (state == QStringLiteral("stale"))
+                        displayText(QStringLiteral("Предупреждение: телеметрия аппарата устарела"));
+                    else if (state == QStringLiteral("waiting"))
+                        displayText(QStringLiteral("ROS 2 готов, ожидание телеметрии аппарата"));
+                    else
+                        displayText(QStringLiteral("Ошибка: соединение с ROS 2 недоступно"));
+                }
+
+                const bool poseStale =
+                    freshness->poseMs == 0 || now - freshness->poseMs > staleAfterMs;
+                setDynamicProperty(ui->lbl_depth_value, "telemetryStale", poseStale);
+                setDynamicProperty(ui->lbl_speed_value, "telemetryStale", poseStale);
+                const bool imuStale =
+                    freshness->imuMs == 0 || now - freshness->imuMs > staleAfterMs;
+                setDynamicProperty(ui->lbl_heading, "telemetryStale", imuStale);
+                setDynamicProperty(ui->lbl_pitch, "telemetryStale", imuStale);
+                setDynamicProperty(ui->lbl_roll, "telemetryStale", imuStale);
+                const bool batteryStale =
+                    freshness->batteryMs == 0 || now - freshness->batteryMs > staleAfterMs;
+                setDynamicProperty(ui->lbl_voltage_value, "telemetryStale", batteryStale);
+                setDynamicProperty(ui->lbl_voltage2_value, "telemetryStale", batteryStale);
+                const bool temperatureStale =
+                    freshness->temperatureMs == 0 || now - freshness->temperatureMs > staleAfterMs;
+                setDynamicProperty(ui->lbl_temp_value, "telemetryStale", temperatureStale);
+                const bool bottomDistanceStale = freshness->bottomDistanceMs == 0 ||
+                                                 now - freshness->bottomDistanceMs > staleAfterMs;
+                setDynamicProperty(ui->lbl_bottom_value, "telemetryStale", bottomDistanceStale);
+            });
     connectionWatchdog->start();
 
     connect(this, &MainWindow::publishTwistRequested, rosBridge, &RosBridge::publishTwistInternal,
