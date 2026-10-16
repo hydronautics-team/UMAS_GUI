@@ -19,6 +19,7 @@ public:
 
     std::optional<umas::input::ControlCommand> poll() override;
     bool isAvailable() const override;
+    void reset() override;
 
 private:
     void markDirty();

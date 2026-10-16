@@ -138,3 +138,14 @@ std::optional<umas::input::ControlCommand> GamepadInputSource::poll()
 }
 
 bool GamepadInputSource::isAvailable() const { return gamepad_ && gamepad_->isConnected(); }
+
+void GamepadInputSource::reset()
+{
+    march_ = 0.0f;
+    lag_ = 0.0f;
+    depth_ = 0.0f;
+    roll_ = 0.0f;
+    pitch_ = 0.0f;
+    yaw_ = 0.0f;
+    markDirty();
+}

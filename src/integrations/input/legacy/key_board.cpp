@@ -23,6 +23,13 @@ std::optional<umas::input::ControlCommand> KeyBoard::poll()
 
 bool KeyBoard::isAvailable() const { return true; }
 
+void KeyBoard::reset()
+{
+    command_ = {};
+    command_.valid = true;
+    dirty_ = true;
+}
+
 void KeyBoard::keyPressEvent(QKeyEvent *event)
 {
     switch (event->key())

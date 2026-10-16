@@ -25,6 +25,7 @@ public:
     virtual ~IInputSource() = default;
     virtual std::optional<ControlCommand> poll() = 0;
     virtual bool isAvailable() const = 0;
+    virtual void reset() = 0;
 };
 
 } // namespace umas::input

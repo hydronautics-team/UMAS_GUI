@@ -2108,14 +2108,26 @@ void MainWindow::setCommandLinkAvailable(bool available)
     }
 
     if (!available)
+        stopControlInput(QString());
+}
+
+void MainWindow::stopControlInput(const QString &reason)
+{
+    if (activeInput)
+        activeInput->reset();
+    controlService.reset();
+
+    const umas::input::ControlCommand stopped;
+    updateControlLabels(stopped);
+    emit publishTwistRequested(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+
+    if (rosBridge)
     {
-        controlService.reset();
-        if (rosBridge)
-        {
-            rosBridge->setTurnState(QStringLiteral("stop"));
-            rosBridge->setGripState(QStringLiteral("stop"));
-        }
+        rosBridge->setTurnState(QStringLiteral("stop"));
+        rosBridge->setGripState(QStringLiteral("stop"));
     }
+    if (!reason.isEmpty())
+        displayText(reason);
 }
 
 umas::input::ControlCommand MainWindow::applyGains(const umas::input::ControlCommand &raw) const
@@ -2463,6 +2475,14 @@ void MainWindow::toggleTheme()
 {
     isDark_ = !isDark_;
     applyTheme(isDark_);
+}
+
+bool MainWindow::event(QEvent *event)
+{
+    if (event->type() == QEvent::WindowDeactivate)
+        stopControlInput(QStringLiteral("Предупреждение: управление остановлено — окно пульта "
+                                        "потеряло фокус"));
+    return QMainWindow::event(event);
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)

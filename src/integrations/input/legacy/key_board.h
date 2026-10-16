@@ -14,6 +14,7 @@ public:
 
     std::optional<umas::input::ControlCommand> poll() override;
     bool isAvailable() const override;
+    void reset() override;
 
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);

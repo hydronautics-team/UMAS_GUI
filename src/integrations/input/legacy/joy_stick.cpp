@@ -51,6 +51,11 @@ std::optional<umas::input::ControlCommand> JoyStick::poll()
 
 bool JoyStick::isAvailable() const { return id >= 0 && sf::Joystick::isConnected(id); }
 
+void JoyStick::reset()
+{
+    // Значения читаются напрямую из устройства при следующем poll().
+}
+
 void JoyStick::selectAvailableJoystick()
 {
     for (unsigned int i = 0; i < sf::Joystick::Count; ++i)

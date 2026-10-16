@@ -90,8 +90,8 @@ private:
 
     bool status_keyboard = false;
 
-    RosBridge *rosBridge;
-    UVState *uvState;
+    RosBridge *rosBridge = nullptr;
+    UVState *uvState = nullptr;
     VideoPlayerWidget *videoPlayer_ = nullptr;
 
 private slots:
@@ -113,6 +113,7 @@ private:
     void applyTheme(bool dark);
     void setupActuators();
     void setCommandLinkAvailable(bool available);
+    void stopControlInput(const QString &reason);
     QTimer *brightnessTimer_ = nullptr;
     int brightnessStep_ = 0;
 
@@ -127,6 +128,7 @@ signals:
     void controlFlagRequested(uint8_t bit, bool value);
 
 protected:
+    bool event(QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     Ui::MainWindow *ui;
     QTimer *updateTimer = nullptr;
