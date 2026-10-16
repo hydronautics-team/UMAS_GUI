@@ -25,8 +25,29 @@ void HudPanel::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event)
 
-    constexpr qreal chamfer = 11.0;
+    if (property("transparentPanel").toBool())
+        return;
+
     const QRectF bounds = rect().adjusted(0.5, 0.5, -0.5, -0.5);
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    if (property("telemetryCard").toBool())
+    {
+        QLinearGradient background(bounds.topLeft(), bounds.bottomLeft());
+        background.setColorAt(0.0, QColor(QStringLiteral("#031b2a")));
+        background.setColorAt(1.0, QColor(QStringLiteral("#00111d")));
+        painter.setPen(QPen(QColor(QStringLiteral("#07516b")), 1.0));
+        painter.setBrush(background);
+        painter.drawRoundedRect(bounds, 6.0, 6.0);
+
+        painter.setPen(QPen(QColor(QStringLiteral("#00d9e6")), 2.0, Qt::SolidLine, Qt::RoundCap));
+        painter.drawLine(QPointF(bounds.left() + 0.8, bounds.top() + 17.0),
+                         QPointF(bounds.left() + 0.8, bounds.bottom() - 17.0));
+        return;
+    }
+
+    constexpr qreal chamfer = 11.0;
 
     QPainterPath panelPath;
     panelPath.moveTo(bounds.left() + chamfer, bounds.top());
@@ -38,9 +59,6 @@ void HudPanel::paintEvent(QPaintEvent *event)
     panelPath.lineTo(bounds.left(), bounds.bottom() - chamfer);
     panelPath.lineTo(bounds.left(), bounds.top() + chamfer);
     panelPath.closeSubpath();
-
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
 
     QLinearGradient background(bounds.topLeft(), bounds.bottomLeft());
     background.setColorAt(0.0, QColor(QStringLiteral("#001522")));

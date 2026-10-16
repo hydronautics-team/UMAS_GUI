@@ -514,8 +514,6 @@ static const QString LIGHT_THEME =
     "QLCDNumber { background-color: #eef8f7; color: #087f77; border: 1px solid #b5d2d0; "
     "border-radius: 6px; }"
     "QLabel { color: #23474c; background: transparent; }"
-    "QFrame#frame_telemetry { background-color: #edf5f4; border: 1px solid #b5d2d0; border-radius: "
-    "10px; padding: 5px; }"
     "QFrame#frame_quickActions, QFrame#dashboardNavigation { background-color: #edf5f4; border: "
     "1px solid #b5d2d0; border-radius: 9px; }"
     "QPushButton[dashboardNav='true'] { text-align: left; padding: 11px 13px; border: none; "
@@ -600,17 +598,20 @@ static const QString DARK_THEME =
     "QLCDNumber { background-color: #04161c; color: #5de2d7; border: 1px solid #174a56; "
     "border-radius: 6px; }"
     "QLabel { color: #c9e7e5; background: transparent; }"
-    "QFrame#frame_telemetry { background-color: #09262e; border: 1px solid #174a56; border-radius: "
-    "10px; padding: 5px; }"
     "QFrame#frame_quickActions, QFrame#dashboardNavigation { background-color: #071f27; border: "
     "1px solid #174a56; border-radius: 9px; }"
     "HudPanel[telemetryCard='true'] { background: transparent; }"
     "QLabel[telemetryIcon='true'] { color: #55f5f0; background-color: #021825; border: 1px solid "
     "#07516b; border-radius: 5px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; "
     "font-weight: 600; padding: 3px; }"
-    "QLabel[telemetryTitle='true'] { color: #91bbd0; font-size: 11px; font-weight: 500; }"
-    "QLabel[telemetryValue='true'] { color: #e3f6ff; font-family: 'Exo 2', 'Segoe UI', sans-serif; "
-    "font-size: 20px; font-weight: 600; background: transparent; border: none; padding: 0; }"
+    "QLabel[telemetryTitle='true'] { color: #86aec1; font-size: 11px; font-weight: 500; "
+    "letter-spacing: 0.2px; }"
+    "QLabel[telemetryValue='true'], QPushButton[telemetryValue='true'] { color: #e3f6ff; "
+    "font-family: 'Exo 2', 'Segoe UI', sans-serif; font-size: 20px; font-weight: 600; "
+    "background: transparent; border: none; padding: 0; margin: 0; text-align: left; "
+    "min-height: 22px; }"
+    "QLabel[telemetryValue='true'][semanticValue='true'], "
+    "QPushButton[telemetryValue='true'][semanticValue='true'] { color: #17f49a; }"
     "QLabel[telemetryValue='true'][telemetryStale='true'], "
     "QPushButton[telemetryValue='true'][telemetryStale='true'] { color: #668a9b; }"
     "QLabel[orientationMetric='true'][telemetryStale='true'] { color: #668a9b; "
@@ -685,8 +686,11 @@ static const QString DARK_THEME =
     "QPushButton#btn_killswitch_status { min-height: 0px; padding: 4px 10px; margin: 0px; }"
     "QPushButton#btn_killswitch_status:disabled { color: #ffe8ec; background-color: #a3263d; "
     "border: 1px solid #f05268; }"
+    "QPushButton#btn_killswitch_status[telemetryStale='true'] { color: #668a9b; "
+    "background: transparent; border: none; }"
     "QLabel[telemetryValue='true'][safetyState='normal'], "
-    "QPushButton#btn_killswitch_status[safetyState='normal'] { color: #17f49a; }"
+    "QPushButton#btn_killswitch_status[safetyState='normal'] { color: #17f49a; "
+    "background: transparent; border: none; }"
     "QLabel[telemetryValue='true'][safetyState='alarm'], "
     "QPushButton#btn_killswitch_status[safetyState='alarm'] { color: #ffe8ec; "
     "background-color: #a3263d; border: 1px solid #f05268; }"
@@ -734,14 +738,14 @@ static const QString DARK_THEME =
     "QToolTip { background-color: #0d3540; color: #efffff; border: 1px solid #5de2d7; padding: "
     "5px; border-radius: 4px; }";
 
-static QPixmap makeHudGlyph(int kind, const QSize &size = QSize(24, 24))
+static QPixmap makeHudGlyph(int kind, const QSize &size = QSize(24, 24),
+                            const QColor &color = QColor(QStringLiteral("#55f5f0")))
 {
     QPixmap pixmap(size);
     pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.setPen(
-        QPen(QColor(QStringLiteral("#55f5f0")), 1.8, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(QPen(color, 1.8, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.setBrush(Qt::NoBrush);
 
     const QRectF bounds(3.0, 3.0, size.width() - 6.0, size.height() - 6.0);
@@ -923,18 +927,20 @@ static void setupTelemetryCards(MainWindow *window)
         const char *valueName;
         int iconKind;
         int width;
+        const char *accent;
+        bool semanticValue;
     };
 
     const TelemetryDescriptor descriptors[] = {
-        {"lbl_depth_title", "lbl_depth_value", 6, 160},
-        {"lbl_bottom_title", "lbl_bottom_value", 7, 136},
-        {"lbl_speed_title", "lbl_speed_value", 8, 175},
-        {"lbl_temp_title", "lbl_temp_value", 9, 137},
-        {"lbl_leak_title", "lbl_leak_value", 10, 141},
-        {"lbl_voltage_title", "lbl_voltage_value", 11, 129},
-        {"lbl_voltage2_title", "lbl_voltage2_value", 11, 130},
-        {"lbl_kill_title", "btn_killswitch_status", 12, 163},
-        {"lbl_ping_title", "lbl_ping_value", 13, 140},
+        {"lbl_depth_title", "lbl_depth_value", 6, 160, "#22dff3", false},
+        {"lbl_bottom_title", "lbl_bottom_value", 7, 132, "#79cfff", false},
+        {"lbl_speed_title", "lbl_speed_value", 8, 177, "#69bfff", false},
+        {"lbl_temp_title", "lbl_temp_value", 9, 133, "#3edff0", false},
+        {"lbl_leak_title", "lbl_leak_value", 10, 145, "#17f49a", true},
+        {"lbl_voltage_title", "lbl_voltage_value", 11, 130, "#42f4e2", true},
+        {"lbl_voltage2_title", "lbl_voltage2_value", 11, 139, "#42f4e2", true},
+        {"lbl_kill_title", "btn_killswitch_status", 12, 151, "#17f49a", true},
+        {"lbl_ping_title", "lbl_ping_value", 13, 140, "#79cfff", false},
     };
 
     while (QLayoutItem *item = telemetryLayout->takeAt(0))
@@ -952,7 +958,12 @@ static void setupTelemetryCards(MainWindow *window)
     }
 
     telemetryLayout->setContentsMargins(0, 0, 0, 0);
-    telemetryLayout->setSpacing(9);
+    telemetryLayout->setSpacing(10);
+    if (auto *strip = window->findChild<HudPanel *>(QStringLiteral("frame_telemetry")))
+    {
+        strip->setProperty("transparentPanel", true);
+        strip->update();
+    }
 
     for (const TelemetryDescriptor &descriptor : descriptors)
     {
@@ -967,23 +978,31 @@ static void setupTelemetryCards(MainWindow *window)
         card->setFixedSize(descriptor.width, 64);
 
         auto *cardLayout = new QHBoxLayout(card);
-        cardLayout->setContentsMargins(11, 8, 11, 8);
-        cardLayout->setSpacing(9);
+        cardLayout->setContentsMargins(12, 7, 10, 7);
+        cardLayout->setSpacing(8);
 
         auto *icon = new QLabel(card);
-        icon->setProperty("telemetryIcon", true);
         icon->setAlignment(Qt::AlignCenter);
-        icon->setFixedSize(31, 31);
-        icon->setPixmap(makeHudGlyph(descriptor.iconKind));
+        icon->setFixedSize(34, 38);
+        icon->setPixmap(makeHudGlyph(descriptor.iconKind, QSize(28, 28),
+                                     QColor(QString::fromLatin1(descriptor.accent))));
 
         auto *textLayout = new QVBoxLayout();
         textLayout->setContentsMargins(0, 0, 0, 0);
         textLayout->setSpacing(1);
         title->setProperty("telemetryTitle", true);
         value->setProperty("telemetryValue", true);
+        value->setProperty("hudValue", false);
+        value->setProperty("semanticValue", descriptor.semanticValue);
         value->setProperty("telemetryStale", true);
         title->setStyleSheet(QString());
         value->setStyleSheet(QString());
+        QFont titleFont = title->font();
+        titleFont.setStretch(QFont::SemiCondensed);
+        title->setFont(titleFont);
+        title->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        if (auto *valueLabel = qobject_cast<QLabel *>(value))
+            valueLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         textLayout->addWidget(title);
         textLayout->addWidget(value);
 
