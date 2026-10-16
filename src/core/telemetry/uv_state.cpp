@@ -1,5 +1,7 @@
 #include "uv_state.h"
 
+#include <QDateTime>
+
 UVState::UVState(QObject *parent) : QObject(parent) {}
 
 void UVState::setImu(const UVState::ImuData &imu)
@@ -38,6 +40,21 @@ void UVState::setControlFlags(std::uint8_t flags)
 {
     control_flags_ = flags;
     emit controlFlagsUpdated(control_flags_);
+}
+
+void UVState::setLeakDetected(bool detected)
+{
+    safety_.leak_detected = detected;
+    safety_.leak_timestamp_ms = static_cast<std::uint64_t>(QDateTime::currentMSecsSinceEpoch());
+    emit safetyUpdated(safety_);
+}
+
+void UVState::setKillSwitchEngaged(bool engaged)
+{
+    safety_.kill_switch_engaged = engaged;
+    safety_.kill_switch_timestamp_ms =
+        static_cast<std::uint64_t>(QDateTime::currentMSecsSinceEpoch());
+    emit safetyUpdated(safety_);
 }
 
 ControlData::ControlData()

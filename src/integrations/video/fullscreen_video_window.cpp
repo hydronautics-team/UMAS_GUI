@@ -122,6 +122,7 @@ void FullscreenVideoWindow::updateHudData()
     const UVState::Pose pose = uvState_->pose();
     const UVState::BatteryData battery = uvState_->battery();
     const UVState::ImuData imu = uvState_->imu();
+    const UVState::SafetyData safety = uvState_->safety();
     const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
     const bool coreFresh =
         pose.timestamp_ms > 0 && nowMs - static_cast<qint64>(pose.timestamp_ms) < 1000;
@@ -129,6 +130,14 @@ void FullscreenVideoWindow::updateHudData()
         battery.timestamp_1_ms > 0 && nowMs - static_cast<qint64>(battery.timestamp_1_ms) < 3000;
     const bool battery2Fresh =
         battery.timestamp_2_ms > 0 && nowMs - static_cast<qint64>(battery.timestamp_2_ms) < 3000;
+    const bool leakFresh = safety.leak_timestamp_ms > 0 &&
+                           nowMs - static_cast<qint64>(safety.leak_timestamp_ms) < 3000;
+    const bool killSwitchFresh =
+        safety.kill_switch_timestamp_ms > 0 &&
+        nowMs - static_cast<qint64>(safety.kill_switch_timestamp_ms) < 3000;
+    const bool leakDetected = leakFresh && safety.leak_detected;
+    const bool killSwitchEngaged = killSwitchFresh && safety.kill_switch_engaged;
+    const bool safetyUnavailable = coreFresh && (!leakFresh || !killSwitchFresh);
 
     const float depth = static_cast<float>(-pose.z);
     const float yaw = imu.yaw;
@@ -169,6 +178,10 @@ void FullscreenVideoWindow::updateHudData()
     alertOverlay_->setAlert("battery_warning", HudAlertOverlay::Level::Warning,
                             warningBattery && !criticalBattery);
     alertOverlay_->setAlert("battery_voltage", HudAlertOverlay::Level::Warning, lowVoltage);
+    alertOverlay_->setAlert("leak", HudAlertOverlay::Level::Critical, leakDetected);
+    alertOverlay_->setAlert("kill_switch", HudAlertOverlay::Level::Critical, killSwitchEngaged);
+    alertOverlay_->setAlert("safety_unavailable", HudAlertOverlay::Level::Warning,
+                            safetyUnavailable);
 
     notificationStack_->setCondition("connection", !coreFresh, "НЕТ СВЯЗИ СО STINGRAY CORE",
                                      HudNotificationStack::Severity::Error);
@@ -184,9 +197,17 @@ void FullscreenVideoWindow::updateHudData()
     notificationStack_->setCondition("battery_voltage", lowVoltage,
                                      "НИЗКОЕ НАПРЯЖЕНИЕ АККУМУЛЯТОРА",
                                      HudNotificationStack::Severity::Warning);
+    notificationStack_->setCondition("leak", leakDetected, "ОБНАРУЖЕНА ПРОТЕЧКА",
+                                     HudNotificationStack::Severity::Error);
+    notificationStack_->setCondition("kill_switch", killSwitchEngaged,
+                                     "KILL SWITCH АКТИВЕН · УПРАВЛЕНИЕ ЗАБЛОКИРОВАНО",
+                                     HudNotificationStack::Severity::Error);
+    notificationStack_->setCondition("safety_unavailable", safetyUnavailable,
+                                     "НЕТ СВЕЖИХ ДАННЫХ ДАТЧИКОВ БЕЗОПАСНОСТИ",
+                                     HudNotificationStack::Severity::Warning);
 
-    const bool stable =
-        coreFresh && !depthExceeded && !criticalBattery && !warningBattery && !lowVoltage;
+    const bool stable = coreFresh && !depthExceeded && !criticalBattery && !warningBattery &&
+                        !lowVoltage && !leakDetected && !killSwitchEngaged && !safetyUnavailable;
     if (stable && !wasStable_)
         notificationStack_->showInfo("stable", "СИСТЕМА СТАБИЛЬНА", 4000);
     wasStable_ = stable;

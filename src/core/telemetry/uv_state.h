@@ -340,10 +340,19 @@ public:
         std::uint64_t timestamp_ms = 0;
     };
 
+    struct SafetyData
+    {
+        bool leak_detected = false;
+        bool kill_switch_engaged = false;
+        std::uint64_t leak_timestamp_ms = 0;
+        std::uint64_t kill_switch_timestamp_ms = 0;
+    };
+
     ImuData imu() const { return imu_; }
     Pose pose() const { return pose_; }
     BatteryData battery() const { return battery_; }
     Diagnostics diagnostics() const { return diagnostics_; }
+    SafetyData safety() const { return safety_; }
     std::uint8_t controlFlags() const { return control_flags_; }
 
 public slots:
@@ -353,6 +362,8 @@ public slots:
     void setBattery(const UVState::BatteryData &battery);
     void setDiagnostics(const UVState::Diagnostics &diagnostics);
     void setControlFlags(std::uint8_t flags);
+    void setLeakDetected(bool detected);
+    void setKillSwitchEngaged(bool engaged);
 
 signals:
     void imuUpdated(const UVState::ImuData &imu);
@@ -360,17 +371,20 @@ signals:
     void batteryUpdated(const UVState::BatteryData &battery);
     void diagnosticsUpdated(const UVState::Diagnostics &diagnostics);
     void controlFlagsUpdated(std::uint8_t flags);
+    void safetyUpdated(const UVState::SafetyData &safety);
 
 private:
     ImuData imu_{};
     Pose pose_{};
     BatteryData battery_{};
     Diagnostics diagnostics_{};
+    SafetyData safety_{};
     std::uint8_t control_flags_ = 0;
 };
 
 Q_DECLARE_METATYPE(UVState::ImuData)
 Q_DECLARE_METATYPE(UVState::Pose)
 Q_DECLARE_METATYPE(UVState::BatteryData)
+Q_DECLARE_METATYPE(UVState::SafetyData)
 
 #endif // UVSTATE_H

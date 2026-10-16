@@ -1454,6 +1454,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     qRegisterMetaType<UVState::ImuData>("UVState::ImuData");
     qRegisterMetaType<UVState::Pose>("UVState::Pose");
     qRegisterMetaType<UVState::BatteryData>("UVState::BatteryData");
+    qRegisterMetaType<UVState::SafetyData>("UVState::SafetyData");
 
     uvState = new UVState(this);
     if (auto *mapPreview = findChild<BathymetryMapPreview *>(QStringLiteral("bathymetryMap")))
@@ -1694,6 +1695,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(rosBridge, &RosBridge::imuReceived, uvState, &UVState::setImu, Qt::QueuedConnection);
 
     connect(rosBridge, &RosBridge::batteryReceived, uvState, &UVState::setBattery,
+            Qt::QueuedConnection);
+    connect(rosBridge, &RosBridge::leakStateReceived, uvState, &UVState::setLeakDetected,
+            Qt::QueuedConnection);
+    connect(rosBridge, &RosBridge::killSwitchStateReceived, uvState, &UVState::setKillSwitchEngaged,
             Qt::QueuedConnection);
     connect(
         uvState, &UVState::batteryUpdated, this,
