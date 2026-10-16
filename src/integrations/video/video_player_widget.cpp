@@ -70,10 +70,10 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget *parent) : QWidget(parent)
 
     toolbar_ = new QWidget(this);
     toolbar_->setObjectName(QStringLiteral("cameraToolbar"));
-    toolbar_->setFixedHeight(40);
+    toolbar_->setFixedHeight(39);
     auto *toolbarLayout = new QHBoxLayout(toolbar_);
-    toolbarLayout->setContentsMargins(10, 4, 7, 4);
-    toolbarLayout->setSpacing(7);
+    toolbarLayout->setContentsMargins(10, 4, 6, 4);
+    toolbarLayout->setSpacing(8);
 
     titleLabel_ = new QLabel(QStringLiteral("◉  КАМЕРА 1"), toolbar_);
     titleLabel_->setObjectName(QStringLiteral("cameraTitle"));
@@ -102,20 +102,23 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget *parent) : QWidget(parent)
     toolbarLayout->addWidget(fpsLabel_);
     toolbarLayout->addWidget(bitrate);
 
-    auto makeAction =
-        [this, toolbarLayout](const QString &text, const QString &tooltip, bool enabled)
+    auto makeAction = [this, toolbarLayout](const QString &text, const QString &tooltip,
+                                            bool enabled, int width = 40)
     {
         auto *button = new QPushButton(text, toolbar_);
         button->setProperty("cameraAction", true);
         button->setToolTip(tooltip);
         button->setEnabled(enabled);
-        button->setFixedSize(34, 29);
+        button->setFixedSize(width, 31);
         toolbarLayout->addWidget(button);
         return button;
     };
-    makeAction(QStringLiteral("□"), QStringLiteral("Снимок пока не подключён"), false);
-    makeAction(QStringLiteral("●"), QStringLiteral("Запись пока не подключена"), false);
-    auto *fullscreen = makeAction(QStringLiteral("⛶"), QStringLiteral("Полноэкранный режим"), true);
+    makeAction(QStringLiteral("▣"), QStringLiteral("Снимок пока не подключён"), false);
+    makeAction(QStringLiteral("◎"), QStringLiteral("Запись пока не подключена"), false);
+    makeAction(QStringLiteral("□"), QStringLiteral("Переключение камеры пока не подключено"),
+               false);
+    auto *fullscreen =
+        makeAction(QStringLiteral("⛶"), QStringLiteral("Полноэкранный режим"), true, 36);
     connect(fullscreen, &QPushButton::clicked, this, &VideoPlayerWidget::fullscreenRequested);
 
     imageLabel_ = new QLabel(this);
@@ -134,7 +137,7 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget *parent) : QWidget(parent)
     thumbnailStrip_->setObjectName(QStringLiteral("cameraThumbnailStrip"));
     auto *thumbnailLayout = new QHBoxLayout(thumbnailStrip_);
     thumbnailLayout->setContentsMargins(0, 0, 0, 0);
-    thumbnailLayout->setSpacing(8);
+    thumbnailLayout->setSpacing(10);
     for (int camera = 1; camera <= 4; ++camera)
     {
         auto *thumbnail = new QPushButton(QStringLiteral("Камера %1").arg(camera), thumbnailStrip_);
@@ -143,7 +146,7 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget *parent) : QWidget(parent)
         thumbnail->setEnabled(camera == 1);
         thumbnail->setToolTip(camera == 1 ? QStringLiteral("Активная камера")
                                           : QStringLiteral("Источник не настроен"));
-        thumbnail->setFixedSize(112, 55);
+        thumbnail->setFixedSize(138, 78);
         thumbnailLayout->addWidget(thumbnail);
     }
 
@@ -298,7 +301,12 @@ void VideoPlayerWidget::resizeEvent(QResizeEvent *event)
     statusLabel_->adjustSize();
     statusLabel_->move((imageLabel_->width() - statusLabel_->width()) / 2,
                        (imageLabel_->height() - statusLabel_->height()) / 2);
-    const int stripWidth = qMin(imageLabel_->width() - 24, 4 * 112 + 3 * 8);
-    thumbnailStrip_->setGeometry(12, imageLabel_->height() - 67, stripWidth, 55);
+    constexpr int thumbnailWidth = 138;
+    constexpr int thumbnailHeight = 78;
+    constexpr int thumbnailSpacing = 10;
+    const int stripWidth =
+        qMin(imageLabel_->width() - 24, 4 * thumbnailWidth + 3 * thumbnailSpacing);
+    thumbnailStrip_->setGeometry(12, imageLabel_->height() - thumbnailHeight - 8, stripWidth,
+                                 thumbnailHeight);
     thumbnailStrip_->raise();
 }
