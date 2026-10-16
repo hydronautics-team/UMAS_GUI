@@ -704,16 +704,141 @@ static const QString DARK_THEME =
     "QScrollBar::handle:vertical { background: #226674; min-height: 24px; border-radius: 4px; }"
     "QScrollBar::handle:vertical:hover { background: #20c7b8; }"
     "QMenuBar { background-color: #04161c; border: none; }"
-    "QLabel#headerConnection { color: #74eee3; font-weight: 700; padding: 5px 9px; }"
+    "QLabel#headerConnection { color: #74eee3; font-size: 20px; font-weight: 700; padding: 0; }"
     "QLabel#headerConnection[connectionState='waiting'] { color: #f0b44d; }"
     "QLabel#headerConnection[connectionState='online'] { color: #17f49a; }"
     "QLabel#headerConnection[connectionState='stale'] { color: #ff8a2a; }"
     "QLabel#headerConnection[connectionState='offline'] { color: #f05268; }"
     "QLabel#headerClock { color: #c9e7e5; font-family: 'JetBrains Mono', 'Consolas', monospace; "
     "font-weight: 600; padding: 3px 8px; }"
+    "QPushButton#headerFullscreenShortcut { min-width: 0; min-height: 0; padding: 0; "
+    "font-size: 17px; background: transparent; border-color: transparent; }"
+    "QPushButton#headerFullscreenShortcut:hover { border-color: #20c7b8; color: #8af5ec; }"
     "QStatusBar { background-color: #04161c; color: #7faaa9; border: none; }"
     "QToolTip { background-color: #0d3540; color: #efffff; border: 1px solid #5de2d7; padding: "
     "5px; border-radius: 4px; }";
+
+static QPixmap makeHudGlyph(int kind, const QSize &size = QSize(24, 24))
+{
+    QPixmap pixmap(size);
+    pixmap.fill(Qt::transparent);
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setPen(
+        QPen(QColor(QStringLiteral("#55f5f0")), 1.8, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setBrush(Qt::NoBrush);
+
+    const QRectF bounds(3.0, 3.0, size.width() - 6.0, size.height() - 6.0);
+    switch (kind)
+    {
+    case 0: // camera
+        painter.drawRoundedRect(QRectF(3, 7, 18, 12), 2, 2);
+        painter.drawEllipse(QPointF(12, 13), 4, 4);
+        painter.drawLine(QPointF(7, 7), QPointF(9, 4));
+        painter.drawLine(QPointF(9, 4), QPointF(14, 4));
+        break;
+    case 1: // target / BSO
+        painter.drawEllipse(bounds.adjusted(2, 2, -2, -2));
+        painter.drawEllipse(QPointF(12, 12), 3, 3);
+        painter.drawLine(QPointF(12, 2), QPointF(12, 7));
+        painter.drawLine(QPointF(12, 17), QPointF(12, 22));
+        break;
+    case 2: // messages
+        painter.drawRoundedRect(QRectF(3, 5, 18, 13), 2, 2);
+        painter.drawLine(QPointF(7, 9), QPointF(17, 9));
+        painter.drawLine(QPointF(7, 13), QPointF(14, 13));
+        painter.drawLine(QPointF(7, 18), QPointF(5, 21));
+        break;
+    case 3: // power
+        painter.drawRoundedRect(QRectF(5, 4, 14, 17), 2, 2);
+        painter.drawLine(QPointF(9, 2), QPointF(15, 2));
+        painter.drawLine(QPointF(8, 9), QPointF(16, 9));
+        painter.drawLine(QPointF(8, 13), QPointF(14, 13));
+        break;
+    case 4: // devices
+        painter.drawLine(QPointF(5, 3), QPointF(5, 21));
+        painter.drawLine(QPointF(12, 3), QPointF(12, 21));
+        painter.drawLine(QPointF(19, 3), QPointF(19, 21));
+        painter.drawEllipse(QPointF(5, 8), 2.5, 2.5);
+        painter.drawEllipse(QPointF(12, 16), 2.5, 2.5);
+        painter.drawEllipse(QPointF(19, 10), 2.5, 2.5);
+        break;
+    case 5: // debug
+        painter.drawRoundedRect(QRectF(7, 6, 10, 14), 4, 4);
+        painter.drawLine(QPointF(4, 9), QPointF(7, 10));
+        painter.drawLine(QPointF(4, 15), QPointF(7, 14));
+        painter.drawLine(QPointF(17, 10), QPointF(20, 9));
+        painter.drawLine(QPointF(17, 14), QPointF(20, 15));
+        painter.drawLine(QPointF(9, 3), QPointF(11, 6));
+        painter.drawLine(QPointF(15, 3), QPointF(13, 6));
+        break;
+    case 6: // depth
+    {
+        QPainterPath drop;
+        drop.moveTo(12, 3);
+        drop.cubicTo(10, 8, 6, 11, 6, 16);
+        drop.cubicTo(6, 21, 18, 21, 18, 16);
+        drop.cubicTo(18, 11, 14, 8, 12, 3);
+        painter.drawPath(drop);
+        break;
+    }
+    case 7: // altitude
+        painter.drawLine(QPointF(4, 5), QPointF(4, 19));
+        painter.drawLine(QPointF(20, 5), QPointF(20, 19));
+        painter.drawLine(QPointF(8, 12), QPointF(16, 12));
+        painter.drawLine(QPointF(8, 12), QPointF(11, 9));
+        painter.drawLine(QPointF(8, 12), QPointF(11, 15));
+        painter.drawLine(QPointF(16, 12), QPointF(13, 9));
+        painter.drawLine(QPointF(16, 12), QPointF(13, 15));
+        break;
+    case 8: // speed
+        painter.drawArc(QRectF(3, 5, 18, 18), 0, 180 * 16);
+        painter.drawLine(QPointF(12, 14), QPointF(17, 8));
+        painter.drawEllipse(QPointF(12, 14), 1.5, 1.5);
+        break;
+    case 9: // temperature
+        painter.drawRoundedRect(QRectF(9, 3, 6, 14), 3, 3);
+        painter.drawEllipse(QPointF(12, 18), 4, 4);
+        painter.drawLine(QPointF(12, 7), QPointF(12, 18));
+        break;
+    case 10: // leak shield
+    {
+        QPolygonF shield;
+        shield << QPointF(12, 3) << QPointF(20, 7) << QPointF(18, 16) << QPointF(12, 21)
+               << QPointF(6, 16) << QPointF(4, 7);
+        painter.drawPolygon(shield);
+        painter.drawEllipse(QPointF(12, 11), 2, 2);
+        break;
+    }
+    case 11: // battery
+        painter.drawRoundedRect(QRectF(5, 4, 14, 17), 2, 2);
+        painter.drawLine(QPointF(9, 2), QPointF(15, 2));
+        painter.drawLine(QPointF(8, 8), QPointF(16, 8));
+        break;
+    case 12: // kill switch
+        painter.drawArc(QRectF(4, 4, 16, 16), 210 * 16, 300 * 16);
+        painter.drawLine(QPointF(12, 2), QPointF(12, 12));
+        break;
+    case 13: // ping
+        painter.drawEllipse(QPointF(12, 12), 3, 3);
+        painter.drawLine(QPointF(12, 2), QPointF(12, 7));
+        painter.drawLine(QPointF(12, 17), QPointF(12, 22));
+        painter.drawLine(QPointF(2, 12), QPointF(7, 12));
+        painter.drawLine(QPointF(17, 12), QPointF(22, 12));
+        break;
+    case 14: // fullscreen
+        painter.drawLine(QPointF(4, 9), QPointF(4, 4));
+        painter.drawLine(QPointF(4, 4), QPointF(9, 4));
+        painter.drawLine(QPointF(15, 4), QPointF(20, 4));
+        painter.drawLine(QPointF(20, 4), QPointF(20, 9));
+        painter.drawLine(QPointF(20, 15), QPointF(20, 20));
+        painter.drawLine(QPointF(20, 20), QPointF(15, 20));
+        painter.drawLine(QPointF(9, 20), QPointF(4, 20));
+        painter.drawLine(QPointF(4, 20), QPointF(4, 15));
+        break;
+    }
+    return pixmap;
+}
 
 static void setupDashboardNavigation(MainWindow *window)
 {
@@ -729,8 +854,8 @@ static void setupDashboardNavigation(MainWindow *window)
 
     auto *navigation = new HudPanel(window);
     navigation->setObjectName(QStringLiteral("dashboardNavigation"));
-    navigation->setMinimumWidth(150);
-    navigation->setMaximumWidth(180);
+    navigation->setFixedWidth(153);
+    navigation->setFixedHeight(460);
 
     auto *navigationLayout = new QVBoxLayout(navigation);
     navigationLayout->setContentsMargins(0, 8, 0, 8);
@@ -738,12 +863,14 @@ static void setupDashboardNavigation(MainWindow *window)
 
     auto *navigationGroup = new QButtonGroup(navigation);
     navigationGroup->setExclusive(true);
-    const QStringList labels = {QStringLiteral("▣  Камера"),     QStringLiteral("◉  БСО"),
-                                QStringLiteral("▤  Сообщения"),  QStringLiteral("▥  Питание"),
-                                QStringLiteral("⌘  Устройства"), QStringLiteral("◇  Отладка")};
+    const QStringList labels = {QStringLiteral("Камера"),     QStringLiteral("БСО"),
+                                QStringLiteral("Сообщения"),  QStringLiteral("Питание"),
+                                QStringLiteral("Устройства"), QStringLiteral("Отладка")};
     for (int index = 0; index < tabs->count() && index < labels.size(); ++index)
     {
         auto *button = new QPushButton(labels.at(index), navigation);
+        button->setIcon(QIcon(makeHudGlyph(index)));
+        button->setIconSize(QSize(20, 20));
         button->setProperty("dashboardNav", true);
         button->setCheckable(true);
         button->setChecked(index == tabs->currentIndex());
@@ -762,7 +889,7 @@ static void setupDashboardNavigation(MainWindow *window)
                              button->setChecked(true);
                      });
 
-    contentLayout->insertWidget(0, navigation);
+    contentLayout->insertWidget(0, navigation, 0, Qt::AlignTop);
     workspaceLayout->removeWidget(quickActions);
     workspaceLayout->addWidget(quickActions);
 }
@@ -778,20 +905,20 @@ static void setupTelemetryCards(MainWindow *window)
     {
         const char *titleName;
         const char *valueName;
-        const char *iconText;
+        int iconKind;
         int width;
     };
 
     const TelemetryDescriptor descriptors[] = {
-        {"lbl_depth_title", "lbl_depth_value", "DEP", 160},
-        {"lbl_bottom_title", "lbl_bottom_value", "ALT", 136},
-        {"lbl_speed_title", "lbl_speed_value", "SPD", 175},
-        {"lbl_temp_title", "lbl_temp_value", "TMP", 137},
-        {"lbl_leak_title", "lbl_leak_value", "LEK", 141},
-        {"lbl_voltage_title", "lbl_voltage_value", "B1", 129},
-        {"lbl_voltage2_title", "lbl_voltage2_value", "B2", 130},
-        {"lbl_kill_title", "btn_killswitch_status", "KIL", 163},
-        {"lbl_ping_title", "lbl_ping_value", "PNG", 140},
+        {"lbl_depth_title", "lbl_depth_value", 6, 160},
+        {"lbl_bottom_title", "lbl_bottom_value", 7, 136},
+        {"lbl_speed_title", "lbl_speed_value", 8, 175},
+        {"lbl_temp_title", "lbl_temp_value", 9, 137},
+        {"lbl_leak_title", "lbl_leak_value", 10, 141},
+        {"lbl_voltage_title", "lbl_voltage_value", 11, 129},
+        {"lbl_voltage2_title", "lbl_voltage2_value", 11, 130},
+        {"lbl_kill_title", "btn_killswitch_status", 12, 163},
+        {"lbl_ping_title", "lbl_ping_value", 13, 140},
     };
 
     while (QLayoutItem *item = telemetryLayout->takeAt(0))
@@ -827,10 +954,11 @@ static void setupTelemetryCards(MainWindow *window)
         cardLayout->setContentsMargins(11, 8, 11, 8);
         cardLayout->setSpacing(9);
 
-        auto *icon = new QLabel(QString::fromLatin1(descriptor.iconText), card);
+        auto *icon = new QLabel(card);
         icon->setProperty("telemetryIcon", true);
         icon->setAlignment(Qt::AlignCenter);
         icon->setFixedSize(31, 31);
+        icon->setPixmap(makeHudGlyph(descriptor.iconKind));
 
         auto *textLayout = new QVBoxLayout();
         textLayout->setContentsMargins(0, 0, 0, 0);
@@ -937,6 +1065,8 @@ static void setupDashboardGrid(MainWindow *window)
     if (auto *orientationContent =
             window->findChild<QHBoxLayout *>(QStringLiteral("horizontalLayout_info")))
     {
+        orientationContent->setContentsMargins(0, 0, 0, 0);
+        orientationContent->setSpacing(6);
         auto *compass = window->findChild<QWidget *>(QStringLiteral("compass"));
         auto *attitude = window->findChild<QWidget *>(QStringLiteral("attitudeIndicator"));
         if (compass && attitude)
@@ -976,15 +1106,15 @@ static void setupDashboardGrid(MainWindow *window)
                            QStringLiteral("ГЛУБИНА И РЕЛЬЕФ ДНА"), &depthLayout, instrumentColumn);
     depthLayout->addWidget(new DepthSonarPreview(depthPanel), 1);
 
-    instrumentLayout->addWidget(orientationPanel, 1);
-    instrumentLayout->addWidget(depthPanel, 1);
+    instrumentLayout->addWidget(orientationPanel, 53);
+    instrumentLayout->addWidget(depthPanel, 47);
     centerLayout->addWidget(instrumentColumn, 35);
-    centerLayout->setStretch(0, 65);
-    centerLayout->setStretch(1, 35);
+    centerLayout->setStretch(0, 64);
+    centerLayout->setStretch(1, 36);
 
     auto *bottomRow = new QWidget(window);
     bottomRow->setObjectName(QStringLiteral("dashboardBottomRow"));
-    bottomRow->setMinimumHeight(245);
+    bottomRow->setMinimumHeight(285);
     bottomRow->setMaximumHeight(310);
     auto *bottomLayout = new QHBoxLayout(bottomRow);
     bottomLayout->setContentsMargins(0, 0, 0, 0);
@@ -1276,10 +1406,10 @@ static void setupDashboardGrid(MainWindow *window)
     }
     mapLayout->addLayout(mapActions);
 
-    bottomLayout->addWidget(quickActions, 27);
-    bottomLayout->addWidget(controlPanel, 29);
-    bottomLayout->addWidget(eventsPanel, 25);
-    bottomLayout->addWidget(mapPanel, 19);
+    bottomLayout->addWidget(quickActions, 273);
+    bottomLayout->addWidget(controlPanel, 290);
+    bottomLayout->addWidget(eventsPanel, 251);
+    bottomLayout->addWidget(mapPanel, 186);
     rootLayout->addWidget(bottomRow);
     rootLayout->setStretch(1, 5);
     rootLayout->setStretch(2, 3);
@@ -1304,7 +1434,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     setupDashboardNavigation(this);
     setupTelemetryCards(this);
     setupDashboardGrid(this);
-    ui->btn_theme_toggle->hide();
 
     qRegisterMetaType<UVState::ImuData>("UVState::ImuData");
     qRegisterMetaType<UVState::Pose>("UVState::Pose");
@@ -1378,22 +1507,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             if (!freshness->rosReady)
             {
                 state = QStringLiteral("offline");
-                text = QStringLiteral("ROS OFFLINE");
+                text = QStringLiteral("×");
             }
             else if (newestTelemetry == 0)
             {
                 state = QStringLiteral("waiting");
-                text = QStringLiteral("НЕТ ТЕЛЕМЕТРИИ");
+                text = QStringLiteral("●");
             }
             else if (now - newestTelemetry > staleAfterMs)
             {
                 state = QStringLiteral("stale");
-                text = QStringLiteral("ДАННЫЕ · %1с").arg((now - newestTelemetry) / 1000);
+                text = QStringLiteral("!");
             }
             else
             {
                 state = QStringLiteral("online");
-                text = QStringLiteral("ROS ONLINE");
+                text = QStringLiteral("●");
             }
             if (headerConnection)
             {
@@ -1673,12 +1802,15 @@ void MainWindow::setupBrandHeader()
     auto *connection = new QLabel(QStringLiteral("ROS ЗАПУСКАЕТСЯ"), headerActions);
     connection->setObjectName(QStringLiteral("headerConnection"));
     connection->setProperty("connectionState", QStringLiteral("waiting"));
+    connection->setAlignment(Qt::AlignCenter);
+    connection->setFixedSize(34, 34);
     connection->setToolTip(QStringLiteral("Состояние ROS 2 · DOMAIN %1")
                                .arg(qEnvironmentVariable("ROS_DOMAIN_ID", "—")));
 
     auto *clock = new QLabel(headerActions);
     clock->setObjectName(QStringLiteral("headerClock"));
     clock->setAlignment(Qt::AlignCenter);
+    clock->setFixedWidth(126);
     auto updateClock = [clock]()
     {
         clock->setText(QDateTime::currentDateTime()
@@ -1690,9 +1822,21 @@ void MainWindow::setupBrandHeader()
     connect(clockTimer, &QTimer::timeout, headerActions, updateClock);
     clockTimer->start(1000);
 
-    actionsLayout->addWidget(connection);
+    ui->btn_theme_toggle->setFixedSize(34, 34);
     actionsLayout->addWidget(ui->btn_theme_toggle);
-    ui->full_screen->setFixedWidth(120);
+    actionsLayout->addWidget(connection);
+
+    auto *fullscreenShortcut = new QPushButton(headerActions);
+    fullscreenShortcut->setObjectName(QStringLiteral("headerFullscreenShortcut"));
+    fullscreenShortcut->setIcon(QIcon(makeHudGlyph(14)));
+    fullscreenShortcut->setIconSize(QSize(22, 22));
+    fullscreenShortcut->setToolTip(QStringLiteral("Полноэкранный режим видео"));
+    fullscreenShortcut->setFixedSize(34, 34);
+    connect(fullscreenShortcut, &QPushButton::clicked, ui->full_screen,
+            [this]() { ui->full_screen->toggle(); });
+    actionsLayout->addWidget(fullscreenShortcut);
+
+    ui->full_screen->setFixedSize(130, 36);
     actionsLayout->addWidget(ui->full_screen);
     actionsLayout->addWidget(clock);
     menuBar()->setCornerWidget(headerActions, Qt::TopRightCorner);
@@ -1749,11 +1893,13 @@ void MainWindow::harmonizeLegacyStyles()
 
 void MainWindow::ensureInteractiveTextFits()
 {
+    const auto *dashboardBottom = findChild<QWidget *>(QStringLiteral("dashboardBottomRow"));
     const auto buttons = findChildren<QPushButton *>();
     for (QPushButton *button : buttons)
     {
         if (button->text().isEmpty() || button == ui->btn_theme_toggle ||
-            button == ui->btn_killswitch_status)
+            button == ui->btn_killswitch_status ||
+            (dashboardBottom && dashboardBottom->isAncestorOf(button)))
             continue;
 
         const QFontMetrics metrics(button->font());
@@ -1764,10 +1910,7 @@ void MainWindow::ensureInteractiveTextFits()
         button->setMinimumHeight(qMax(button->minimumHeight(), safeHeight));
     }
 
-    const QFontMetrics fullScreenMetrics(ui->full_screen->font());
-    ui->full_screen->setMinimumWidth(fullScreenMetrics.horizontalAdvance(ui->full_screen->text()) +
-                                     54);
-    ui->full_screen->setMinimumHeight(fullScreenMetrics.height() + 18);
+    ui->full_screen->setFixedSize(130, 36);
 
     QTabBar *tabs = ui->tabWidget->tabBar();
     QFont tabFont = tabs->font();
@@ -1793,6 +1936,8 @@ void MainWindow::setWidget()
         ui->tab_video->setLayout(new QVBoxLayout(ui->tab_video));
     }
 
+    ui->tab_video->layout()->setContentsMargins(0, 0, 0, 0);
+    ui->tab_video->layout()->setSpacing(0);
     ui->tab_video->layout()->addWidget(videoPlayer_);
 }
 
@@ -2496,9 +2641,11 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 
     if (auto *navigation = findChild<QWidget *>(QStringLiteral("dashboardNavigation")))
     {
-        navigation->setMinimumWidth(compact ? 126 : 150);
-        navigation->setMaximumWidth(compact ? 132 : 180);
+        navigation->setFixedWidth(compact ? 126 : 153);
+        navigation->setFixedHeight(compact ? qMax(280, event->size().height() - 434) : 458);
     }
+    if (auto *bottomRow = findChild<QWidget *>(QStringLiteral("dashboardBottomRow")))
+        bottomRow->setMinimumHeight(compact ? 245 : 285);
     if (auto *instruments = findChild<QWidget *>(QStringLiteral("dashboardInstrumentColumn")))
         instruments->setMinimumWidth(compact ? 350 : 430);
 
