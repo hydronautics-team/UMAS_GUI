@@ -1,10 +1,56 @@
 #include "video_player_widget.h"
 #include <QDebug>
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QPainter>
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QVBoxLayout>
+
+namespace
+{
+QIcon makeCameraActionIcon(int kind)
+{
+    QPixmap pixmap(24, 24);
+    pixmap.fill(Qt::transparent);
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setPen(
+        QPen(QColor(QStringLiteral("#55e9ed")), 1.7, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setBrush(Qt::NoBrush);
+
+    if (kind == 0 || kind == 2)
+    {
+        painter.drawRoundedRect(QRectF(3.0, 6.5, 18.0, 13.5), 2.0, 2.0);
+        painter.drawEllipse(QPointF(12.0, 13.2), 4.0, 4.0);
+        painter.drawLine(QPointF(7.0, 6.5), QPointF(9.0, 3.8));
+        painter.drawLine(QPointF(9.0, 3.8), QPointF(14.5, 3.8));
+        if (kind == 2)
+        {
+            painter.drawLine(QPointF(18.0, 4.0), QPointF(21.0, 4.0));
+            painter.drawLine(QPointF(19.5, 2.5), QPointF(19.5, 5.5));
+        }
+    }
+    else if (kind == 1)
+    {
+        painter.drawEllipse(QPointF(12.0, 12.0), 7.2, 7.2);
+        painter.setBrush(QColor(QStringLiteral("#55e9ed")));
+        painter.drawEllipse(QPointF(12.0, 12.0), 3.2, 3.2);
+    }
+    else
+    {
+        painter.drawLine(QPointF(3.5, 9.0), QPointF(3.5, 3.5));
+        painter.drawLine(QPointF(3.5, 3.5), QPointF(9.0, 3.5));
+        painter.drawLine(QPointF(15.0, 3.5), QPointF(20.5, 3.5));
+        painter.drawLine(QPointF(20.5, 3.5), QPointF(20.5, 9.0));
+        painter.drawLine(QPointF(20.5, 15.0), QPointF(20.5, 20.5));
+        painter.drawLine(QPointF(20.5, 20.5), QPointF(15.0, 20.5));
+        painter.drawLine(QPointF(9.0, 20.5), QPointF(3.5, 20.5));
+        painter.drawLine(QPointF(3.5, 20.5), QPointF(3.5, 15.0));
+    }
+    return QIcon(pixmap);
+}
+} // namespace
 
 class VideoHudOverlay final : public QWidget
 {
@@ -102,23 +148,23 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget *parent) : QWidget(parent)
     toolbarLayout->addWidget(fpsLabel_);
     toolbarLayout->addWidget(bitrate);
 
-    auto makeAction = [this, toolbarLayout](const QString &text, const QString &tooltip,
-                                            bool enabled, int width = 40)
+    auto makeAction =
+        [this, toolbarLayout](int iconKind, const QString &tooltip, bool enabled, int width = 40)
     {
-        auto *button = new QPushButton(text, toolbar_);
+        auto *button = new QPushButton(toolbar_);
         button->setProperty("cameraAction", true);
+        button->setIcon(makeCameraActionIcon(iconKind));
+        button->setIconSize(QSize(22, 22));
         button->setToolTip(tooltip);
         button->setEnabled(enabled);
         button->setFixedSize(width, 31);
         toolbarLayout->addWidget(button);
         return button;
     };
-    makeAction(QStringLiteral("▣"), QStringLiteral("Снимок пока не подключён"), false);
-    makeAction(QStringLiteral("◎"), QStringLiteral("Запись пока не подключена"), false);
-    makeAction(QStringLiteral("□"), QStringLiteral("Переключение камеры пока не подключено"),
-               false);
-    auto *fullscreen =
-        makeAction(QStringLiteral("⛶"), QStringLiteral("Полноэкранный режим"), true, 36);
+    makeAction(0, QStringLiteral("Снимок пока не подключён"), false);
+    makeAction(1, QStringLiteral("Запись пока не подключена"), false);
+    makeAction(2, QStringLiteral("Переключение камеры пока не подключено"), false);
+    auto *fullscreen = makeAction(3, QStringLiteral("Полноэкранный режим"), true, 35);
     connect(fullscreen, &QPushButton::clicked, this, &VideoPlayerWidget::fullscreenRequested);
 
     imageLabel_ = new QLabel(this);
