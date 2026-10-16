@@ -604,6 +604,7 @@ static const QString DARK_THEME =
     "QPushButton[telemetryValue='true'][telemetryStale='true'] { color: #668a9b; }"
     "QLabel[orientationMetric='true'][telemetryStale='true'] { color: #668a9b; "
     "border-color: #123b45; }"
+    "HudPanel[commandUnavailable='true'] { border-color: #6f5428; }"
     "QLabel[dashboardPanelTitle='true'] { color: #55e9ed; font-size: 12px; font-weight: 700; "
     "letter-spacing: 0.5px; padding: 0 0 2px 1px; }"
     "QLabel[emptyInstrument='true'] { color: #668a9b; border: 1px solid #0c5269; "
@@ -673,6 +674,14 @@ static const QString DARK_THEME =
     "QPushButton#btn_killswitch_status { min-height: 0px; padding: 4px 10px; margin: 0px; }"
     "QPushButton#btn_killswitch_status:disabled { color: #ffe8ec; background-color: #a3263d; "
     "border: 1px solid #f05268; }"
+    "QWidget[commandUnavailable='true'] QPushButton:disabled { color: #46616b; "
+    "background: #071b24; border-color: #163846; }"
+    "QWidget[commandUnavailable='true'] QLabel[dashboardPanelTitle='true'] { color: #9b7841; }"
+    "QWidget[commandUnavailable='true'] QLabel[controlValue='true'], "
+    "QWidget[commandUnavailable='true'] QLabel[metricValue='true'] { color: #46616b; "
+    "border-color: #163846; }"
+    "QWidget[commandUnavailable='true'] QProgressBar { border-color: #163846; "
+    "background-color: #071b24; }"
     "QLabel[controlValue='true'] { background-color: #041a20; color: #74eee3; border: 1px solid "
     "#174a56; border-radius: 5px; padding: 3px 7px; min-width: 24px; font-family: 'JetBrains "
     "Mono', 'Consolas', monospace; font-weight: 600; }"
@@ -1408,6 +1417,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             if (freshness->reportedState != state)
             {
                 freshness->reportedState = state;
+                setCommandLinkAvailable(state == QStringLiteral("online"));
                 if (state == QStringLiteral("online"))
                     displayText(QStringLiteral("Соединение с аппаратом установлено"));
                 else if (state == QStringLiteral("stale"))
@@ -2057,6 +2067,14 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 
 void MainWindow::updateUi_fromControl()
 {
+    if (!commandLinkAvailable_)
+    {
+        const umas::input::ControlCommand stopped;
+        updateControlLabels(stopped);
+        emit publishTwistRequested(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        return;
+    }
+
     if (activeInput != nullptr)
     {
         const auto command = activeInput->poll();
@@ -2071,6 +2089,33 @@ void MainWindow::updateUi_fromControl()
 
     emit publishTwistRequested(scaled.march, scaled.lag, scaled.depth, scaled.roll, scaled.pitch,
                                scaled.yaw);
+}
+
+void MainWindow::setCommandLinkAvailable(bool available)
+{
+    commandLinkAvailable_ = available;
+    const QString tooltip =
+        available ? QString() : QStringLiteral("Управление заблокировано: нет свежей телеметрии");
+    for (const QString &name :
+         {QStringLiteral("movementControlPanel"), QStringLiteral("frame_quickActions")})
+    {
+        if (QWidget *panel = findChild<QWidget *>(name))
+        {
+            panel->setEnabled(available);
+            panel->setToolTip(tooltip);
+            setDynamicProperty(panel, "commandUnavailable", !available);
+        }
+    }
+
+    if (!available)
+    {
+        controlService.reset();
+        if (rosBridge)
+        {
+            rosBridge->setTurnState(QStringLiteral("stop"));
+            rosBridge->setGripState(QStringLiteral("stop"));
+        }
+    }
 }
 
 umas::input::ControlCommand MainWindow::applyGains(const umas::input::ControlCommand &raw) const

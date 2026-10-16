@@ -112,11 +112,13 @@ private slots:
 private:
     void applyTheme(bool dark);
     void setupActuators();
+    void setCommandLinkAvailable(bool available);
     QTimer *brightnessTimer_ = nullptr;
     int brightnessStep_ = 0;
 
     QString darkStyle_;
     bool isDark_ = true;
+    bool commandLinkAvailable_ = false;
 
 signals:
     void updateCompass(float yaw);

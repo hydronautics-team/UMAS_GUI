@@ -19,6 +19,8 @@ public:
 
     const umas::input::ControlCommand &snapshot() const { return current_; }
 
+    void reset() { current_ = {}; }
+
 private:
     umas::input::ControlCommand current_{};
 };
