@@ -5,6 +5,7 @@ CLI_PATH="$(realpath "${BASH_SOURCE[0]}")"
 PROJECT_ROOT="$(realpath "$(dirname "$CLI_PATH")/..")"
 IMAGE_NAME="${UMAS_GUI_IMAGE:-umas-gui}"
 APP_CONTAINER_NAME="${UMAS_GUI_CONTAINER:-umas-gui-app}"
+RECORDER_CONTAINER_NAME="${UMAS_GUI_RECORDER_CONTAINER:-umas-gui-recorder}"
 ROS_DOMAIN="${ROS_DOMAIN_ID:-1}"
 
 usage()
@@ -16,6 +17,7 @@ Commands:
   docker-build  Build or update the Docker image
   build         Build only the UMAS GUI application
   run           Run the built application in Docker
+  record        Record the main WELT sensor topics to ./bags
   shell         Open an interactive development shell in Docker
   format        Format project C and C++ sources
   check         Check formatting without changing files
@@ -141,6 +143,45 @@ run_project()
     trap - INT TERM
 }
 
+record_topics()
+{
+    require_image
+
+    local timestamp
+    local output_name
+    local container_output
+    local -a topics=(
+        /core/sensors/imu
+        /stingray_core/sensors/dvl/odometry
+        /stingray_core/sensors/dvl/altitude
+        /stingray_core/pressure_sensor/depth
+        /stingray_core/sensors/depth
+        /core/state/odometry
+        /stingray_core/battery/state
+        /diagnostics
+        /tf
+        /tf_static
+    )
+
+    timestamp="$(date '+%Y-%m-%d_%H-%M-%S')"
+    output_name="welt_sensors_${timestamp}"
+    container_output="/UMAS_GUI/bags/${output_name}"
+    mkdir -p "$PROJECT_ROOT/bags"
+
+    echo "Recording WELT sensor topics to:"
+    echo "  $PROJECT_ROOT/bags/$output_name"
+    echo "Press Ctrl+C to stop and finalize the bag."
+
+    docker_base_args
+    docker run -it "${DOCKER_ARGS[@]}" \
+        --name "$RECORDER_CONTAINER_NAME" \
+        --user "$(id -u):$(id -g)" \
+        -e HOME=/tmp \
+        "$IMAGE_NAME" bash -lc \
+        'source /opt/ros/humble/setup.bash && exec ros2 bag record --storage mcap --output "$1" "${@:2}"' \
+        -- "$container_output" "${topics[@]}"
+}
+
 open_shell()
 {
     require_image
@@ -198,6 +239,9 @@ case "${1:-help}" in
         ;;
     run)
         run_project
+        ;;
+    record)
+        record_topics
         ;;
     shell)
         open_shell

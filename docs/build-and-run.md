@@ -30,6 +30,7 @@ export PATH="$HOME/.local/bin:$PATH"
 umas-gui docker-build  # собрать или обновить Docker-образ
 umas-gui build         # собрать только приложение
 umas-gui run           # запустить пульт
+umas-gui record        # записать основные топики аппарата в rosbag
 umas-gui shell         # открыть shell в контейнере
 umas-gui format        # применить clang-format
 umas-gui check         # проверить форматирование
@@ -64,6 +65,25 @@ umas-gui check         # проверить форматирование
 
 Команда `umas-gui run`, включая запуск через ярлык, сначала закрывает предыдущий
 экземпляр приложения. Одновременно остаётся запущен только один UMAS GUI.
+
+## Запись основных топиков
+
+На операторском компьютере запустите:
+
+```bash
+umas-gui record
+```
+
+Команда записывает IMU, DVL, depth, батарею, итоговую odometry, diagnostics и TF
+в MCAP-файл внутри каталога `bags/welt_sensors_<дата>_<время>`. Для корректного
+завершения и сохранения metadata остановите запись через `Ctrl+C`.
+
+Рекордер использует тот же `ROS_DOMAIN_ID`, что и остальные команды. При
+необходимости задайте его явно:
+
+```bash
+ROS_DOMAIN_ID=2 umas-gui record
+```
 
 ## Docker
 
