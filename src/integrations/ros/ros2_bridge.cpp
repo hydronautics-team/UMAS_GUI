@@ -112,8 +112,8 @@ void RosBridge::run()
     manipulator_pwm_pub_ =
         node_->create_publisher<std_msgs::msg::Int32>("/stingray_core/devices/manipulator/cmd", 10);
 
-    manipulator_timer_ = node_->create_wall_timer(std::chrono::milliseconds(50),
-                                                  [this]() { updateManipulatorCommand(); });
+    // manipulator_timer_ = node_->create_wall_timer(std::chrono::milliseconds(50),
+    //                                               [this]() { updateManipulatorCommand(); });
 
     is_ready_ = true;
 
@@ -225,13 +225,23 @@ void RosBridge::publishLightsBrightness(unsigned value)
     lights_brightness_pub_->publish(msg);
 }
 
-void RosBridge::setTurnState(const QString &state) { turn_state_ = state.toLower(); }
+void RosBridge::setTurnState(const QString &state) 
+{ 
+    turn_state_ = state.toLower();
+    updateManipulatorCommand();
+}
 
-void RosBridge::setGripState(const QString &state) { grip_state_ = state.toLower(); }
+void RosBridge::setGripState(const QString &state) 
+{ 
+    grip_state_ = state.toLower(); 
+    updateManipulatorCommand();
+}
 
 void RosBridge::updateManipulatorCommand()
 {
-    if (!is_ready_ || !manipulator_pwm_pub_)
+    // if (!is_ready_ || !manipulator_pwm_pub_)
+    //     return;
+    if (!is_ready_)
         return;
 
     // Кодируем состояние в число: turn * 10 + grip
@@ -243,13 +253,13 @@ void RosBridge::updateManipulatorCommand()
     else if (turn_state_ == "right")
         turn_code = 2;
 
-    int grip_code = 0;
+    int grip_code = 3;
     if (grip_state_ == "close")
-        grip_code = 1;
+        grip_code = 4;
     else if (grip_state_ == "open")
-        grip_code = 2;
+        grip_code = 5;
 
-    int command = (turn_code * 10) + grip_code;
+    int command = (grip_code * 10) + turn_code;
 
     std_msgs::msg::Int32 msg;
     msg.data = command;
