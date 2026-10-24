@@ -1,16 +1,35 @@
 {
-"cmake.configureArgs": [
-	"-DCMAKE_PREFIX_PATH=/home/shakuevda/Qt/6.4.2/gcc_64/lib/cmake" 		// my
-	// "-DCMAKE_PREFIX_PATH=/home/hydro/Qt/5.15.2/gcc_64/lib/cmake" 			// laptop
-	// "-DCMAKE_PREFIX_PATH=/home/hydronautics/Qt/5.15.2/gcc_64/lib/cmake"			// station
-
-],
-"files.associations": {
-	"qabstractseries": "cpp",
-	"qabstractaxis": "cpp",
-	"qpainter": "cpp",
-	"qchartview": "cpp",
-	"qtmath": "cpp"
-},
-"ros.distro": "iron"
+    "ros.distro": "humble",
+    "C_Cpp.autocomplete": "Disabled",
+    "C_Cpp.errorSquiggles": "Disabled",
+    "C_Cpp.intelliSenseEngine": "Disabled",
+    "C_Cpp.formatting.provider": "disabled",
+    "[cpp]": {
+        "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file"
+    },
+    "[c]": {
+        "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file"
+    },
+    "clangd.arguments": [
+        "--background-index",
+        "--clang-tidy",
+        "--completion-style=detailed",
+        "--compile-commands-dir=/tmp/umas-gui-build",
+        "--header-insertion=iwyu",
+        "--query-driver=/usr/bin/clang,/usr/bin/clang++,/usr/bin/gcc,/usr/bin/g++"
+    ],
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    "files.insertFinalNewline": true,
+    "cmake.configureOnOpen": false,
+    "files.associations": {
+        "*.h": "cpp",
+        "*.hpp": "cpp",
+        "*.cpp": "cpp",
+        "*.tcc": "cpp"
+    }
 }
