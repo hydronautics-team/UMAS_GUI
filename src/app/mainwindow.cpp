@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include <QApplication>
+#include <QDateTime>
 #include <QFontMetrics>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -254,6 +255,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                 ui->lbl_pitch->setText(QStringLiteral("ДИФФЕРЕНТ: %1°").arg(imu.pitch, 0, 'f', 1));
                 ui->lbl_roll->setText(QStringLiteral("КРЕН: %1°").arg(imu.roll, 0, 'f', 1));
             });
+
+    // The GUI deliberately consumes only stingray_core's fused state. Sensor selection and
+    // fusion (pressure sensor, DVL, IMU, etc.) remain an implementation detail of the core.
+    connect(uvState, &UVState::poseUpdated, this, &MainWindow::updateTelemetryFromState);
+    telemetryTimer_ = new QTimer(this);
+    telemetryTimer_->setInterval(250);
+    connect(telemetryTimer_, &QTimer::timeout, this, &MainWindow::updateTelemetryFromState);
+    telemetryTimer_->start();
 
     connect(rosBridge, &RosBridge::controlFlagsPublished, uvState, &UVState::setControlFlags,
             Qt::QueuedConnection);
@@ -1076,24 +1085,51 @@ void MainWindow::resetTelemetryToDefault()
 
 void MainWindow::updateTelemetryFromState()
 {
+    const UVState::Pose pose = uvState->pose();
+    const UVState::BatteryData battery = uvState->battery();
+    const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
+    constexpr qint64 odometryTimeoutMs = 1000;
+
+    const bool odometryFresh =
+        pose.timestamp_ms > 0 && nowMs - static_cast<qint64>(pose.timestamp_ms) < odometryTimeoutMs;
+    if (!odometryFresh)
+    {
+        resetTelemetryToDefault();
+        return;
+    }
+
     isConnected = true;
 
     // Зелёный фон для нормальных данных
     QString connectedStyle =
         "background-color: #12665f; color: #dffffb; font-weight: 600; border-radius: 7px; border: "
         "1px solid #20c7b8; font-size: 15px; padding: 4px 10px;";
+    QString noConnectionStyle =
+        "background-color: #a3263d; color: #ffe8ec; font-weight: 600; border-radius: 7px; border: "
+        "1px solid #f05268; font-size: 15px; padding: 4px 10px;";
 
     ui->lbl_depth_value->setStyleSheet(connectedStyle);
-    ui->lbl_bottom_value->setStyleSheet(connectedStyle);
-    ui->lbl_voltage_value->setStyleSheet(connectedStyle);
-    ui->lbl_voltage2_value->setStyleSheet(connectedStyle);
     ui->lbl_speed_value->setStyleSheet(connectedStyle);
-    ui->btn_killswitch_status->setStyleSheet(connectedStyle);
-    ui->lbl_ping_value->setStyleSheet(connectedStyle);
 
-    // Здесь обновляй реальные значения из uvState
-    // ui->lbl_depth_value->setText(QString::number(uvState->getDepth(), 'f', 2) + " м");
-    // и т.д.
+    // REP-103 uses Z positive upwards; vehicle depth is positive downwards.
+    const double depth = qMax(0.0, -pose.z);
+    const double speed = std::hypot(pose.velocity_x, pose.velocity_y);
+    ui->lbl_depth_value->setText(QStringLiteral("%1 м").arg(depth, 0, 'f', 2));
+    ui->lbl_speed_value->setText(QStringLiteral("%1 м/с").arg(speed, 0, 'f', 2));
+
+    // Battery data is board state rather than navigation sensor input and therefore remains a
+    // separate core topic. Do not mark stale batteries as valid just because odometry is fresh.
+    constexpr qint64 batteryTimeoutMs = 3000;
+    const bool battery1Fresh = battery.timestamp_1_ms > 0 &&
+                               nowMs - static_cast<qint64>(battery.timestamp_1_ms) < batteryTimeoutMs;
+    const bool battery2Fresh = battery.timestamp_2_ms > 0 &&
+                               nowMs - static_cast<qint64>(battery.timestamp_2_ms) < batteryTimeoutMs;
+    ui->lbl_voltage_value->setStyleSheet(battery1Fresh ? connectedStyle : noConnectionStyle);
+    ui->lbl_voltage_value->setText(
+        battery1Fresh ? QStringLiteral("%1 В").arg(battery.voltage_1, 0, 'f', 1) : "N/A");
+    ui->lbl_voltage2_value->setStyleSheet(battery2Fresh ? connectedStyle : noConnectionStyle);
+    ui->lbl_voltage2_value->setText(
+        battery2Fresh ? QStringLiteral("%1 В").arg(battery.voltage_2, 0, 'f', 1) : "N/A");
 }
 
 void MainWindow::toggleTheme()

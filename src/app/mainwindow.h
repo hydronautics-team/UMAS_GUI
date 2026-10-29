@@ -113,6 +113,7 @@ private:
     void applyTheme(bool dark);
     void setupActuators();
     QTimer *brightnessTimer_ = nullptr;
+    QTimer *telemetryTimer_ = nullptr;
     int brightnessStep_ = 0;
 
     QString darkStyle_;

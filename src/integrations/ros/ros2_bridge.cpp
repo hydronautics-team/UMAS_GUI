@@ -45,6 +45,9 @@ void RosBridge::run()
             pose.velocity_x = msg->twist.twist.linear.x;
             pose.velocity_y = msg->twist.twist.linear.y;
             pose.velocity_z = msg->twist.twist.linear.z;
+            pose.angular_velocity_x = msg->twist.twist.angular.x;
+            pose.angular_velocity_y = msg->twist.twist.angular.y;
+            pose.angular_velocity_z = msg->twist.twist.angular.z;
             pose.timestamp_ms = nowMs;
             emit poseReceived(pose);
 

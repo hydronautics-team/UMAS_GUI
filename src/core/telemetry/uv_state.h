@@ -311,6 +311,9 @@ public:
         double velocity_x = 0.0;
         double velocity_y = 0.0;
         double velocity_z = 0.0;
+        double angular_velocity_x = 0.0;
+        double angular_velocity_y = 0.0;
+        double angular_velocity_z = 0.0;
         std::uint64_t timestamp_ms = 0;
     };
 
