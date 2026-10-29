@@ -834,7 +834,7 @@ void MainWindow::setBottom_mode()
 {
     ui->pushButton_modeManual->setCheckable(true);
     ui->pushButton_modeAutomated->setCheckable(true);
-    ui->pushButton_modeAutomatic->setCheckable(false);
+    ui->pushButton_modeAutomatic->setCheckable(true);
     QButtonGroup *mode = new QButtonGroup(this);
     mode->addButton(ui->pushButton_modeManual);
     mode->addButton(ui->pushButton_modeAutomated);
@@ -843,12 +843,20 @@ void MainWindow::setBottom_mode()
 
     ui->pushButton_modeManual->setChecked(true);
 
+    connect(ui->pushButton_modeManual, &QPushButton::clicked, this,
+            [this]() { rosBridge->setControlModeInternal(0); });
+    connect(ui->pushButton_modeAutomated, &QPushButton::clicked, this,
+            [this]() { rosBridge->setControlModeInternal(1); });
+    connect(ui->pushButton_modeAutomatic, &QPushButton::clicked, this,
+            [this]() { rosBridge->setControlModeInternal(2); });
+
     ui->pushButton_modeAutomated_surge->setCheckable(true);
     ui->pushButton_modeAutomated_sway->setCheckable(true);
     ui->pushButton_modeAutomated_depth->setCheckable(true);
     ui->pushButton_modeAutomated_yaw->setCheckable(true);
     ui->pushButton_modeAutomated_pitch->setCheckable(true);
     ui->pushButton_modeAutomated_roll->setCheckable(true);
+    ui->pushButton_sumControlImpacts->setCheckable(true);
     QButtonGroup *modeAutomated = new QButtonGroup(this);
     modeAutomated->addButton(ui->pushButton_modeAutomated_surge);
     modeAutomated->addButton(ui->pushButton_modeAutomated_sway);
@@ -870,6 +878,13 @@ void MainWindow::setBottom_mode()
             [this](bool checked) { emit controlFlagRequested(4, checked); });
     connect(ui->pushButton_modeAutomated_roll, &QPushButton::toggled, this,
             [this](bool checked) { emit controlFlagRequested(5, checked); });
+    connect(ui->pushButton_sumControlImpacts, &QPushButton::toggled, this,
+            [this](bool checked)
+            {
+                emit controlFlagRequested(6, checked);
+                displayText(checked ? "Суммирование воздействий САУ включено"
+                                    : "Суммирование воздействий САУ выключено");
+            });
 
     connect(this, &MainWindow::controlFlagRequested, rosBridge, &RosBridge::setControlFlagInternal,
             Qt::QueuedConnection);
@@ -1297,7 +1312,9 @@ void MainWindow::setupButtonStyles(bool dark)
          {ui->pushButton_modeManual, ui->pushButton_modeAutomated, ui->pushButton_modeAutomatic,
           ui->pushButton_modeAutomated_surge, ui->pushButton_modeAutomated_sway,
           ui->pushButton_modeAutomated_depth, ui->pushButton_modeAutomated_yaw,
-          ui->pushButton_modeAutomated_pitch, ui->pushButton_modeAutomated_roll})
+          ui->pushButton_modeAutomated_pitch, ui->pushButton_modeAutomated_roll,
+          ui->pushButton_zeroYaw, ui->pushButton_resetDvlOrigin,
+          ui->pushButton_sumControlImpacts})
         b->setStyleSheet(modeStyle);
     for (auto *b :
          {ui->btn_light_off, ui->btn_light_mode1, ui->btn_light_mode2, ui->btn_light_mode3})
