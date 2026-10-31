@@ -106,6 +106,7 @@ set(PROJECT_SOURCES
         src/core/telemetry/uv_state.cpp
         src/core/telemetry/uv_state.h
         src/integrations/input/i_input_source.h
+        src/integrations/input/axis_response.h
         src/core/control/control_service.h
         src/integrations/input/legacy/key_board.h src/integrations/input/legacy/key_board.cpp
         src/integrations/input/legacy/joy_stick.h src/integrations/input/legacy/joy_stick.cpp

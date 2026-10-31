@@ -1,7 +1,15 @@
 #include "joy_stick.h"
 
+#include "axis_response.h"
 #include <QDebug>
 #include <chrono>
+
+namespace
+{
+constexpr double STICK_RANGE = 100.0;
+constexpr double STICK_DEADZONE = 5.0;
+constexpr double STICK_EXPO = 0.65;
+}
 
 JoyStick::JoyStick()
 {
@@ -34,12 +42,19 @@ std::optional<umas::input::ControlCommand> JoyStick::poll()
     }
 
     umas::input::ControlCommand command;
-    command.march = -sf::Joystick::getAxisPosition(id, impactAxisMarch) / 1.0;
-    command.lag = sf::Joystick::getAxisPosition(id, impactAxisLag) / 1.0;
-    command.depth = sf::Joystick::getAxisPosition(id, impactAxisDepth) / 1.0;
-    command.roll = sf::Joystick::getAxisPosition(id, impactAxisRoll) / 1.0;
-    command.pitch = sf::Joystick::getAxisPosition(id, impactAxisPitch) / 1.0;
-    command.yaw = sf::Joystick::getAxisPosition(id, impactAxisYaw) / 1.0;
+    command.march = -umas::input::shapeStickAxis(
+        sf::Joystick::getAxisPosition(id, impactAxisMarch), STICK_RANGE, STICK_DEADZONE,
+        STICK_EXPO);
+    command.lag = umas::input::shapeStickAxis(sf::Joystick::getAxisPosition(id, impactAxisLag),
+                                               STICK_RANGE, STICK_DEADZONE, STICK_EXPO);
+    command.depth = umas::input::shapeStickAxis(sf::Joystick::getAxisPosition(id, impactAxisDepth),
+                                                 STICK_RANGE, STICK_DEADZONE, STICK_EXPO);
+    command.roll = umas::input::shapeStickAxis(sf::Joystick::getAxisPosition(id, impactAxisRoll),
+                                                STICK_RANGE, STICK_DEADZONE, STICK_EXPO);
+    command.pitch = umas::input::shapeStickAxis(sf::Joystick::getAxisPosition(id, impactAxisPitch),
+                                                 STICK_RANGE, STICK_DEADZONE, STICK_EXPO);
+    command.yaw = umas::input::shapeStickAxis(sf::Joystick::getAxisPosition(id, impactAxisYaw),
+                                               STICK_RANGE, STICK_DEADZONE, STICK_EXPO);
     command.valid = true;
     command.timestamp_ms =
         static_cast<std::uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
