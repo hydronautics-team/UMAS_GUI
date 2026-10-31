@@ -1,5 +1,6 @@
 #include "gamepad_input_source.h"
 
+#include "axis_response.h"
 #include "gamepad.h"
 #include <chrono>
 #include <cmath>
@@ -7,6 +8,7 @@
 namespace
 {
 constexpr float STICK_DEADZONE = 15.0f;
+constexpr double STICK_EXPO = 0.65;
 std::uint64_t now_ms()
 {
     return static_cast<std::uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -22,33 +24,29 @@ GamepadInputSource::GamepadInputSource(Gamepad *gamepad, QObject *parent)
     connect(gamepad_, &Gamepad::leftStickYMoved, this,
             [this](float v)
             {
-                if (std::abs(v) < STICK_DEADZONE)
-                    v = 0.0f;
-                march_ = -v / 100.f;
+                march_ = static_cast<float>(
+                    -umas::input::shapeStickAxis(v, 100.0, STICK_DEADZONE, STICK_EXPO) / 100.0);
                 markDirty();
             });
     connect(gamepad_, &Gamepad::leftStickXMoved, this,
             [this](float v)
             {
-                if (std::abs(v) < STICK_DEADZONE)
-                    v = 0.0f;
-                yaw_ = v / 100.f;
+                yaw_ = static_cast<float>(
+                    umas::input::shapeStickAxis(v, 100.0, STICK_DEADZONE, STICK_EXPO) / 100.0);
                 markDirty();
             });
     connect(gamepad_, &Gamepad::rightStickYMoved, this,
             [this](float v)
             {
-                if (std::abs(v) < STICK_DEADZONE)
-                    v = 0.0f;
-                pitch_ = v / 100.f;
+                pitch_ = static_cast<float>(
+                    umas::input::shapeStickAxis(v, 100.0, STICK_DEADZONE, STICK_EXPO) / 100.0);
                 markDirty();
             });
     connect(gamepad_, &Gamepad::rightStickXMoved, this,
             [this](float v)
             {
-                if (std::abs(v) < STICK_DEADZONE)
-                    v = 0.0f;
-                lag_ = v / 100.f;
+                lag_ = static_cast<float>(
+                    umas::input::shapeStickAxis(v, 100.0, STICK_DEADZONE, STICK_EXPO) / 100.0);
                 markDirty();
             });
 

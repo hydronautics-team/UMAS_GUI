@@ -49,6 +49,7 @@ public slots:
     void zeroYawInternal();
     void resetDvlOriginInternal();
     void setControlFlagInternal(uint8_t bit, bool value);
+    void setControlModeInternal(uint8_t mode);
     void publishLightsMode(unsigned mode);
     void publishLightsBrightness(unsigned value);
 
@@ -59,6 +60,7 @@ private:
     rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr battery_sub_;
     UVState::BatteryData battery_data_{};
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr control_flags_pub_;
+    rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr control_mode_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr zero_yaw_pub_;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr reset_dvl_origin_client_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr lights_mode_pub_;

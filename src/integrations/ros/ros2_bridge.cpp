@@ -25,7 +25,8 @@ void RosBridge::run()
 
     node_ = rclcpp::Node::make_shared("qt_controller_node", "qt_controller");
 
-    twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/control/data", 10);
+    twist_pub_ =
+        node_->create_publisher<geometry_msgs::msg::Twist>("/control/manual_impact", 10);
 
     odometry_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
         "/core/state/odometry", rclcpp::QoS(10).reliable(),
@@ -103,6 +104,7 @@ void RosBridge::run()
         });
 
     control_flags_pub_ = node_->create_publisher<std_msgs::msg::UInt8>("/control/loop_flags", 10);
+    control_mode_pub_ = node_->create_publisher<std_msgs::msg::UInt8>("/control/mode", 10);
 
     zero_yaw_pub_ = node_->create_publisher<std_msgs::msg::Bool>("/imu/zero_yaw", 10);
     reset_dvl_origin_client_ =
@@ -207,6 +209,17 @@ void RosBridge::setControlFlagInternal(uint8_t bit, bool value)
     emit controlFlagsPublished(control_flags_);
 
     qDebug() << "Published control mode flags:" << static_cast<int>(control_flags_);
+}
+
+void RosBridge::setControlModeInternal(uint8_t mode)
+{
+    if (!is_ready_ || !control_mode_pub_ || mode > 2)
+        return;
+
+    std_msgs::msg::UInt8 msg;
+    msg.data = mode;
+    control_mode_pub_->publish(msg);
+    qDebug() << "Published control source mode:" << static_cast<int>(mode);
 }
 
 void RosBridge::publishLightsMode(unsigned mode)

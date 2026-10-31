@@ -1144,6 +1144,14 @@ QSlider:disabled::handle:horizontal {
            </layout>
           </item>
           <item>
+           <widget class="QPushButton" name="pushButton_sumControlImpacts">
+            <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
+            <property name="toolTip"><string>Добавлять ручное воздействие к выходу САУ и удерживать последнюю точку после отпускания управления</string></property>
+            <property name="text"><string>Суммирование воздействий</string></property>
+            <property name="checkable"><bool>true</bool></property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="pushButton_modeAutomatic">
             <property name="sizePolicy"><sizepolicy hsizetype="Minimum" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property>
             <property name="text"><string>Автоматический</string></property>
