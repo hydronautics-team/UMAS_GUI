@@ -13,6 +13,7 @@
 #include <QPalette>
 #include <QPushButton>
 #include <QResizeEvent>
+#include <algorithm>
 #include <cmath>
 
 FullscreenVideoWindow::FullscreenVideoWindow(UVState *uvState, QWidget *parent)
@@ -123,17 +124,28 @@ void FullscreenVideoWindow::updateHudData()
     const UVState::BatteryData battery = uvState_->battery();
     const UVState::ImuData imu = uvState_->imu();
     const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
-    const bool coreFresh =
-        pose.timestamp_ms > 0 && nowMs - static_cast<qint64>(pose.timestamp_ms) < 1000;
+    constexpr qint64 odometryTimeoutMs = 1000;
+    constexpr qint64 batteryTimeoutMs = 3000;
+    constexpr qint64 coreTimeoutMs = 3000;
+    const bool odometryFresh =
+        pose.timestamp_ms > 0 &&
+        nowMs - static_cast<qint64>(pose.timestamp_ms) < odometryTimeoutMs;
     const bool battery1Fresh =
-        battery.timestamp_1_ms > 0 && nowMs - static_cast<qint64>(battery.timestamp_1_ms) < 3000;
+        battery.timestamp_1_ms > 0 &&
+        nowMs - static_cast<qint64>(battery.timestamp_1_ms) < batteryTimeoutMs;
     const bool battery2Fresh =
-        battery.timestamp_2_ms > 0 && nowMs - static_cast<qint64>(battery.timestamp_2_ms) < 3000;
+        battery.timestamp_2_ms > 0 &&
+        nowMs - static_cast<qint64>(battery.timestamp_2_ms) < batteryTimeoutMs;
+    const qint64 lastCoreMessageMs = std::max(
+        {static_cast<qint64>(pose.timestamp_ms), static_cast<qint64>(battery.timestamp_1_ms),
+         static_cast<qint64>(battery.timestamp_2_ms)});
+    const bool coreFresh =
+        lastCoreMessageMs > 0 && nowMs - lastCoreMessageMs < coreTimeoutMs;
 
     const float depth = static_cast<float>(-pose.z);
     const float yaw = imu.yaw;
 
-    if (coreFresh)
+    if (odometryFresh)
     {
         const double horizontalSpeed = std::hypot(pose.velocity_x, pose.velocity_y);
         motionLabel_->setText(QStringLiteral("СКОРОСТЬ: %1 м/с").arg(horizontalSpeed, 0, 'f', 2));
@@ -159,11 +171,13 @@ void FullscreenVideoWindow::updateHudData()
                                  (battery2Fresh && battery.percentage_2 <= 15.0f);
     const bool warningBattery = (battery1Fresh && battery.percentage_1 <= 25.0f) ||
                                 (battery2Fresh && battery.percentage_2 <= 25.0f);
-    const bool depthExceeded = coreFresh && depth > 10.0f;
+    const bool depthExceeded = odometryFresh && depth > 10.0f;
     const bool lowVoltage = (battery1Fresh && battery.voltage_1 < 13.6f) ||
                             (battery2Fresh && battery.voltage_2 < 13.6f);
 
     alertOverlay_->setAlert("connection", HudAlertOverlay::Level::Critical, !coreFresh);
+    alertOverlay_->setAlert("odometry", HudAlertOverlay::Level::Warning,
+                            coreFresh && !odometryFresh);
     alertOverlay_->setAlert("depth", HudAlertOverlay::Level::Critical, depthExceeded);
     alertOverlay_->setAlert("battery_critical", HudAlertOverlay::Level::Critical, criticalBattery);
     alertOverlay_->setAlert("battery_warning", HudAlertOverlay::Level::Warning,
@@ -172,6 +186,9 @@ void FullscreenVideoWindow::updateHudData()
 
     notificationStack_->setCondition("connection", !coreFresh, "НЕТ СВЯЗИ СО STINGRAY CORE",
                                      HudNotificationStack::Severity::Error);
+    notificationStack_->setCondition("odometry", coreFresh && !odometryFresh,
+                                     "НЕТ ДАННЫХ ОДОМЕТРИИ",
+                                     HudNotificationStack::Severity::Warning);
     notificationStack_->setCondition(
         "depth", depthExceeded, QStringLiteral("ПРЕВЫШЕНИЕ ГЛУБИНЫ: %1 м").arg(depth, 0, 'f', 1),
         HudNotificationStack::Severity::Error);
@@ -185,8 +202,8 @@ void FullscreenVideoWindow::updateHudData()
                                      "НИЗКОЕ НАПРЯЖЕНИЕ АККУМУЛЯТОРА",
                                      HudNotificationStack::Severity::Warning);
 
-    const bool stable =
-        coreFresh && !depthExceeded && !criticalBattery && !warningBattery && !lowVoltage;
+    const bool stable = coreFresh && odometryFresh && !depthExceeded && !criticalBattery &&
+                        !warningBattery && !lowVoltage;
     if (stable && !wasStable_)
         notificationStack_->showInfo("stable", "СИСТЕМА СТАБИЛЬНА", 4000);
     wasStable_ = stable;
