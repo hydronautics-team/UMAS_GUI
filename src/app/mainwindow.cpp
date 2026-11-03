@@ -11,6 +11,7 @@
 #include <QPixmap>
 #include <QPushButton>
 #include <QTabBar>
+#include <QTextCursor>
 #include <QtMath>
 #include <algorithm>
 #include <cmath>
@@ -522,6 +523,8 @@ void MainWindow::displayText(QString str)
     QString currentTime = QTime::currentTime().toString("HH:mm:ss");
     qInfo() << currentTime << str;
     ui->textEdit_console->append(currentTime + " " + str);
+    ui->textEdit_console->moveCursor(QTextCursor::End);
+    ui->textEdit_console->ensureCursorVisible();
 }
 
 void MainWindow::setTimer_updateImpact(int periodUpdateMsec)
