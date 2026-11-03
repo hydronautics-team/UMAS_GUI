@@ -125,11 +125,14 @@ void FullscreenVideoWindow::updateHudData()
     const UVState::ImuData imu = uvState_->imu();
     const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
     constexpr qint64 odometryTimeoutMs = 1000;
+    constexpr qint64 imuTimeoutMs = 1000;
     constexpr qint64 batteryTimeoutMs = 3000;
     constexpr qint64 coreTimeoutMs = 3000;
     const bool odometryFresh =
         pose.timestamp_ms > 0 &&
         nowMs - static_cast<qint64>(pose.timestamp_ms) < odometryTimeoutMs;
+    const bool imuFresh =
+        imu.timestamp_ms > 0 && nowMs - static_cast<qint64>(imu.timestamp_ms) < imuTimeoutMs;
     const bool battery1Fresh =
         battery.timestamp_1_ms > 0 &&
         nowMs - static_cast<qint64>(battery.timestamp_1_ms) < batteryTimeoutMs;
@@ -137,7 +140,8 @@ void FullscreenVideoWindow::updateHudData()
         battery.timestamp_2_ms > 0 &&
         nowMs - static_cast<qint64>(battery.timestamp_2_ms) < batteryTimeoutMs;
     const qint64 lastCoreMessageMs = std::max(
-        {static_cast<qint64>(pose.timestamp_ms), static_cast<qint64>(battery.timestamp_1_ms),
+        {static_cast<qint64>(pose.timestamp_ms), static_cast<qint64>(imu.timestamp_ms),
+         static_cast<qint64>(battery.timestamp_1_ms),
          static_cast<qint64>(battery.timestamp_2_ms)});
     const bool coreFresh =
         lastCoreMessageMs > 0 && nowMs - lastCoreMessageMs < coreTimeoutMs;
@@ -149,6 +153,16 @@ void FullscreenVideoWindow::updateHudData()
     {
         const double horizontalSpeed = std::hypot(pose.velocity_x, pose.velocity_y);
         motionLabel_->setText(QStringLiteral("СКОРОСТЬ: %1 м/с").arg(horizontalSpeed, 0, 'f', 2));
+        depthGauge_->setTelemetry(depth, static_cast<float>(pose.velocity_z));
+    }
+    else
+    {
+        motionLabel_->setText("СКОРОСТЬ: N/A");
+        depthGauge_->setTelemetry(0.0f, 0.0f, false);
+    }
+
+    if (imuFresh)
+    {
         orientationLabel_->setText(
             QStringLiteral("Курс %1°   Дифферент %2°   Крен %3°")
                 .arg(static_cast<int>(qRound(yaw + 360.0f)) % 360, 3, 10, QLatin1Char('0'))
@@ -156,13 +170,10 @@ void FullscreenVideoWindow::updateHudData()
                 .arg(imu.roll, 0, 'f', 1));
         compass_->setYaw(yaw);
         attitudeIndicator_->setAttitude(imu.pitch, imu.roll);
-        depthGauge_->setTelemetry(depth, static_cast<float>(pose.velocity_z));
     }
     else
     {
-        motionLabel_->setText("СКОРОСТЬ: N/A");
         orientationLabel_->setText("НЕТ ДАННЫХ ОРИЕНТАЦИИ");
-        depthGauge_->setTelemetry(0.0f, 0.0f, false);
     }
 
     batteryStatusWidget_->setBatteries(battery.percentage_1, battery1Fresh, battery.percentage_2,
@@ -178,6 +189,7 @@ void FullscreenVideoWindow::updateHudData()
     alertOverlay_->setAlert("connection", HudAlertOverlay::Level::Critical, !coreFresh);
     alertOverlay_->setAlert("odometry", HudAlertOverlay::Level::Warning,
                             coreFresh && !odometryFresh);
+    alertOverlay_->setAlert("imu", HudAlertOverlay::Level::Warning, coreFresh && !imuFresh);
     alertOverlay_->setAlert("depth", HudAlertOverlay::Level::Critical, depthExceeded);
     alertOverlay_->setAlert("battery_critical", HudAlertOverlay::Level::Critical, criticalBattery);
     alertOverlay_->setAlert("battery_warning", HudAlertOverlay::Level::Warning,
@@ -188,6 +200,8 @@ void FullscreenVideoWindow::updateHudData()
                                      HudNotificationStack::Severity::Error);
     notificationStack_->setCondition("odometry", coreFresh && !odometryFresh,
                                      "НЕТ ДАННЫХ ОДОМЕТРИИ",
+                                     HudNotificationStack::Severity::Warning);
+    notificationStack_->setCondition("imu", coreFresh && !imuFresh, "НЕТ ДАННЫХ IMU",
                                      HudNotificationStack::Severity::Warning);
     notificationStack_->setCondition(
         "depth", depthExceeded, QStringLiteral("ПРЕВЫШЕНИЕ ГЛУБИНЫ: %1 м").arg(depth, 0, 'f', 1),
@@ -202,8 +216,8 @@ void FullscreenVideoWindow::updateHudData()
                                      "НИЗКОЕ НАПРЯЖЕНИЕ АККУМУЛЯТОРА",
                                      HudNotificationStack::Severity::Warning);
 
-    const bool stable = coreFresh && odometryFresh && !depthExceeded && !criticalBattery &&
-                        !warningBattery && !lowVoltage;
+    const bool stable = coreFresh && odometryFresh && imuFresh && !depthExceeded &&
+                        !criticalBattery && !warningBattery && !lowVoltage;
     if (stable && !wasStable_)
         notificationStack_->showInfo("stable", "СИСТЕМА СТАБИЛЬНА", 4000);
     wasStable_ = stable;

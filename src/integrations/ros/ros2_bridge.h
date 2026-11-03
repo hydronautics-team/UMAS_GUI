@@ -9,7 +9,9 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/battery_state.hpp>
+#include <sensor_msgs/msg/imu.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/int32.hpp>
 #include <std_msgs/msg/u_int8.hpp>
 #include <std_srvs/srv/trigger.hpp>
@@ -40,6 +42,11 @@ signals:
     void poseReceived(const UVState::Pose &pose);
     void imuReceived(const UVState::ImuData &imu);
     void batteryReceived(const UVState::BatteryData &battery);
+    void temperatureReceived(float temperatureCelsius);
+    void bottomDistanceReceived(float distanceMeters);
+    void leakStateReceived(bool leakDetected);
+    void killSwitchStateReceived(bool engaged);
+    void pingUpdated(int latencyMilliseconds, bool available);
     void controlFlagsPublished(std::uint8_t flags);
     void dvlOriginResetFinished(bool success, const QString &message);
 
@@ -57,12 +64,19 @@ private:
     rclcpp::Node::SharedPtr node_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr twist_pub_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odometry_sub_;
+    rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
     rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr battery_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr temperature_sub_;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr bottom_distance_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr leak_state_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr kill_switch_state_sub_;
     UVState::BatteryData battery_data_{};
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr control_flags_pub_;
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr control_mode_pub_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr zero_yaw_pub_;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr reset_dvl_origin_client_;
+    rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr health_ping_client_;
+    rclcpp::TimerBase::SharedPtr health_ping_timer_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr lights_mode_pub_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr lights_brightness_pub_;
 
@@ -74,6 +88,9 @@ private:
     int current_pwm_ = 0;
 
     int last_sent_command_ = -1;
+    std::uint64_t health_ping_request_id_ = 0;
+    std::uint64_t active_health_ping_request_id_ = 0;
+    std::chrono::steady_clock::time_point health_ping_started_{};
     QString target_state_ = "stop";
     QString turn_state_ = "none";
     QString grip_state_ = "stop";

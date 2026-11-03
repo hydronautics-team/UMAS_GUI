@@ -80,6 +80,16 @@ private:
     void resetTelemetryToDefault();
     void updateTelemetryFromState();
     bool isConnected = false;
+    qint64 temperatureTimestampMs_ = 0;
+    qint64 bottomDistanceTimestampMs_ = 0;
+    qint64 leakTimestampMs_ = 0;
+    qint64 killSwitchTimestampMs_ = 0;
+    qint64 pingTimestampMs_ = 0;
+    float temperatureCelsius_ = 0.0f;
+    float bottomDistanceMeters_ = 0.0f;
+    bool leakDetected_ = false;
+    bool killSwitchEngaged_ = false;
+    int pingMilliseconds_ = 0;
 
     void setTurnState(const QString &state);
     void setGripState(const QString &state);

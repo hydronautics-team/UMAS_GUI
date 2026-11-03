@@ -25,8 +25,19 @@ void RosBridge::run()
 
     node_ = rclcpp::Node::make_shared("qt_controller_node", "qt_controller");
 
-    twist_pub_ =
-        node_->create_publisher<geometry_msgs::msg::Twist>("/control/manual_impact", 10);
+    const auto temperatureTopic =
+        node_->declare_parameter<std::string>("temperature_topic", "/ms5837/temperature");
+    const auto imuTopic = node_->declare_parameter<std::string>("imu_topic", "/core/sensors/imu");
+    const auto bottomDistanceTopic = node_->declare_parameter<std::string>(
+        "bottom_distance_topic", "/stingray_core/sensors/dvl/altitude");
+    const auto leakStateTopic =
+        node_->declare_parameter<std::string>("leak_state_topic", "/stingray_core/safety/leak");
+    const auto killSwitchStateTopic = node_->declare_parameter<std::string>(
+        "kill_switch_state_topic", "/stingray_core/safety/kill_switch");
+    const auto healthPingService =
+        node_->declare_parameter<std::string>("health_ping_service", "/stingray_core/health/ping");
+
+    twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/control/data", 10);
 
     odometry_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
         "/core/state/odometry", rclcpp::QoS(10).reliable(),
@@ -51,11 +62,28 @@ void RosBridge::run()
             pose.angular_velocity_z = msg->twist.twist.angular.z;
             pose.timestamp_ms = nowMs;
             emit poseReceived(pose);
+        });
 
-            const double x = msg->pose.pose.orientation.x;
-            const double y = msg->pose.pose.orientation.y;
-            const double z = msg->pose.pose.orientation.z;
-            const double w = msg->pose.pose.orientation.w;
+    imu_sub_ = node_->create_subscription<sensor_msgs::msg::Imu>(
+        imuTopic, rclcpp::SensorDataQoS(),
+        [this](const sensor_msgs::msg::Imu::SharedPtr msg)
+        {
+            // orientation_covariance[0] == -1 means that the IMU does not provide orientation.
+            if (msg->orientation_covariance[0] < 0.0)
+                return;
+
+            double x = msg->orientation.x;
+            double y = msg->orientation.y;
+            double z = msg->orientation.z;
+            double w = msg->orientation.w;
+            const double norm = std::sqrt(x * x + y * y + z * z + w * w);
+            if (!std::isfinite(norm) || norm < 1e-6)
+                return;
+
+            x /= norm;
+            y /= norm;
+            z /= norm;
+            w /= norm;
 
             UVState::ImuData imu;
             const double sinRollCosPitch = 2.0 * (w * x + y * z);
@@ -72,7 +100,16 @@ void RosBridge::run()
             imu.quat[1] = static_cast<float>(y);
             imu.quat[2] = static_cast<float>(z);
             imu.quat[3] = static_cast<float>(w);
-            imu.timestamp_ms = nowMs;
+            imu.accel_x = static_cast<float>(msg->linear_acceleration.x);
+            imu.accel_y = static_cast<float>(msg->linear_acceleration.y);
+            imu.accel_z = static_cast<float>(msg->linear_acceleration.z);
+            imu.gyro_x = static_cast<float>(msg->angular_velocity.x);
+            imu.gyro_y = static_cast<float>(msg->angular_velocity.y);
+            imu.gyro_z = static_cast<float>(msg->angular_velocity.z);
+            imu.timestamp_ms = static_cast<std::uint64_t>(
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch())
+                    .count());
             emit imuReceived(imu);
         });
 
@@ -103,12 +140,84 @@ void RosBridge::run()
             emit batteryReceived(battery_data_);
         });
 
+    temperature_sub_ = node_->create_subscription<std_msgs::msg::Float32>(
+        temperatureTopic, rclcpp::SensorDataQoS(),
+        [this](const std_msgs::msg::Float32::SharedPtr msg)
+        {
+            if (std::isfinite(msg->data))
+                emit temperatureReceived(msg->data);
+        });
+
+    bottom_distance_sub_ = node_->create_subscription<std_msgs::msg::Float32>(
+        bottomDistanceTopic, rclcpp::SensorDataQoS(),
+        [this](const std_msgs::msg::Float32::SharedPtr msg)
+        {
+            if (std::isfinite(msg->data) && msg->data >= 0.0f)
+                emit bottomDistanceReceived(msg->data);
+        });
+
+    leak_state_sub_ = node_->create_subscription<std_msgs::msg::Bool>(
+        leakStateTopic, rclcpp::QoS(1).reliable().transient_local(),
+        [this](const std_msgs::msg::Bool::SharedPtr msg) { emit leakStateReceived(msg->data); });
+
+    kill_switch_state_sub_ = node_->create_subscription<std_msgs::msg::Bool>(
+        killSwitchStateTopic, rclcpp::QoS(1).reliable().transient_local(),
+        [this](const std_msgs::msg::Bool::SharedPtr msg)
+        { emit killSwitchStateReceived(msg->data); });
+
     control_flags_pub_ = node_->create_publisher<std_msgs::msg::UInt8>("/control/loop_flags", 10);
     control_mode_pub_ = node_->create_publisher<std_msgs::msg::UInt8>("/control/mode", 10);
 
     zero_yaw_pub_ = node_->create_publisher<std_msgs::msg::Bool>("/imu/zero_yaw", 10);
     reset_dvl_origin_client_ =
         node_->create_client<std_srvs::srv::Trigger>("/core/localization/reset_origin");
+
+    health_ping_client_ = node_->create_client<std_srvs::srv::Trigger>(healthPingService);
+    health_ping_timer_ = node_->create_wall_timer(
+        std::chrono::seconds(1),
+        [this]()
+        {
+            constexpr auto requestTimeout = std::chrono::seconds(3);
+            const auto now = std::chrono::steady_clock::now();
+            if (active_health_ping_request_id_ != 0)
+            {
+                if (now - health_ping_started_ <= requestTimeout)
+                    return;
+                active_health_ping_request_id_ = 0;
+                emit pingUpdated(0, false);
+            }
+
+            if (!health_ping_client_->service_is_ready())
+            {
+                emit pingUpdated(0, false);
+                return;
+            }
+
+            const std::uint64_t requestId = ++health_ping_request_id_;
+            active_health_ping_request_id_ = requestId;
+            health_ping_started_ = now;
+            auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
+            health_ping_client_->async_send_request(
+                request,
+                [this, requestId,
+                 started = now](rclcpp::Client<std_srvs::srv::Trigger>::SharedFuture future)
+                {
+                    if (active_health_ping_request_id_ != requestId)
+                        return;
+                    active_health_ping_request_id_ = 0;
+                    try
+                    {
+                        future.get();
+                        const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                            std::chrono::steady_clock::now() - started);
+                        emit pingUpdated(static_cast<int>(elapsed.count()), true);
+                    }
+                    catch (const std::exception &)
+                    {
+                        emit pingUpdated(0, false);
+                    }
+                });
+        });
 
     lights_mode_pub_ = node_->create_publisher<std_msgs::msg::Int32>("/lights/mode", 10);
     lights_brightness_pub_ =

@@ -238,6 +238,42 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(rosBridge, &RosBridge::batteryReceived, uvState, &UVState::setBattery,
             Qt::QueuedConnection);
 
+    connect(rosBridge, &RosBridge::temperatureReceived, this,
+            [this](float temperature)
+            {
+                temperatureCelsius_ = temperature;
+                temperatureTimestampMs_ = QDateTime::currentMSecsSinceEpoch();
+            });
+    connect(rosBridge, &RosBridge::bottomDistanceReceived, this,
+            [this](float distance)
+            {
+                bottomDistanceMeters_ = distance;
+                bottomDistanceTimestampMs_ = QDateTime::currentMSecsSinceEpoch();
+            });
+    connect(rosBridge, &RosBridge::leakStateReceived, this,
+            [this](bool detected)
+            {
+                leakDetected_ = detected;
+                leakTimestampMs_ = QDateTime::currentMSecsSinceEpoch();
+            });
+    connect(rosBridge, &RosBridge::killSwitchStateReceived, this,
+            [this](bool engaged)
+            {
+                killSwitchEngaged_ = engaged;
+                killSwitchTimestampMs_ = QDateTime::currentMSecsSinceEpoch();
+            });
+    connect(rosBridge, &RosBridge::pingUpdated, this,
+            [this](int latencyMilliseconds, bool available)
+            {
+                if (!available)
+                {
+                    pingTimestampMs_ = 0;
+                    return;
+                }
+                pingMilliseconds_ = latencyMilliseconds;
+                pingTimestampMs_ = QDateTime::currentMSecsSinceEpoch();
+            });
+
     connect(rosBridge, &RosBridge::dvlOriginResetFinished, this,
             [this](bool success, const QString &message)
             {
@@ -1086,6 +1122,12 @@ void MainWindow::resetTelemetryToDefault()
     ui->lbl_bottom_value->setStyleSheet(noConnectionStyle);
     ui->lbl_bottom_value->setText("N/A");
 
+    ui->lbl_temp_value->setStyleSheet(noConnectionStyle);
+    ui->lbl_temp_value->setText("N/A");
+
+    ui->lbl_leak_value->setStyleSheet(noConnectionStyle);
+    ui->lbl_leak_value->setText("N/A");
+
     ui->lbl_voltage_value->setStyleSheet(noConnectionStyle);
     ui->lbl_voltage_value->setText("N/A");
 
@@ -1106,20 +1148,38 @@ void MainWindow::updateTelemetryFromState()
 {
     const UVState::Pose pose = uvState->pose();
     const UVState::BatteryData battery = uvState->battery();
+    const UVState::ImuData imu = uvState->imu();
     const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
     constexpr qint64 odometryTimeoutMs = 1000;
+    constexpr qint64 imuTimeoutMs = 1000;
     constexpr qint64 batteryTimeoutMs = 3000;
+    constexpr qint64 auxiliaryTelemetryTimeoutMs = 3000;
     constexpr qint64 coreTimeoutMs = 3000;
 
     const bool odometryFresh =
         pose.timestamp_ms > 0 && nowMs - static_cast<qint64>(pose.timestamp_ms) < odometryTimeoutMs;
+    const bool imuFresh =
+        imu.timestamp_ms > 0 && nowMs - static_cast<qint64>(imu.timestamp_ms) < imuTimeoutMs;
     const bool battery1Fresh = battery.timestamp_1_ms > 0 &&
                                nowMs - static_cast<qint64>(battery.timestamp_1_ms) < batteryTimeoutMs;
     const bool battery2Fresh = battery.timestamp_2_ms > 0 &&
                                nowMs - static_cast<qint64>(battery.timestamp_2_ms) < batteryTimeoutMs;
+    const bool temperatureFresh = temperatureTimestampMs_ > 0 &&
+                                  nowMs - temperatureTimestampMs_ < auxiliaryTelemetryTimeoutMs;
+    const bool bottomDistanceFresh = bottomDistanceTimestampMs_ > 0 &&
+                                     nowMs - bottomDistanceTimestampMs_ <
+                                         auxiliaryTelemetryTimeoutMs;
+    const bool leakFresh =
+        leakTimestampMs_ > 0 && nowMs - leakTimestampMs_ < auxiliaryTelemetryTimeoutMs;
+    const bool killSwitchFresh = killSwitchTimestampMs_ > 0 &&
+                                 nowMs - killSwitchTimestampMs_ < auxiliaryTelemetryTimeoutMs;
+    const bool pingFresh =
+        pingTimestampMs_ > 0 && nowMs - pingTimestampMs_ < auxiliaryTelemetryTimeoutMs;
     const qint64 lastCoreMessageMs = std::max(
-        {static_cast<qint64>(pose.timestamp_ms), static_cast<qint64>(battery.timestamp_1_ms),
-         static_cast<qint64>(battery.timestamp_2_ms)});
+        {static_cast<qint64>(pose.timestamp_ms), static_cast<qint64>(imu.timestamp_ms),
+         static_cast<qint64>(battery.timestamp_1_ms),
+         static_cast<qint64>(battery.timestamp_2_ms), temperatureTimestampMs_,
+         bottomDistanceTimestampMs_, leakTimestampMs_, killSwitchTimestampMs_, pingTimestampMs_});
     const bool coreFresh =
         lastCoreMessageMs > 0 && nowMs - lastCoreMessageMs < coreTimeoutMs;
 
@@ -1149,6 +1209,35 @@ void MainWindow::updateTelemetryFromState()
         odometryFresh ? QStringLiteral("%1 м").arg(depth, 0, 'f', 2) : "N/A");
     ui->lbl_speed_value->setText(
         odometryFresh ? QStringLiteral("%1 м/с").arg(speed, 0, 'f', 2) : "N/A");
+
+    if (!imuFresh)
+    {
+        ui->lbl_heading->setText("КУРС: N/A");
+        ui->lbl_pitch->setText("ДИФФЕРЕНТ: N/A");
+        ui->lbl_roll->setText("КРЕН: N/A");
+    }
+
+    ui->lbl_bottom_value->setStyleSheet(bottomDistanceFresh ? connectedStyle : noConnectionStyle);
+    ui->lbl_bottom_value->setText(
+        bottomDistanceFresh ? QStringLiteral("%1 м").arg(bottomDistanceMeters_, 0, 'f', 1)
+                            : "N/A");
+    ui->lbl_temp_value->setStyleSheet(temperatureFresh ? connectedStyle : noConnectionStyle);
+    ui->lbl_temp_value->setText(
+        temperatureFresh ? QStringLiteral("%1 °C").arg(temperatureCelsius_, 0, 'f', 1) : "N/A");
+    ui->lbl_leak_value->setStyleSheet(
+        leakFresh ? (leakDetected_ ? noConnectionStyle : connectedStyle) : noConnectionStyle);
+    ui->lbl_leak_value->setText(
+        leakFresh ? (leakDetected_ ? QStringLiteral("ЕСТЬ") : QStringLiteral("НЕТ")) : "N/A");
+    ui->btn_killswitch_status->setStyleSheet(
+        killSwitchFresh ? (killSwitchEngaged_ ? noConnectionStyle : connectedStyle)
+                        : noConnectionStyle);
+    ui->btn_killswitch_status->setText(
+        killSwitchFresh
+            ? (killSwitchEngaged_ ? QStringLiteral("АКТИВЕН") : QStringLiteral("СНЯТ"))
+            : "N/A");
+    ui->lbl_ping_value->setStyleSheet(pingFresh ? connectedStyle : noConnectionStyle);
+    ui->lbl_ping_value->setText(
+        pingFresh ? QStringLiteral("%1 мс").arg(pingMilliseconds_) : QStringLiteral("N/A"));
 
     // Battery data is board state rather than navigation sensor input and therefore remains a
     // separate core topic. Do not mark stale batteries as valid just because odometry is fresh.
