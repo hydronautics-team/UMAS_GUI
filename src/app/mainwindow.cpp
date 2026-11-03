@@ -12,6 +12,7 @@
 #include <QPushButton>
 #include <QTabBar>
 #include <QtMath>
+#include <algorithm>
 #include <cmath>
 
 static QIcon makeSunIcon()
@@ -1104,10 +1105,22 @@ void MainWindow::updateTelemetryFromState()
     const UVState::BatteryData battery = uvState->battery();
     const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
     constexpr qint64 odometryTimeoutMs = 1000;
+    constexpr qint64 batteryTimeoutMs = 3000;
+    constexpr qint64 coreTimeoutMs = 3000;
 
     const bool odometryFresh =
         pose.timestamp_ms > 0 && nowMs - static_cast<qint64>(pose.timestamp_ms) < odometryTimeoutMs;
-    if (!odometryFresh)
+    const bool battery1Fresh = battery.timestamp_1_ms > 0 &&
+                               nowMs - static_cast<qint64>(battery.timestamp_1_ms) < batteryTimeoutMs;
+    const bool battery2Fresh = battery.timestamp_2_ms > 0 &&
+                               nowMs - static_cast<qint64>(battery.timestamp_2_ms) < batteryTimeoutMs;
+    const qint64 lastCoreMessageMs = std::max(
+        {static_cast<qint64>(pose.timestamp_ms), static_cast<qint64>(battery.timestamp_1_ms),
+         static_cast<qint64>(battery.timestamp_2_ms)});
+    const bool coreFresh =
+        lastCoreMessageMs > 0 && nowMs - lastCoreMessageMs < coreTimeoutMs;
+
+    if (!coreFresh)
     {
         resetTelemetryToDefault();
         return;
@@ -1123,22 +1136,19 @@ void MainWindow::updateTelemetryFromState()
         "background-color: #a3263d; color: #ffe8ec; font-weight: 600; border-radius: 7px; border: "
         "1px solid #f05268; font-size: 15px; padding: 4px 10px;";
 
-    ui->lbl_depth_value->setStyleSheet(connectedStyle);
-    ui->lbl_speed_value->setStyleSheet(connectedStyle);
+    ui->lbl_depth_value->setStyleSheet(odometryFresh ? connectedStyle : noConnectionStyle);
+    ui->lbl_speed_value->setStyleSheet(odometryFresh ? connectedStyle : noConnectionStyle);
 
     // REP-103 uses Z positive upwards; vehicle depth is positive downwards.
     const double depth = qMax(0.0, -pose.z);
     const double speed = std::hypot(pose.velocity_x, pose.velocity_y);
-    ui->lbl_depth_value->setText(QStringLiteral("%1 м").arg(depth, 0, 'f', 2));
-    ui->lbl_speed_value->setText(QStringLiteral("%1 м/с").arg(speed, 0, 'f', 2));
+    ui->lbl_depth_value->setText(
+        odometryFresh ? QStringLiteral("%1 м").arg(depth, 0, 'f', 2) : "N/A");
+    ui->lbl_speed_value->setText(
+        odometryFresh ? QStringLiteral("%1 м/с").arg(speed, 0, 'f', 2) : "N/A");
 
     // Battery data is board state rather than navigation sensor input and therefore remains a
     // separate core topic. Do not mark stale batteries as valid just because odometry is fresh.
-    constexpr qint64 batteryTimeoutMs = 3000;
-    const bool battery1Fresh = battery.timestamp_1_ms > 0 &&
-                               nowMs - static_cast<qint64>(battery.timestamp_1_ms) < batteryTimeoutMs;
-    const bool battery2Fresh = battery.timestamp_2_ms > 0 &&
-                               nowMs - static_cast<qint64>(battery.timestamp_2_ms) < batteryTimeoutMs;
     ui->lbl_voltage_value->setStyleSheet(battery1Fresh ? connectedStyle : noConnectionStyle);
     ui->lbl_voltage_value->setText(
         battery1Fresh ? QStringLiteral("%1 В").arg(battery.voltage_1, 0, 'f', 1) : "N/A");
