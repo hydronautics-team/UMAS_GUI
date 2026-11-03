@@ -687,8 +687,8 @@ void MainWindow::useGamepad()
     connect(gamepad, &Gamepad::buttonAPressed, this, [this]() { setGripState("close"); });
     connect(gamepad, &Gamepad::buttonAReleased, this, [this]() { setGripState("stop"); });
 
-    // Кнопка 11 — toggle: замкнуть/разомкнуть 3 контура
-    connect(gamepad, &Gamepad::button11Pressed, this,
+    // D-Pad вверх — toggle: замкнуть/разомкнуть 3 контура
+    connect(gamepad, &Gamepad::dPadUpPressed, this,
             [this]()
             {
                 bool currentlyClosed = ui->pushButton_modeAutomated_yaw->isChecked() &&
