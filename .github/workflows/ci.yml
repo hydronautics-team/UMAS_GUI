@@ -32,7 +32,7 @@ jobs:
           file: ./docker/Dockerfile
           load: true
           push: false
-          tags: stingray-station-ci:${{ github.sha }}
+          tags: umas-gui-ci:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -40,12 +40,12 @@ jobs:
         run: |
           docker run --rm \
             --volume "${{ github.workspace }}:/UMAS_GUI:ro" \
-            stingray-station-ci:${{ github.sha }} \
+            umas-gui-ci:${{ github.sha }} \
             ./scripts/ci/format.sh
 
       - name: Build application
         run: |
           docker run --rm \
             --volume "${{ github.workspace }}:/UMAS_GUI:ro" \
-            stingray-station-ci:${{ github.sha }} \
+            umas-gui-ci:${{ github.sha }} \
             bash -lc 'source /opt/ros/humble/setup.bash && cmake -S /UMAS_GUI -B /tmp/umas-gui-build && cmake --build /tmp/umas-gui-build --parallel "$(nproc)"'
