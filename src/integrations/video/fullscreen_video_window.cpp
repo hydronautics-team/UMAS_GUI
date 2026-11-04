@@ -74,6 +74,13 @@ FullscreenVideoWindow::FullscreenVideoWindow(UVState *uvState, QWidget *parent)
     connect(secondaryCameraButton_, &QPushButton::toggled, this,
             &FullscreenVideoWindow::setSecondaryCameraEnabled);
 
+    if (uvState_)
+    {
+        connect(uvState_, &UVState::imuUpdated, this,
+                [this](const UVState::ImuData &imu) { updateOrientation(imu); });
+        updateOrientation(uvState_->imu());
+    }
+
     hudTimer_ = new QTimer(this);
     connect(hudTimer_, &QTimer::timeout, this, &FullscreenVideoWindow::updateHudData);
     hudTimer_->start(100);
@@ -115,6 +122,17 @@ void FullscreenVideoWindow::drawFrame(const QPixmap &pixmap)
     }
 }
 
+void FullscreenVideoWindow::updateOrientation(const UVState::ImuData &imu)
+{
+    orientationLabel_->setText(
+        QStringLiteral("Курс %1°   Дифферент %2°   Крен %3°")
+            .arg(static_cast<int>(qRound(imu.yaw + 360.0f)) % 360, 3, 10, QLatin1Char('0'))
+            .arg(imu.pitch, 0, 'f', 1)
+            .arg(imu.roll, 0, 'f', 1));
+    compass_->setYaw(imu.yaw);
+    attitudeIndicator_->setAttitude(imu.pitch, imu.roll);
+}
+
 void FullscreenVideoWindow::updateHudData()
 {
     if (!uvState_)
@@ -147,8 +165,6 @@ void FullscreenVideoWindow::updateHudData()
         lastCoreMessageMs > 0 && nowMs - lastCoreMessageMs < coreTimeoutMs;
 
     const float depth = static_cast<float>(-pose.z);
-    const float yaw = imu.yaw;
-
     if (odometryFresh)
     {
         const double horizontalSpeed = std::hypot(pose.velocity_x, pose.velocity_y);
@@ -161,17 +177,7 @@ void FullscreenVideoWindow::updateHudData()
         depthGauge_->setTelemetry(0.0f, 0.0f, false);
     }
 
-    if (imuFresh)
-    {
-        orientationLabel_->setText(
-            QStringLiteral("Курс %1°   Дифферент %2°   Крен %3°")
-                .arg(static_cast<int>(qRound(yaw + 360.0f)) % 360, 3, 10, QLatin1Char('0'))
-                .arg(imu.pitch, 0, 'f', 1)
-                .arg(imu.roll, 0, 'f', 1));
-        compass_->setYaw(yaw);
-        attitudeIndicator_->setAttitude(imu.pitch, imu.roll);
-    }
-    else
+    if (!imuFresh)
     {
         orientationLabel_->setText("НЕТ ДАННЫХ ОРИЕНТАЦИИ");
     }

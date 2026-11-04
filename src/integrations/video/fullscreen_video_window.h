@@ -44,6 +44,8 @@ private slots:
     void setSecondaryCameraEnabled(bool enabled);
 
 private:
+    void updateOrientation(const UVState::ImuData &imu);
+
     UVState *uvState_;
     QLabel *fullscreenVideoLabel_;   // Холст для видео
     QWidget *videoPlayer_ = nullptr; // Указатель на видео-плеер
