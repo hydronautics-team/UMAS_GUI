@@ -60,9 +60,7 @@ ROS_DOMAIN_ID=2 umas-gui run
 
 ## Скриншоты
 
-```markdown
 ![Полноэкранный режим](resources/images/full_screen.jpeg)
-```
 
 ## Командная строка
 
