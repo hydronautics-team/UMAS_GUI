@@ -1,63 +1,119 @@
-# UMAS_GUI
+# UMAS GUI
 
-Проект — операторский пульт управления подводными аппаратами. Qt-приложение, которое взаимодействует с бортовой системой через ROS 2: получает телеметрию/видео, визуализирует состояние и отправляет управляющие команды.
+[![CI](https://github.com/hydronautics-team/UMAS_GUI/actions/workflows/ci.yml/badge.svg)](https://github.com/hydronautics-team/UMAS_GUI/actions/workflows/ci.yml)
+[![Docker CI](https://github.com/hydronautics-team/UMAS_GUI/actions/workflows/docker-image.yml/badge.svg)](https://github.com/hydronautics-team/UMAS_GUI/actions/workflows/docker-image.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Пример GUI при планировании миссии
-![mission_planning_example](gui.png)
+Операторский пульт управления подводными аппаратами. UMAS GUI принимает
+телеметрию и видеопотоки через ROS 2, отображает состояние аппарата и передаёт
+команды оператора в систему управления.
 
-Архитектура взаимодействия с ROS 2
-- RosBridge (ros2_bridge/RosBridge) работает в отдельном QThread и инициализирует rclcpp::Node с namespace "qt_controller".
-- Публикации:
-  - geometry_msgs::msg::Twist → /control/data (управляющие команды)
-  - std_msgs::msg::UInt8 → /control/loop_flags (флаги режимов управления)
+![Интерфейс UMAS GUI](resources/images/main_screen.jpeg)
 
-Сборка и запуск
-Рекомендуется использовать контейнеры, скрипты уже подготовлены в ./docker:
+## Возможности
 
-1) Собрать образ:
+- управление движением аппарата с клавиатуры и геймпада;
+- ручной, автоматизированный и автоматический режимы управления;
+- настройка контуров стабилизации и прямого воздействия оператора;
+- отображение положения, ориентации, глубины и состояния аккумуляторов;
+- основной и дополнительный видеопотоки с полноэкранным режимом;
+- HUD-приборы, предупреждения и уведомления оператора;
+- управление освещением и исполнительными устройствами;
+- сброс локальной позиции DVL;
+- запись основных ROS 2 топиков в rosbag формата MCAP.
+
+## Технологии
+
+- C++17 и Qt 5;
+- ROS 2 Humble;
+- GStreamer;
+- SFML;
+- CMake и Docker.
+
+## Быстрый старт
+
+Для рекомендуемой сборки необходим Docker. Клонируйте репозиторий и выполните
+из его корня:
+
 ```bash
-# Bash
-./docker/build_docker.sh
+./scripts/install-cli.sh
+umas-gui docker-build
+umas-gui build
+umas-gui run
 ```
 
-2) Запустить контейнер (среда выполнения):
+Для установки ярлыка на рабочий стол:
+
 ```bash
-# Bash
-./docker/run_docker.sh
+./scripts/install-desktop-shortcut.sh
 ```
 
-3) Скомпилировать приложение (в контейнере ):
+По умолчанию приложение использует `ROS_DOMAIN_ID=1`. Другой домен можно указать
+при запуске:
+
 ```bash
-# Bash
-./docker/compile_app.sh
+ROS_DOMAIN_ID=2 umas-gui run
 ```
 
-4) Запустить приложение:
-```bash
-# Bash
-./docker/run_app.sh
+Подробные требования и варианты локальной сборки приведены в разделе
+[«Сборка и запуск»](docs/build-and-run.md).
+
+## Скриншоты
+
+![Полноэкранный режим](resources/images/full_screen.jpeg)
+
+## Командная строка
+
+| Команда | Назначение |
+| --- | --- |
+| `umas-gui docker-build` | Собрать или обновить Docker-образ |
+| `umas-gui build` | Собрать приложение |
+| `umas-gui run` | Запустить операторский пульт |
+| `umas-gui record` | Записать основные ROS 2 топики в MCAP |
+| `umas-gui shell` | Открыть shell в контейнере разработки |
+| `umas-gui format` | Отформатировать исходники C/C++ |
+| `umas-gui check` | Проверить форматирование |
+
+## Структура проекта
+
+```text
+src/
+├── app/             # точка входа и главное окно
+├── core/            # состояние аппарата и прикладная логика
+├── integrations/    # ROS 2, видео и устройства ввода
+└── ui/              # приборы и элементы интерфейса
+
+resources/           # изображения и Qt-ресурсы
+docker/              # окружение разработки и сборки
+scripts/             # CLI и вспомогательные сценарии
+docs/                # документация проекта
+archive/             # отключённые legacy-модули
 ```
 
-Альтернативно (локально, при наличии ROS 2 и Qt):
-- В рабочей директории ROS 2 workspace:
-```bash
-# Bash
-colcon build --packages-select UMAS_GUI
-source install/setup.bash
-# или стандартный CMake-подход:
-mkdir build && cd build
-cmake .. && make -j$(nproc)
-```
+Подробнее: [архитектура UMAS GUI](docs/architecture.md).
 
-Структура проекта (ключевые папки/файлы)
-- CMakeLists.txt, package.xml — сборка и зависимости
-- docker/ — скрипты сборки и запуска
-- main.cpp, mainwindow.* — точка входа и главный UI
-- ros2_bridge/ — RosBridge (rclcpp ↔ Qt)
-- input/ — адаптеры источников ввода (gamepad, клавиатура)
-- remote_control/ — joystick/keyboard helpers
-- control/ — control_service (применение команд)
-- uv/ — UVState (центральная модель состояния аппарата)
-- compass/, map/, Diagnostic_bord_UI/ — дополнительные UI-модули
-- Gamepad/, mods/ — вспомогательные модули и режимы
+## Разработка и CI
 
+Изменения вносятся в отдельных ветках через Pull Request в `master`.
+
+Для каждого Pull Request GitHub Actions:
+
+1. собирает Docker-окружение;
+2. компилирует приложение через CMake.
+
+После попадания изменений в `master` отдельный workflow публикует Docker-образ.
+Правила оформления изменений и Pull Request описаны в
+[руководстве участника](docs/contributing.md).
+
+## Документация
+
+- [Сборка и запуск](docs/build-and-run.md)
+- [Архитектура и ROS 2](docs/architecture.md)
+- [Правила разработки](docs/contributing.md)
+- [Стиль кода](docs/coding-style.md)
+- [Содержание документации](docs/README.md)
+
+## Лицензия
+
+UMAS GUI распространяется на условиях лицензии [MIT](LICENSE). Сторонние
+компоненты сохраняют лицензии своих правообладателей.

@@ -32,6 +32,9 @@ __pycache__/
 *.pyc
 *.log
 *.tmp
-.vscode/
+bags/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .idea/
 .DS_Store

@@ -1,0 +1,35 @@
+{
+    "name": "UMAS GUI",
+    "build": {
+        "dockerfile": "../docker/Dockerfile",
+        "context": "..",
+        "args": {
+            "DEV_UID": "1000",
+            "DEV_GID": "1000"
+        }
+    },
+    "workspaceFolder": "/UMAS_GUI",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/UMAS_GUI,type=bind",
+    "remoteUser": "vscode",
+    "containerUser": "vscode",
+    "runArgs": [
+        "--network=host",
+        "--privileged"
+    ],
+    "mounts": [
+        "source=/dev,target=/dev,type=bind",
+        "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind"
+    ],
+    "containerEnv": {
+        "DISPLAY": "${localEnv:DISPLAY}",
+        "ROS_DOMAIN_ID": "${localEnv:ROS_DOMAIN_ID:1}"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "llvm-vs-code-extensions.vscode-clangd"
+            ]
+        }
+    },
+    "postCreateCommand": "bash -lc 'source /opt/ros/humble/setup.bash && cmake -S /UMAS_GUI -B /tmp/umas-gui-build'"
+}

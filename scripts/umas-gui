@@ -1,0 +1,263 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CLI_PATH="$(realpath "${BASH_SOURCE[0]}")"
+PROJECT_ROOT="$(realpath "$(dirname "$CLI_PATH")/..")"
+IMAGE_NAME="${UMAS_GUI_IMAGE:-umas-gui}"
+APP_CONTAINER_NAME="${UMAS_GUI_CONTAINER:-umas-gui-app}"
+RECORDER_CONTAINER_NAME="${UMAS_GUI_RECORDER_CONTAINER:-umas-gui-recorder}"
+ROS_DOMAIN="${ROS_DOMAIN_ID:-1}"
+
+usage()
+{
+    cat <<'EOF'
+Usage: umas-gui <command>
+
+Commands:
+  docker-build  Build or update the Docker image
+  build         Build only the UMAS GUI application
+  run           Run the built application in Docker
+  record        Record the main WELT sensor topics to ./bags
+  shell         Open an interactive development shell in Docker
+  format        Format project C and C++ sources
+  check         Check formatting without changing files
+  help          Show this help
+EOF
+}
+
+require_command()
+{
+    if ! command -v "$1" >/dev/null 2>&1; then
+        echo "Error: required command '$1' was not found." >&2
+        exit 1
+    fi
+}
+
+docker_base_args()
+{
+    DOCKER_ARGS=(
+        --rm
+        --network host
+        --privileged
+        -e "ROS_DOMAIN_ID=$ROS_DOMAIN"
+        -v "$PROJECT_ROOT:/UMAS_GUI:rw"
+        -v /dev:/dev
+    )
+}
+
+require_image()
+{
+    require_command docker
+    if ! docker image inspect "$IMAGE_NAME" >/dev/null 2>&1; then
+        echo "Docker image '$IMAGE_NAME' was not found. Run 'umas-gui docker-build' first." >&2
+        exit 1
+    fi
+}
+
+build_docker_image()
+{
+    require_command docker
+    echo "Building Docker image '$IMAGE_NAME'..."
+    docker build -f "$PROJECT_ROOT/docker/Dockerfile" -t "$IMAGE_NAME" "$PROJECT_ROOT"
+}
+
+build_project()
+{
+    require_image
+    echo "Building UMAS GUI..."
+    docker_base_args
+    docker run "${DOCKER_ARGS[@]}" "$IMAGE_NAME" bash -lc \
+        'source /opt/ros/humble/setup.bash && cmake -S /UMAS_GUI -B /UMAS_GUI/build && cmake --build /UMAS_GUI/build -j"$(nproc)"'
+}
+
+enable_x11()
+{
+    require_command xhost
+    if [[ -z "${DISPLAY:-}" ]]; then
+        echo "Error: DISPLAY is not set." >&2
+        exit 1
+    fi
+    xhost +si:localuser:root >/dev/null
+    trap 'xhost -si:localuser:root >/dev/null 2>&1 || true' EXIT
+}
+
+stop_running_app()
+{
+    local container_id
+    local container_command
+
+    if docker container inspect "$APP_CONTAINER_NAME" >/dev/null 2>&1; then
+        echo "Stopping the previous UMAS GUI instance..."
+        stop_app_container
+    fi
+
+    # Подхватывает экземпляры, запущенные до появления постоянного имени контейнера.
+    while IFS= read -r container_id; do
+        [[ -z "$container_id" ]] && continue
+        container_command="$(docker container inspect --format '{{json .Config.Cmd}}' "$container_id")"
+        if [[ "$container_command" == *"/UMAS_GUI/build/UMAS_GUI"* ]]; then
+            echo "Stopping a legacy UMAS GUI instance..."
+            docker stop --time 2 "$container_id" >/dev/null
+        fi
+    done < <(docker ps --quiet --filter "ancestor=$IMAGE_NAME")
+}
+
+stop_app_container()
+{
+    if docker container inspect "$APP_CONTAINER_NAME" >/dev/null 2>&1; then
+        docker stop --time 2 "$APP_CONTAINER_NAME" >/dev/null 2>&1 || true
+        docker rm --force "$APP_CONTAINER_NAME" >/dev/null 2>&1 || true
+    fi
+}
+
+handle_run_signal()
+{
+    local exit_code="$1"
+    trap - INT TERM
+    echo
+    echo "Stopping UMAS GUI..."
+    stop_app_container
+    exit "$exit_code"
+}
+
+run_project()
+{
+    require_image
+    if [[ ! -x "$PROJECT_ROOT/build/UMAS_GUI" ]]; then
+        echo "UMAS GUI is not built. Run 'umas-gui build' first." >&2
+        exit 1
+    fi
+
+    stop_running_app
+    enable_x11
+    docker_base_args
+    trap 'handle_run_signal 130' INT
+    trap 'handle_run_signal 143' TERM
+    docker run "${DOCKER_ARGS[@]}" \
+        --name "$APP_CONTAINER_NAME" \
+        --label "com.hydronautics.umas-gui.role=application" \
+        -e "DISPLAY=$DISPLAY" \
+        -v /tmp/.X11-unix:/tmp/.X11-unix \
+        "$IMAGE_NAME" bash -lc \
+        'source /opt/ros/humble/setup.bash && exec /UMAS_GUI/build/UMAS_GUI'
+    trap - INT TERM
+}
+
+record_topics()
+{
+    require_image
+
+    local timestamp
+    local output_name
+    local container_output
+    local -a topics=(
+        /core/sensors/imu
+        /stingray_core/sensors/dvl/odometry
+        /stingray_core/sensors/dvl/altitude
+        /stingray_core/pressure_sensor/depth
+        /stingray_core/sensors/depth
+        /core/state/odometry
+        /stingray_core/battery/state
+        /diagnostics
+        /tf
+        /tf_static
+    )
+
+    timestamp="$(date '+%Y-%m-%d_%H-%M-%S')"
+    output_name="welt_sensors_${timestamp}"
+    container_output="/UMAS_GUI/bags/${output_name}"
+    mkdir -p "$PROJECT_ROOT/bags"
+
+    echo "Recording WELT sensor topics to:"
+    echo "  $PROJECT_ROOT/bags/$output_name"
+    echo "Press Ctrl+C to stop and finalize the bag."
+
+    docker_base_args
+    docker run -it "${DOCKER_ARGS[@]}" \
+        --name "$RECORDER_CONTAINER_NAME" \
+        --user "$(id -u):$(id -g)" \
+        -e HOME=/tmp \
+        "$IMAGE_NAME" bash -lc \
+        'source /opt/ros/humble/setup.bash && exec ros2 bag record --storage mcap --output "$1" "${@:2}"' \
+        -- "$container_output" "${topics[@]}"
+}
+
+open_shell()
+{
+    require_image
+    enable_x11
+    docker_base_args
+    docker run -it "${DOCKER_ARGS[@]}" \
+        -e "DISPLAY=$DISPLAY" \
+        -v /tmp/.X11-unix:/tmp/.X11-unix \
+        "$IMAGE_NAME" bash
+}
+
+format_sources()
+{
+    if command -v clang-format >/dev/null 2>&1; then
+        find "$PROJECT_ROOT/src" \
+            \( -name '*.cpp' -o -name '*.hpp' -o -name '*.c' -o -name '*.h' \) \
+            -print0 | xargs -0 clang-format -i
+        return
+    fi
+
+    ensure_docker_tool clang-format
+    docker run --rm -v "$PROJECT_ROOT:/UMAS_GUI:rw" "$IMAGE_NAME" bash -lc \
+        'find /UMAS_GUI/src \( -name "*.cpp" -o -name "*.hpp" -o -name "*.c" -o -name "*.h" \) -print0 | xargs -0 clang-format -i'
+}
+
+check_sources()
+{
+    if command -v clang-format >/dev/null 2>&1; then
+        "$PROJECT_ROOT/scripts/ci/format.sh"
+        return
+    fi
+
+    ensure_docker_tool clang-format
+    docker run --rm -v "$PROJECT_ROOT:/UMAS_GUI:rw" "$IMAGE_NAME" bash -lc \
+        'cd /UMAS_GUI && ./scripts/ci/format.sh'
+}
+
+ensure_docker_tool()
+{
+    local tool="$1"
+    require_image
+
+    if ! docker run --rm "$IMAGE_NAME" bash -lc "command -v '$tool'" >/dev/null 2>&1; then
+        echo "Docker image '$IMAGE_NAME' does not contain $tool. Run 'umas-gui docker-build' to update it." >&2
+        exit 1
+    fi
+}
+
+case "${1:-help}" in
+    docker-build|build-docker)
+        build_docker_image
+        ;;
+    build)
+        build_project
+        ;;
+    run)
+        run_project
+        ;;
+    record)
+        record_topics
+        ;;
+    shell)
+        open_shell
+        ;;
+    format)
+        format_sources
+        ;;
+    check)
+        check_sources
+        ;;
+    help|-h|--help)
+        usage
+        ;;
+    *)
+        echo "Unknown command: $1" >&2
+        usage >&2
+        exit 2
+        ;;
+esac
