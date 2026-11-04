@@ -274,13 +274,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                 pingTimestampMs_ = QDateTime::currentMSecsSinceEpoch();
             });
 
-    connect(rosBridge, &RosBridge::dvlOriginResetFinished, this,
-            [this](bool success, const QString &message)
-            {
-                ui->pushButton_resetDvlOrigin->setEnabled(true);
-                displayText((success ? "DVL: " : "Ошибка DVL: ") + message);
-            },
-            Qt::QueuedConnection);
+    connect(
+        rosBridge, &RosBridge::dvlOriginResetFinished, this,
+        [this](bool success, const QString &message)
+        {
+            ui->pushButton_resetDvlOrigin->setEnabled(true);
+            displayText((success ? "DVL: " : "Ошибка DVL: ") + message);
+        },
+        Qt::QueuedConnection);
 
     connect(uvState, &UVState::imuUpdated, this,
             [this](const UVState::ImuData &imu)
@@ -375,7 +376,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                         fullscreenWindow_->setVideoWidget(videoPlayer_);
                         videoPlayer_->show();
 
-                        //сигнал закрытия окна
+                        // сигнал закрытия окна
                         connect(fullscreenWindow_, &FullscreenVideoWindow::windowClosed, this,
                                 [this]()
                                 {
@@ -754,8 +755,8 @@ void MainWindow::useGamepad()
                 }
             });
 
-    // Кнопка 12 — круговая смена режима скоростей
-    connect(gamepad, &Gamepad::button12Pressed, this,
+    // D-Pad вниз — круговая смена режима скоростей
+    connect(gamepad, &Gamepad::dPadDownPressed, this,
             [this]()
             {
                 int current = static_cast<int>(currentMode);
@@ -1160,28 +1161,29 @@ void MainWindow::updateTelemetryFromState()
         pose.timestamp_ms > 0 && nowMs - static_cast<qint64>(pose.timestamp_ms) < odometryTimeoutMs;
     const bool imuFresh =
         imu.timestamp_ms > 0 && nowMs - static_cast<qint64>(imu.timestamp_ms) < imuTimeoutMs;
-    const bool battery1Fresh = battery.timestamp_1_ms > 0 &&
-                               nowMs - static_cast<qint64>(battery.timestamp_1_ms) < batteryTimeoutMs;
-    const bool battery2Fresh = battery.timestamp_2_ms > 0 &&
-                               nowMs - static_cast<qint64>(battery.timestamp_2_ms) < batteryTimeoutMs;
+    const bool battery1Fresh =
+        battery.timestamp_1_ms > 0 &&
+        nowMs - static_cast<qint64>(battery.timestamp_1_ms) < batteryTimeoutMs;
+    const bool battery2Fresh =
+        battery.timestamp_2_ms > 0 &&
+        nowMs - static_cast<qint64>(battery.timestamp_2_ms) < batteryTimeoutMs;
     const bool temperatureFresh = temperatureTimestampMs_ > 0 &&
                                   nowMs - temperatureTimestampMs_ < auxiliaryTelemetryTimeoutMs;
-    const bool bottomDistanceFresh = bottomDistanceTimestampMs_ > 0 &&
-                                     nowMs - bottomDistanceTimestampMs_ <
-                                         auxiliaryTelemetryTimeoutMs;
+    const bool bottomDistanceFresh =
+        bottomDistanceTimestampMs_ > 0 &&
+        nowMs - bottomDistanceTimestampMs_ < auxiliaryTelemetryTimeoutMs;
     const bool leakFresh =
         leakTimestampMs_ > 0 && nowMs - leakTimestampMs_ < auxiliaryTelemetryTimeoutMs;
-    const bool killSwitchFresh = killSwitchTimestampMs_ > 0 &&
-                                 nowMs - killSwitchTimestampMs_ < auxiliaryTelemetryTimeoutMs;
+    const bool killSwitchFresh =
+        killSwitchTimestampMs_ > 0 && nowMs - killSwitchTimestampMs_ < auxiliaryTelemetryTimeoutMs;
     const bool pingFresh =
         pingTimestampMs_ > 0 && nowMs - pingTimestampMs_ < auxiliaryTelemetryTimeoutMs;
     const qint64 lastCoreMessageMs = std::max(
         {static_cast<qint64>(pose.timestamp_ms), static_cast<qint64>(imu.timestamp_ms),
-         static_cast<qint64>(battery.timestamp_1_ms),
-         static_cast<qint64>(battery.timestamp_2_ms), temperatureTimestampMs_,
-         bottomDistanceTimestampMs_, leakTimestampMs_, killSwitchTimestampMs_, pingTimestampMs_});
-    const bool coreFresh =
-        lastCoreMessageMs > 0 && nowMs - lastCoreMessageMs < coreTimeoutMs;
+         static_cast<qint64>(battery.timestamp_1_ms), static_cast<qint64>(battery.timestamp_2_ms),
+         temperatureTimestampMs_, bottomDistanceTimestampMs_, leakTimestampMs_,
+         killSwitchTimestampMs_, pingTimestampMs_});
+    const bool coreFresh = lastCoreMessageMs > 0 && nowMs - lastCoreMessageMs < coreTimeoutMs;
 
     if (!coreFresh)
     {
@@ -1205,10 +1207,10 @@ void MainWindow::updateTelemetryFromState()
     // REP-103 uses Z positive upwards; vehicle depth is positive downwards.
     const double depth = qMax(0.0, -pose.z);
     const double speed = std::hypot(pose.velocity_x, pose.velocity_y);
-    ui->lbl_depth_value->setText(
-        odometryFresh ? QStringLiteral("%1 м").arg(depth, 0, 'f', 2) : "N/A");
-    ui->lbl_speed_value->setText(
-        odometryFresh ? QStringLiteral("%1 м/с").arg(speed, 0, 'f', 2) : "N/A");
+    ui->lbl_depth_value->setText(odometryFresh ? QStringLiteral("%1 м").arg(depth, 0, 'f', 2)
+                                               : "N/A");
+    ui->lbl_speed_value->setText(odometryFresh ? QStringLiteral("%1 м/с").arg(speed, 0, 'f', 2)
+                                               : "N/A");
 
     if (!imuFresh)
     {
@@ -1219,8 +1221,7 @@ void MainWindow::updateTelemetryFromState()
 
     ui->lbl_bottom_value->setStyleSheet(bottomDistanceFresh ? connectedStyle : noConnectionStyle);
     ui->lbl_bottom_value->setText(
-        bottomDistanceFresh ? QStringLiteral("%1 м").arg(bottomDistanceMeters_, 0, 'f', 1)
-                            : "N/A");
+        bottomDistanceFresh ? QStringLiteral("%1 м").arg(bottomDistanceMeters_, 0, 'f', 1) : "N/A");
     ui->lbl_temp_value->setStyleSheet(temperatureFresh ? connectedStyle : noConnectionStyle);
     ui->lbl_temp_value->setText(
         temperatureFresh ? QStringLiteral("%1 °C").arg(temperatureCelsius_, 0, 'f', 1) : "N/A");
@@ -1232,12 +1233,11 @@ void MainWindow::updateTelemetryFromState()
         killSwitchFresh ? (killSwitchEngaged_ ? noConnectionStyle : connectedStyle)
                         : noConnectionStyle);
     ui->btn_killswitch_status->setText(
-        killSwitchFresh
-            ? (killSwitchEngaged_ ? QStringLiteral("АКТИВЕН") : QStringLiteral("СНЯТ"))
-            : "N/A");
+        killSwitchFresh ? (killSwitchEngaged_ ? QStringLiteral("АКТИВЕН") : QStringLiteral("СНЯТ"))
+                        : "N/A");
     ui->lbl_ping_value->setStyleSheet(pingFresh ? connectedStyle : noConnectionStyle);
-    ui->lbl_ping_value->setText(
-        pingFresh ? QStringLiteral("%1 мс").arg(pingMilliseconds_) : QStringLiteral("N/A"));
+    ui->lbl_ping_value->setText(pingFresh ? QStringLiteral("%1 мс").arg(pingMilliseconds_)
+                                          : QStringLiteral("N/A"));
 
     // Battery data is board state rather than navigation sensor input and therefore remains a
     // separate core topic. Do not mark stale batteries as valid just because odometry is fresh.
@@ -1415,8 +1415,7 @@ void MainWindow::setupButtonStyles(bool dark)
           ui->pushButton_modeAutomated_surge, ui->pushButton_modeAutomated_sway,
           ui->pushButton_modeAutomated_depth, ui->pushButton_modeAutomated_yaw,
           ui->pushButton_modeAutomated_pitch, ui->pushButton_modeAutomated_roll,
-          ui->pushButton_zeroYaw, ui->pushButton_resetDvlOrigin,
-          ui->pushButton_sumControlImpacts})
+          ui->pushButton_zeroYaw, ui->pushButton_resetDvlOrigin, ui->pushButton_sumControlImpacts})
         b->setStyleSheet(modeStyle);
     for (auto *b :
          {ui->btn_light_off, ui->btn_light_mode1, ui->btn_light_mode2, ui->btn_light_mode3})
