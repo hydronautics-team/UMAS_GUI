@@ -6,6 +6,7 @@
 #include <QFileInfo>
 #include <QFontMetrics>
 #include <QGridLayout>
+#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMenuBar>
@@ -13,6 +14,7 @@
 #include <QPainterPath>
 #include <QPixmap>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QTabBar>
 #include <QTextCursor>
 #include <QStandardPaths>
@@ -108,8 +110,10 @@ static const QString LIGHT_THEME =
     "solid #91b9b7; border-bottom-right-radius: 5px; }"
     "QSpinBox::up-button:hover, QSpinBox::down-button:hover, QDoubleSpinBox::up-button:hover, "
     "QDoubleSpinBox::down-button:hover { background-color: #bde9e5; }"
-    "QSpinBox::up-arrow, QSpinBox::down-arrow, QDoubleSpinBox::up-arrow, "
-    "QDoubleSpinBox::down-arrow { width: 9px; height: 9px; }"
+    "QSpinBox::up-arrow, QDoubleSpinBox::up-arrow { image: url(:/controls/spin-up.svg); width: "
+    "12px; height: 8px; }"
+    "QSpinBox::down-arrow, QDoubleSpinBox::down-arrow { image: url(:/controls/spin-down.svg); "
+    "width: 12px; height: 8px; }"
     "QComboBox QAbstractItemView { background-color: #f2f8f7; border: 1px solid #91b9b7; color: "
     "#16383d; selection-background-color: #bde9e5; selection-color: #064d49; }"
     "QGroupBox { border: 1px solid #b5d2d0; border-radius: 9px; margin-top: 12px; padding-top: "
@@ -194,8 +198,10 @@ static const QString DARK_THEME =
     "solid #397886; border-bottom-right-radius: 5px; }"
     "QSpinBox::up-button:hover, QSpinBox::down-button:hover, QDoubleSpinBox::up-button:hover, "
     "QDoubleSpinBox::down-button:hover { background-color: #176173; }"
-    "QSpinBox::up-arrow, QSpinBox::down-arrow, QDoubleSpinBox::up-arrow, "
-    "QDoubleSpinBox::down-arrow { width: 9px; height: 9px; }"
+    "QSpinBox::up-arrow, QDoubleSpinBox::up-arrow { image: url(:/controls/spin-up.svg); width: "
+    "12px; height: 8px; }"
+    "QSpinBox::down-arrow, QDoubleSpinBox::down-arrow { image: url(:/controls/spin-down.svg); "
+    "width: 12px; height: 8px; }"
     "QComboBox QAbstractItemView { background-color: #09262e; border: 1px solid #247080; color: "
     "#d7f3f1; selection-background-color: #19b8aa; selection-color: #031416; }"
     "QGroupBox { border: 1px solid #174a56; border-radius: 9px; margin-top: 12px; padding-top: "
@@ -1009,7 +1015,13 @@ void MainWindow::setupInputGainTab()
     auto *tab = new QWidget(ui->tabWidget);
     auto *layout = new QVBoxLayout(tab);
     layout->setContentsMargins(18, 18, 18, 18);
-    auto *modeTabs = new QTabWidget(tab);
+    auto *scrollArea = new QScrollArea(tab);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setFrameShape(QFrame::NoFrame);
+    auto *content = new QWidget(scrollArea);
+    auto *contentLayout = new QVBoxLayout(content);
+    contentLayout->setContentsMargins(0, 0, 0, 0);
+    contentLayout->setSpacing(14);
 
     const QMap<QString, QString> sourceTitles = {{"keyboard", QStringLiteral("Клавиатура")},
                                                  {"joystick", QStringLiteral("Джойстик")},
@@ -1025,14 +1037,14 @@ void MainWindow::setupInputGainTab()
 
     for (int mode = 0; mode < modeTitles.size(); ++mode)
     {
-        auto *modePage = new QWidget(modeTabs);
-        auto *grid = new QGridLayout(modePage);
+        auto *modeGroup = new QGroupBox(modeTitles[mode], content);
+        auto *grid = new QGridLayout(modeGroup);
         grid->setHorizontalSpacing(10);
         grid->setVerticalSpacing(10);
 
         for (int axisIndex = 0; axisIndex < gainNames.size(); ++axisIndex)
         {
-            auto *header = new QLabel(axisTitles.value(gainNames[axisIndex]), modePage);
+            auto *header = new QLabel(axisTitles.value(gainNames[axisIndex]), modeGroup);
             header->setAlignment(Qt::AlignCenter);
             grid->addWidget(header, 0, axisIndex + 1);
         }
@@ -1040,17 +1052,16 @@ void MainWindow::setupInputGainTab()
         for (int sourceIndex = 0; sourceIndex < inputSourceNames_.size(); ++sourceIndex)
         {
             const QString sourceName = inputSourceNames_[sourceIndex];
-            grid->addWidget(new QLabel(sourceTitles.value(sourceName), modePage), sourceIndex + 1,
+            grid->addWidget(new QLabel(sourceTitles.value(sourceName), modeGroup), sourceIndex + 1,
                             0);
 
             for (int axisIndex = 0; axisIndex < gainNames.size(); ++axisIndex)
             {
                 const QString axisName = gainNames[axisIndex];
-                auto *spinBox = new QDoubleSpinBox(modePage);
+                auto *spinBox = new QDoubleSpinBox(modeGroup);
                 spinBox->setRange(0.0, 5000.0);
                 spinBox->setDecimals(1);
                 spinBox->setSingleStep(0.5);
-                spinBox->setSuffix(QStringLiteral(" ×"));
                 spinBox->setKeyboardTracking(false);
                 spinBox->setToolTip(
                     QStringLiteral("Режим «%1»: канал «%2», источник «%3»")
@@ -1062,19 +1073,12 @@ void MainWindow::setupInputGainTab()
             }
         }
         grid->setColumnStretch(0, 1);
-        modeTabs->addTab(modePage, modeTitles[mode]);
+        contentLayout->addWidget(modeGroup);
     }
+    contentLayout->addStretch();
+    scrollArea->setWidget(content);
 
-    auto *hint = new QLabel(
-        QStringLiteral("Для каждого режима скорости задаётся отдельный конечный коэффициент "
-                       "устройства по каждой оси. Дополнительного перемножения коэффициентов нет. "
-                       "Изменения сохраняются сразу."),
-        tab);
-    hint->setWordWrap(true);
-
-    layout->addWidget(modeTabs);
-    layout->addWidget(hint);
-    layout->addStretch();
+    layout->addWidget(scrollArea);
     ui->tabWidget->addTab(tab, QStringLiteral("Управление"));
 }
 
