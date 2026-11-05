@@ -15,9 +15,9 @@
 #include <QPixmap>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QStandardPaths>
 #include <QTabBar>
 #include <QTextCursor>
-#include <QStandardPaths>
 #include <QtMath>
 #include <algorithm>
 #include <cmath>
@@ -371,9 +371,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     setUpdateUI();
 
-    for (QSpinBox *spinBox : {ui->spinBox_gain_surge, ui->spinBox_gain_sway,
-                              ui->spinBox_gain_depth, ui->spinBox_gain_yaw,
-                              ui->spinBox_gain_pitch, ui->spinBox_gain_roll})
+    for (QSpinBox *spinBox : {ui->spinBox_gain_surge, ui->spinBox_gain_sway, ui->spinBox_gain_depth,
+                              ui->spinBox_gain_yaw, ui->spinBox_gain_pitch, ui->spinBox_gain_roll})
         spinBox->hide();
     qApp->installEventFilter(this);
 
@@ -1029,14 +1028,12 @@ void MainWindow::setupInputGainTab()
     const QMap<QString, QString> sourceTitles = {{"keyboard", QStringLiteral("Клавиатура")},
                                                  {"joystick", QStringLiteral("Джойстик")},
                                                  {"gamepad", QStringLiteral("Геймпад")}};
-    const QMap<QString, QString> axisTitles = {{"surge", QStringLiteral("Марш")},
-                                               {"sway", QStringLiteral("Лаг")},
-                                               {"depth", QStringLiteral("Глубина")},
-                                               {"yaw", QStringLiteral("Курс")},
-                                               {"pitch", QStringLiteral("Дифферент")},
-                                               {"roll", QStringLiteral("Крен")}};
-    const QStringList modeTitles = {QStringLiteral("Медленно"), QStringLiteral("Средне"),
-                                    QStringLiteral("Быстро")};
+    const QMap<QString, QString> axisTitles = {
+        {"surge", QStringLiteral("Марш")},      {"sway", QStringLiteral("Лаг")},
+        {"depth", QStringLiteral("Глубина")},   {"yaw", QStringLiteral("Курс")},
+        {"pitch", QStringLiteral("Дифферент")}, {"roll", QStringLiteral("Крен")}};
+    const QStringList modeTitles = {QStringLiteral("Медленный"), QStringLiteral("Средний"),
+                                    QStringLiteral("Быстрый")};
 
     for (int mode = 0; mode < modeTitles.size(); ++mode)
     {
@@ -1067,10 +1064,9 @@ void MainWindow::setupInputGainTab()
                 spinBox->setSingleStep(0.5);
                 spinBox->setButtonSymbols(QAbstractSpinBox::PlusMinus);
                 spinBox->setKeyboardTracking(false);
-                spinBox->setToolTip(
-                    QStringLiteral("Режим «%1»: канал «%2», источник «%3»")
-                        .arg(modeTitles[mode], axisTitles.value(axisName),
-                             sourceTitles.value(sourceName)));
+                spinBox->setToolTip(QStringLiteral("Режим «%1»: канал «%2», источник «%3»")
+                                        .arg(modeTitles[mode], axisTitles.value(axisName),
+                                             sourceTitles.value(sourceName)));
                 inputModeAxisGainSpinBoxes_[mode][sourceName][axisName] = spinBox;
                 controlGainSpinBoxes_.append(spinBox);
                 grid->addWidget(spinBox, sourceIndex + 1, axisIndex + 1);
@@ -1088,32 +1084,33 @@ void MainWindow::setupInputGainTab()
 
 void MainWindow::setupRightPanelManipulator()
 {
-    auto *group = new QGroupBox(QStringLiteral("Манипулятор"), ui->page_main);
-    group->setObjectName(QStringLiteral("groupBox_manipulator"));
-    auto *grid = new QGridLayout(group);
-    grid->setContentsMargins(10, 12, 10, 10);
-    grid->setHorizontalSpacing(8);
-    grid->setVerticalSpacing(8);
+    auto *panel = new QWidget(ui->page_main);
+    panel->setObjectName(QStringLiteral("panel_manipulator"));
+    auto *row = new QHBoxLayout(panel);
+    row->setContentsMargins(0, 0, 0, 0);
+    row->setSpacing(6);
+    row->addWidget(ui->lbl_manip_title);
 
-    for (QPushButton *button : {ui->btn_manip_compress, ui->btn_manip_release,
-                                ui->btn_manip_rotate_ccw, ui->btn_manip_rotate_cw,
-                                ui->btn_manip_stop})
-        button->setFixedSize(100, 32);
+    for (QPushButton *button :
+         {ui->btn_manip_compress, ui->btn_manip_release, ui->btn_manip_rotate_ccw,
+          ui->btn_manip_rotate_cw, ui->btn_manip_stop})
+    {
+        button->setMinimumSize(0, 30);
+        button->setMaximumSize(QWIDGETSIZE_MAX, 34);
+        button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        row->addWidget(button);
+    }
 
-    grid->addWidget(ui->btn_manip_compress, 0, 0, Qt::AlignCenter);
-    grid->addWidget(ui->btn_manip_release, 0, 1, Qt::AlignCenter);
-    grid->addWidget(ui->btn_manip_rotate_ccw, 1, 0, Qt::AlignCenter);
-    grid->addWidget(ui->btn_manip_rotate_cw, 1, 1, Qt::AlignCenter);
-    grid->addWidget(ui->btn_manip_stop, 2, 0, 1, 2, Qt::AlignCenter);
-    grid->addWidget(ui->full_screen, 3, 0, 1, 2);
+    if (auto *cameraLayout = qobject_cast<QVBoxLayout *>(ui->tab_video->layout()))
+        cameraLayout->insertWidget(0, ui->full_screen, 0, Qt::AlignRight);
 
-    ui->lbl_manip_title->hide();
+    ui->lbl_manip_title->show();
     while (QLayoutItem *item = ui->horizontalLayout_manipulator->takeAt(0))
         delete item;
     ui->verticalLayout_4->removeItem(ui->horizontalLayout_manipulator);
     delete ui->horizontalLayout_manipulator;
 
-    ui->verticalLayout_3->insertWidget(5, group);
+    ui->verticalLayout_3->insertWidget(5, panel);
 
     auto *impactGroup = new QGroupBox(QStringLiteral("Текущее воздействие"), ui->page_main);
     auto *impactGrid = new QGridLayout(impactGroup);
@@ -1122,7 +1119,7 @@ void MainWindow::setupRightPanelManipulator()
     impactGrid->setVerticalSpacing(6);
 
     const QList<QPair<QLabel *, QLabel *>> impacts = {
-        {ui->label_4, ui->label_controlMarch}, {ui->label_10, ui->label_controlLag},
+        {ui->label_4, ui->label_controlMarch},  {ui->label_10, ui->label_controlLag},
         {ui->label_12, ui->label_controlDepth}, {ui->label_7, ui->label_controlYaw},
         {ui->label_11, ui->label_controlDif},   {ui->label_13, ui->label_controlKren}};
     for (int index = 0; index < impacts.size(); ++index)
@@ -1133,9 +1130,8 @@ void MainWindow::setupRightPanelManipulator()
         impactGrid->addWidget(impacts[index].second, row, column + 1);
     }
 
-    for (QSpinBox *spinBox : {ui->spinBox_gain_surge, ui->spinBox_gain_sway,
-                              ui->spinBox_gain_depth, ui->spinBox_gain_yaw,
-                              ui->spinBox_gain_pitch, ui->spinBox_gain_roll})
+    for (QSpinBox *spinBox : {ui->spinBox_gain_surge, ui->spinBox_gain_sway, ui->spinBox_gain_depth,
+                              ui->spinBox_gain_yaw, ui->spinBox_gain_pitch, ui->spinBox_gain_roll})
         spinBox->hide();
     while (QLayoutItem *item = ui->verticalLayout_11->takeAt(0))
         delete item;
@@ -1279,10 +1275,8 @@ void MainWindow::loadSettings()
         {
             for (const QString &axisName : gainNames)
             {
-                const QString key = QStringLiteral("%1_%2_%3")
-                                        .arg(mode)
-                                        .arg(sourceName)
-                                        .arg(axisName);
+                const QString key =
+                    QStringLiteral("%1_%2_%3").arg(mode).arg(sourceName).arg(axisName);
                 const double migratedValue =
                     legacyAxisGains[sourceName][axisName] * speedModeGains[mode][axisName];
                 const double value =
@@ -1307,10 +1301,8 @@ void MainWindow::saveSettings()
         {
             for (const QString &axisName : gainNames)
             {
-                const QString key = QStringLiteral("%1_%2_%3")
-                                        .arg(mode)
-                                        .arg(sourceName)
-                                        .arg(axisName);
+                const QString key =
+                    QStringLiteral("%1_%2_%3").arg(mode).arg(sourceName).arg(axisName);
                 settings.setValue(key, inputModeAxisGains_[mode][sourceName][axisName]);
             }
         }
@@ -1613,6 +1605,9 @@ void MainWindow::setupButtonStyles(bool dark)
                "#62ddd2, stop:1 #19aaa0); color: #052f2c;"
                " border: 1px solid #07847c; font-weight: 700; }";
     for (auto *b : {ui->pushButton_speedFast, ui->pushButton_speedMedium, ui->pushButton_speedSlow})
+        b->setStyleSheet(speedStyle);
+    for (auto *b : {ui->btn_manip_compress, ui->btn_manip_release, ui->btn_manip_rotate_ccw,
+                    ui->btn_manip_rotate_cw, ui->btn_manip_stop})
         b->setStyleSheet(speedStyle);
 
     const QString modeStyle =
