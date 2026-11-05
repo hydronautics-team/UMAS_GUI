@@ -2,6 +2,7 @@
 build/
 install/
 log/
+logs/
 
 # CMake
 CMakeFiles/
@@ -33,6 +34,7 @@ __pycache__/
 *.log
 *.tmp
 bags/
+dist/
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
