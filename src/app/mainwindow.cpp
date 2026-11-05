@@ -111,10 +111,10 @@ static const QString LIGHT_THEME =
     "solid #91b9b7; border-bottom-right-radius: 5px; }"
     "QSpinBox::up-button:hover, QSpinBox::down-button:hover, QDoubleSpinBox::up-button:hover, "
     "QDoubleSpinBox::down-button:hover { background-color: #bde9e5; }"
-    "QToolButton[spinStepButton='true'] { background-color: #dceae8; color: #075e58; border: 1px "
+    "QToolButton#spinStepButton { background-color: #dceae8; color: #075e58; border: 1px "
     "solid #91b9b7; border-radius: 5px; font-size: 17px; font-weight: 700; padding: 0px; }"
-    "QToolButton[spinStepButton='true']:hover { background-color: #bde9e5; border-color: #159d93; }"
-    "QToolButton[spinStepButton='true']:pressed { background-color: #9edbd5; }"
+    "QToolButton#spinStepButton:hover { background-color: #bde9e5; border-color: #159d93; }"
+    "QToolButton#spinStepButton:pressed { background-color: #9edbd5; }"
     "QComboBox QAbstractItemView { background-color: #f2f8f7; border: 1px solid #91b9b7; color: "
     "#16383d; selection-background-color: #bde9e5; selection-color: #064d49; }"
     "QGroupBox { border: 1px solid #b5d2d0; border-radius: 9px; margin-top: 12px; padding-top: "
@@ -199,10 +199,10 @@ static const QString DARK_THEME =
     "solid #397886; border-bottom-right-radius: 5px; }"
     "QSpinBox::up-button:hover, QSpinBox::down-button:hover, QDoubleSpinBox::up-button:hover, "
     "QDoubleSpinBox::down-button:hover { background-color: #176173; }"
-    "QToolButton[spinStepButton='true'] { background-color: #124653; color: #74eee3; border: 1px "
+    "QToolButton#spinStepButton { background-color: #124653; color: #74eee3; border: 1px "
     "solid #397886; border-radius: 5px; font-size: 17px; font-weight: 700; padding: 0px; }"
-    "QToolButton[spinStepButton='true']:hover { background-color: #176173; border-color: #74eee3; }"
-    "QToolButton[spinStepButton='true']:pressed { background-color: #0b3039; }"
+    "QToolButton#spinStepButton:hover { background-color: #176173; border-color: #74eee3; }"
+    "QToolButton#spinStepButton:pressed { background-color: #0b3039; }"
     "QComboBox QAbstractItemView { background-color: #09262e; border: 1px solid #247080; color: "
     "#d7f3f1; selection-background-color: #19b8aa; selection-color: #031416; }"
     "QGroupBox { border: 1px solid #174a56; border-radius: 9px; margin-top: 12px; padding-top: "
@@ -1086,16 +1086,28 @@ void MainWindow::setupInputGainTab()
                 editorLayout->setSpacing(3);
                 auto *minusButton = new QToolButton(editor);
                 minusButton->setText(QStringLiteral("−"));
-                minusButton->setProperty("spinStepButton", true);
+                minusButton->setObjectName(QStringLiteral("spinStepButton"));
                 minusButton->setFixedSize(26, 28);
                 minusButton->setAutoRepeat(true);
+                minusButton->setFocusPolicy(Qt::NoFocus);
                 auto *plusButton = new QToolButton(editor);
                 plusButton->setText(QStringLiteral("+"));
-                plusButton->setProperty("spinStepButton", true);
+                plusButton->setObjectName(QStringLiteral("spinStepButton"));
                 plusButton->setFixedSize(26, 28);
                 plusButton->setAutoRepeat(true);
-                connect(minusButton, &QToolButton::clicked, spinBox, &QDoubleSpinBox::stepDown);
-                connect(plusButton, &QToolButton::clicked, spinBox, &QDoubleSpinBox::stepUp);
+                plusButton->setFocusPolicy(Qt::NoFocus);
+                connect(minusButton, &QToolButton::clicked, spinBox,
+                        [spinBox]()
+                        {
+                            spinBox->stepDown();
+                            spinBox->clearFocus();
+                        });
+                connect(plusButton, &QToolButton::clicked, spinBox,
+                        [spinBox]()
+                        {
+                            spinBox->stepUp();
+                            spinBox->clearFocus();
+                        });
                 editorLayout->addWidget(minusButton);
                 editorLayout->addWidget(spinBox, 1);
                 editorLayout->addWidget(plusButton);
@@ -1511,6 +1523,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
             if (ownsFocus && !clickedInside)
             {
+                focusedWidget->clearFocus();
                 spinBox->clearFocus();
                 break;
             }
