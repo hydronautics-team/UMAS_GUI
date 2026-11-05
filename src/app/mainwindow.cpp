@@ -1013,6 +1013,10 @@ void MainWindow::setTab()
     ui->tabWidget->setTabText(2, "Контроль сообщений");
     ui->tabWidget->setTabText(3, "Режимы питания");
     ui->tabWidget->setTabText(4, "Исполнительные устройства");
+    ui->tabWidget->setTabText(5, "Карта");
+
+    ui->horizontalLayout_4->removeItem(ui->verticalLayout_12);
+    ui->horizontalLayout_mapWidget->addLayout(ui->verticalLayout_12);
 
     auto *logsTab = new QWidget(ui->tabWidget);
     logsTab->setObjectName(QStringLiteral("tab_logs"));
