@@ -1,4 +1,5 @@
 #include "fullscreen_video_window.h"
+#include "application_logger.h"
 #include "attitudeindicator.h"
 #include "battery_status_widget.h"
 #include "compass.h"
@@ -85,13 +86,13 @@ FullscreenVideoWindow::FullscreenVideoWindow(UVState *uvState, QWidget *parent)
     connect(hudTimer_, &QTimer::timeout, this, &FullscreenVideoWindow::updateHudData);
     hudTimer_->start(100);
 
-    qDebug() << "Полноэкранное окно HUD создано";
+    UMAS_LOG_DEBUG() << "Полноэкранное окно HUD создано";
 }
 
 FullscreenVideoWindow::~FullscreenVideoWindow()
 {
     hudTimer_->stop();
-    qDebug() << "Полноэкранное окно HUD уничтожено";
+    UMAS_LOG_DEBUG() << "Полноэкранное окно HUD уничтожено";
 }
 
 void FullscreenVideoWindow::setVideoWidget(QWidget *widget)

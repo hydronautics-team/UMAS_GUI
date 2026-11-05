@@ -1,4 +1,5 @@
 #include "gamepad.h"
+#include "application_logger.h"
 #include <QCoreApplication>
 #include <QDebug>
 #include <errno.h>
@@ -27,13 +28,14 @@ Gamepad::Gamepad(int id, QObject *parent)
     m_fd = open(devicePath.toLocal8Bit().constData(), O_RDONLY | O_NONBLOCK);
     if (m_fd < 0)
     {
-        qWarning() << "Не удалось открыть устройство" << devicePath << ":" << strerror(errno);
+        UMAS_LOG_WARNING() << "Не удалось открыть устройство" << devicePath << ":"
+                           << strerror(errno);
         m_connected = false;
         return;
     }
 
     m_connected = true;
-    qDebug() << "Геймпад подключён:" << devicePath;
+    UMAS_LOG_DEBUG() << "Геймпад подключён:" << devicePath;
 
     m_notifier = new QSocketNotifier(m_fd, QSocketNotifier::Read, this);
     connect(m_notifier, &QSocketNotifier::activated, this, &Gamepad::onJoystickEvent);
@@ -62,7 +64,7 @@ void Gamepad::onJoystickEvent()
     {
         if (bytesRead < 0 && errno != EAGAIN)
         {
-            qWarning() << "Ошибка чтения из джойстика:" << strerror(errno);
+            UMAS_LOG_WARNING() << "Ошибка чтения из джойстика:" << strerror(errno);
             m_connected = false;
             m_notifier->setEnabled(false);
             close(m_fd);
@@ -76,7 +78,7 @@ void Gamepad::onJoystickEvent()
                           : (e.type & JS_EVENT_AXIS) ? "AXIS"
                           : (e.type & JS_EVENT_INIT) ? "INIT"
                                                      : "UNKNOWN";
-    qDebug() << "[Gamepad RAW]"
+    UMAS_LOG_DEBUG() << "[Gamepad RAW]"
              << "type=" << typeStr << "number=" << e.number << "value=" << e.value
              << "(init=" << bool(e.type & JS_EVENT_INIT) << ")";
     // ============================================
@@ -121,7 +123,7 @@ void Gamepad::onJoystickEvent()
             {
                 // L2: -100 (отпущена) → 0 ; +100 (нажата) → 100
                 float trigger = std::clamp(normalized, 0.0f, 100.0f);
-                qDebug() << "[Gamepad] L2 → normalized=" << normalized << "trigger=" << trigger
+                UMAS_LOG_DEBUG() << "[Gamepad] L2 → normalized=" << normalized << "trigger=" << trigger
                          << "→ emit leftTriggerMoved";
                 emit leftTriggerMoved(trigger);
             }
@@ -130,7 +132,7 @@ void Gamepad::onJoystickEvent()
             {
                 // R2: -100 (отпущена) → 0 ; +100 (нажата) → 100
                 float trigger = std::clamp(normalized, 0.0f, 100.0f);
-                qDebug() << "[Gamepad] R2 → normalized=" << normalized << "trigger=" << trigger
+                UMAS_LOG_DEBUG() << "[Gamepad] R2 → normalized=" << normalized << "trigger=" << trigger
                          << "→ emit rightTriggerMoved";
                 emit rightTriggerMoved(trigger);
             }

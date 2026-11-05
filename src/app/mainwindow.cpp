@@ -259,7 +259,7 @@ static const QString DARK_THEME =
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ApplicationLogger::initialize(QDir::current().filePath(QStringLiteral("logs")));
-    qInfo().noquote() << "Application UI starting"
+    UMAS_LOG_INFO().noquote() << "Application UI starting"
                       << "version=" << QCoreApplication::applicationVersion()
                       << "architecture=" << QSysInfo::buildCpuArchitecture()
                       << "kernel=" << QSysInfo::kernelType() << QSysInfo::kernelVersion()
@@ -268,7 +268,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(qApp, &QCoreApplication::aboutToQuit, this,
             []()
             {
-                qInfo() << "Application shutdown requested";
+                UMAS_LOG_INFO() << "Application shutdown requested";
                 ApplicationLogger::shutdown();
             });
 
@@ -638,7 +638,7 @@ void MainWindow::setConsole()
 void MainWindow::displayText(QString str)
 {
     QString currentTime = QTime::currentTime().toString("HH:mm:ss");
-    qInfo().noquote() << str;
+    UMAS_LOG_INFO().noquote() << str;
     ui->textEdit_console->append(currentTime + " " + str);
     ui->textEdit_console->moveCursor(QTextCursor::End);
     ui->textEdit_console->ensureCursorVisible();
@@ -1803,7 +1803,7 @@ void MainWindow::setGripState(const QString &state)
 
 MainWindow::~MainWindow()
 {
-    qInfo() << "Main window is being destroyed";
+    UMAS_LOG_INFO() << "Main window is being destroyed";
     delete ui;
     ApplicationLogger::shutdown();
 }

@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QMessageLogContext>
+#include <QMessageLogger>
 #include <QMutex>
 #include <QMutexLocker>
 #include <QTextStream>
@@ -14,6 +15,11 @@
 #include <QUuid>
 
 #include <cstdio>
+
+#define UMAS_LOG_DEBUG() QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, "umas").debug()
+#define UMAS_LOG_INFO() QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, "umas").info()
+#define UMAS_LOG_WARNING() QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, "umas").warning()
+#define UMAS_LOG_ERROR() QMessageLogger(__FILE__, __LINE__, Q_FUNC_INFO, "umas").critical()
 
 class ApplicationLogger final
 {

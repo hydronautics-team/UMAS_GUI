@@ -1,4 +1,5 @@
 #include "joy_stick.h"
+#include "application_logger.h"
 
 #include "axis_response.h"
 #include <QDebug>
@@ -74,7 +75,7 @@ void JoyStick::selectAvailableJoystick()
         {
             if (id != static_cast<int>(i))
             {
-                qInfo() << "JoyStick: подключен контроллер с id" << i;
+                UMAS_LOG_INFO() << "JoyStick: подключен контроллер с id" << i;
             }
             id = static_cast<int>(i);
             return;
@@ -83,7 +84,7 @@ void JoyStick::selectAvailableJoystick()
 
     if (id != -1)
     {
-        qWarning() << "JoyStick: контроллер не обнаружен";
+        UMAS_LOG_WARNING() << "JoyStick: контроллер не обнаружен";
     }
     id = -1;
 }

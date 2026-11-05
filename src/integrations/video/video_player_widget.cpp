@@ -1,4 +1,5 @@
 #include "video_player_widget.h"
+#include "application_logger.h"
 #include <QDebug>
 #include <QResizeEvent>
 #include <QVBoxLayout>
@@ -44,7 +45,7 @@ VideoPlayerWidget::VideoPlayerWidget(QWidget *parent) : QWidget(parent)
                 }
             });
 
-    qDebug() << "VideoPlayerWidget (GStreamer) создан";
+    UMAS_LOG_DEBUG() << "VideoPlayerWidget (GStreamer) создан";
 }
 
 VideoPlayerWidget::~VideoPlayerWidget() { stopStream(); }
@@ -61,7 +62,7 @@ void VideoPlayerWidget::startStream(const QString &portStr)
 {
     if (gstPipeline_)
     {
-        qDebug() << "Поток уже запущен";
+        UMAS_LOG_DEBUG() << "Поток уже запущен";
         return;
     }
 
@@ -76,7 +77,7 @@ void VideoPlayerWidget::startStream(const QString &portStr)
 
     if (error)
     {
-        qCritical() << "GStreamer error:" << error->message;
+        UMAS_LOG_ERROR() << "GStreamer error:" << error->message;
         g_error_free(error);
         statusLabel_->setText("Ошибка запуска GStreamer");
         return;
@@ -98,7 +99,7 @@ void VideoPlayerWidget::startStream(const QString &portStr)
 
     gst_element_set_state(gstPipeline_, GST_STATE_PLAYING);
     statusLabel_->setText(QString("Поток активен (Порт: %1)").arg(portStr));
-    qDebug() << "Видео-поток запущен на порту" << portStr;
+    UMAS_LOG_DEBUG() << "Видео-поток запущен на порту" << portStr;
 }
 
 void VideoPlayerWidget::stopStream()
@@ -109,7 +110,7 @@ void VideoPlayerWidget::stopStream()
         gst_object_unref(gstPipeline_);
         gstPipeline_ = nullptr;
         statusLabel_->setText("Поток остановлен");
-        qDebug() << "Видео-поток остановлен";
+        UMAS_LOG_DEBUG() << "Видео-поток остановлен";
     }
 }
 

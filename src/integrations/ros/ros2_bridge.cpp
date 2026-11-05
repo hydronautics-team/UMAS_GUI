@@ -1,4 +1,5 @@
 #include "ros2_bridge.h"
+#include "application_logger.h"
 #include <QDebug>
 #include <algorithm>
 #include <cmath>
@@ -266,7 +267,7 @@ void RosBridge::zeroYawInternal()
     msg.data = true;
     zero_yaw_pub_->publish(msg);
 
-    qDebug() << "Published yaw zero signal";
+    UMAS_LOG_DEBUG() << "Published yaw zero signal";
 }
 
 void RosBridge::resetDvlOriginInternal()
@@ -318,7 +319,7 @@ void RosBridge::setControlFlagInternal(uint8_t bit, bool value)
 
     emit controlFlagsPublished(control_flags_);
 
-    qDebug() << "Published control mode flags:" << static_cast<int>(control_flags_);
+    UMAS_LOG_DEBUG() << "Published control mode flags:" << static_cast<int>(control_flags_);
 }
 
 void RosBridge::setControlModeInternal(uint8_t mode)
@@ -329,7 +330,7 @@ void RosBridge::setControlModeInternal(uint8_t mode)
     std_msgs::msg::UInt8 msg;
     msg.data = mode;
     control_mode_pub_->publish(msg);
-    qDebug() << "Published control source mode:" << static_cast<int>(mode);
+    UMAS_LOG_DEBUG() << "Published control source mode:" << static_cast<int>(mode);
 }
 
 void RosBridge::publishLightsMode(unsigned mode)
@@ -339,7 +340,7 @@ void RosBridge::publishLightsMode(unsigned mode)
     std_msgs::msg::Int32 msg;
     msg.data = static_cast<int32_t>(mode);
     lights_mode_pub_->publish(msg);
-    qDebug() << "Published light mode:" << mode;
+    UMAS_LOG_DEBUG() << "Published light mode:" << mode;
 }
 
 void RosBridge::publishLightsBrightness(unsigned value)
@@ -395,7 +396,7 @@ void RosBridge::updateManipulatorCommand()
     static int last_command = -1;
     if (command != last_command)
     {
-        qDebug() << "Manipulator command:" << command << "(turn:" << turn_state_
+        UMAS_LOG_DEBUG() << "Manipulator command:" << command << "(turn:" << turn_state_
                  << ", grip:" << grip_state_ << ")";
         last_command = command;
     }
