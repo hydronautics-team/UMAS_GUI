@@ -18,6 +18,7 @@
 #include <QStandardPaths>
 #include <QTabBar>
 #include <QTextCursor>
+#include <QToolButton>
 #include <QtMath>
 #include <algorithm>
 #include <cmath>
@@ -110,10 +111,10 @@ static const QString LIGHT_THEME =
     "solid #91b9b7; border-bottom-right-radius: 5px; }"
     "QSpinBox::up-button:hover, QSpinBox::down-button:hover, QDoubleSpinBox::up-button:hover, "
     "QDoubleSpinBox::down-button:hover { background-color: #bde9e5; }"
-    "QSpinBox::up-arrow, QDoubleSpinBox::up-arrow { image: url(:/controls/spin-plus.xpm); width: "
-    "15px; height: 15px; }"
-    "QSpinBox::down-arrow, QDoubleSpinBox::down-arrow { image: url(:/controls/spin-minus.xpm); "
-    "width: 15px; height: 15px; }"
+    "QToolButton[spinStepButton='true'] { background-color: #dceae8; color: #075e58; border: 1px "
+    "solid #91b9b7; border-radius: 5px; font-size: 17px; font-weight: 700; padding: 0px; }"
+    "QToolButton[spinStepButton='true']:hover { background-color: #bde9e5; border-color: #159d93; }"
+    "QToolButton[spinStepButton='true']:pressed { background-color: #9edbd5; }"
     "QComboBox QAbstractItemView { background-color: #f2f8f7; border: 1px solid #91b9b7; color: "
     "#16383d; selection-background-color: #bde9e5; selection-color: #064d49; }"
     "QGroupBox { border: 1px solid #b5d2d0; border-radius: 9px; margin-top: 12px; padding-top: "
@@ -198,10 +199,10 @@ static const QString DARK_THEME =
     "solid #397886; border-bottom-right-radius: 5px; }"
     "QSpinBox::up-button:hover, QSpinBox::down-button:hover, QDoubleSpinBox::up-button:hover, "
     "QDoubleSpinBox::down-button:hover { background-color: #176173; }"
-    "QSpinBox::up-arrow, QDoubleSpinBox::up-arrow { image: url(:/controls/spin-plus.xpm); width: "
-    "15px; height: 15px; }"
-    "QSpinBox::down-arrow, QDoubleSpinBox::down-arrow { image: url(:/controls/spin-minus.xpm); "
-    "width: 15px; height: 15px; }"
+    "QToolButton[spinStepButton='true'] { background-color: #124653; color: #74eee3; border: 1px "
+    "solid #397886; border-radius: 5px; font-size: 17px; font-weight: 700; padding: 0px; }"
+    "QToolButton[spinStepButton='true']:hover { background-color: #176173; border-color: #74eee3; }"
+    "QToolButton[spinStepButton='true']:pressed { background-color: #0b3039; }"
     "QComboBox QAbstractItemView { background-color: #09262e; border: 1px solid #247080; color: "
     "#d7f3f1; selection-background-color: #19b8aa; selection-color: #031416; }"
     "QGroupBox { border: 1px solid #174a56; border-radius: 9px; margin-top: 12px; padding-top: "
@@ -583,7 +584,6 @@ void MainWindow::ensureInteractiveTextFits()
 
     for (QAbstractSpinBox *spinBox : findChildren<QAbstractSpinBox *>())
     {
-        spinBox->setButtonSymbols(QAbstractSpinBox::PlusMinus);
         spinBox->setMinimumWidth(qMax(spinBox->minimumWidth(), 104));
     }
 
@@ -1072,14 +1072,34 @@ void MainWindow::setupInputGainTab()
                 spinBox->setRange(0.0, 5000.0);
                 spinBox->setDecimals(1);
                 spinBox->setSingleStep(0.1);
-                spinBox->setButtonSymbols(QAbstractSpinBox::PlusMinus);
+                spinBox->setButtonSymbols(QAbstractSpinBox::NoButtons);
                 spinBox->setKeyboardTracking(false);
                 spinBox->setToolTip(QStringLiteral("Режим «%1»: канал «%2», источник «%3»")
                                         .arg(modeTitles[mode], axisTitles.value(axisName),
                                              sourceTitles.value(sourceName)));
                 inputModeAxisGainSpinBoxes_[mode][sourceName][axisName] = spinBox;
                 controlGainSpinBoxes_.append(spinBox);
-                grid->addWidget(spinBox, sourceIndex + 1, axisIndex + 1);
+
+                auto *editor = new QWidget(modeGroup);
+                auto *editorLayout = new QHBoxLayout(editor);
+                editorLayout->setContentsMargins(0, 0, 0, 0);
+                editorLayout->setSpacing(3);
+                auto *minusButton = new QToolButton(editor);
+                minusButton->setText(QStringLiteral("−"));
+                minusButton->setProperty("spinStepButton", true);
+                minusButton->setFixedSize(26, 28);
+                minusButton->setAutoRepeat(true);
+                auto *plusButton = new QToolButton(editor);
+                plusButton->setText(QStringLiteral("+"));
+                plusButton->setProperty("spinStepButton", true);
+                plusButton->setFixedSize(26, 28);
+                plusButton->setAutoRepeat(true);
+                connect(minusButton, &QToolButton::clicked, spinBox, &QDoubleSpinBox::stepDown);
+                connect(plusButton, &QToolButton::clicked, spinBox, &QDoubleSpinBox::stepUp);
+                editorLayout->addWidget(minusButton);
+                editorLayout->addWidget(spinBox, 1);
+                editorLayout->addWidget(plusButton);
+                grid->addWidget(editor, sourceIndex + 1, axisIndex + 1);
             }
         }
         grid->setColumnStretch(0, 1);
