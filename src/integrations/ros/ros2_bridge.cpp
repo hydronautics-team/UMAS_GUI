@@ -37,7 +37,8 @@ void RosBridge::run()
     const auto healthPingService =
         node_->declare_parameter<std::string>("health_ping_service", "/stingray_core/health/ping");
 
-    twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/control/data", 10);
+    twist_pub_ =
+        node_->create_publisher<geometry_msgs::msg::Twist>("/control/manual_impact", 10);
 
     odometry_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
         "/core/state/odometry", rclcpp::QoS(10).reliable(),
