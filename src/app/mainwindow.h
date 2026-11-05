@@ -59,15 +59,12 @@ private:
     SpeedMode currentMode;
 
     QMap<int, QMap<QString, double>> speedModeGains;
-    QVector<QSpinBox *> gainSpinBoxes;
     QStringList gainNames = {"surge", "sway", "depth", "yaw", "pitch", "roll"};
-    QMap<QString, QMap<QString, double>> inputAxisGains_;
-    QMap<QString, QMap<QString, QDoubleSpinBox *>> inputAxisGainSpinBoxes_;
+    QMap<int, QMap<QString, QMap<QString, double>>> inputModeAxisGains_;
+    QMap<int, QMap<QString, QMap<QString, QDoubleSpinBox *>>> inputModeAxisGainSpinBoxes_;
     QVector<QAbstractSpinBox *> controlGainSpinBoxes_;
     const QStringList inputSourceNames_ = {"keyboard", "joystick", "gamepad"};
 
-    void saveCurrentModeGains();
-    void setSpinBoxValuesForCurrentMode();
     void saveSettings();
     void loadSettings();
     void useGamepad();

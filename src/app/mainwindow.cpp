@@ -5,9 +5,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QFontMetrics>
-#include <QFormLayout>
 #include <QGridLayout>
-#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMenuBar>
@@ -374,32 +372,28 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     setUpdateUI();
 
-    gainSpinBoxes = {ui->spinBox_gain_surge, ui->spinBox_gain_sway,  ui->spinBox_gain_depth,
-                     ui->spinBox_gain_yaw,   ui->spinBox_gain_pitch, ui->spinBox_gain_roll};
-    for (QSpinBox *spinBox : gainSpinBoxes)
-        controlGainSpinBoxes_.append(spinBox);
+    for (QSpinBox *spinBox : {ui->spinBox_gain_surge, ui->spinBox_gain_sway,
+                              ui->spinBox_gain_depth, ui->spinBox_gain_yaw,
+                              ui->spinBox_gain_pitch, ui->spinBox_gain_roll})
+        spinBox->hide();
     qApp->installEventFilter(this);
 
     loadSettings();
-    setSpinBoxValuesForCurrentMode();
 
-    for (auto spinBox : gainSpinBoxes)
+    for (int mode = 0; mode < 3; ++mode)
     {
-        connect(spinBox, QOverload<int>::of(&QSpinBox::valueChanged), this,
-                [this]() { saveCurrentModeGains(); });
-    }
-
-    for (const QString &sourceName : inputSourceNames_)
-    {
-        for (const QString &axisName : gainNames)
+        for (const QString &sourceName : inputSourceNames_)
         {
-            QDoubleSpinBox *spinBox = inputAxisGainSpinBoxes_[sourceName][axisName];
-            connect(spinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
-                    [this, sourceName, axisName](double value)
-                    {
-                        inputAxisGains_[sourceName][axisName] = value;
-                        saveSettings();
-                    });
+            for (const QString &axisName : gainNames)
+            {
+                QDoubleSpinBox *spinBox = inputModeAxisGainSpinBoxes_[mode][sourceName][axisName];
+                connect(spinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
+                        [this, mode, sourceName, axisName](double value)
+                        {
+                            inputModeAxisGains_[mode][sourceName][axisName] = value;
+                            saveSettings();
+                        });
+            }
         }
     }
 
@@ -866,7 +860,8 @@ void MainWindow::updateUi_fromControl()
 umas::input::ControlCommand MainWindow::applyGains(const umas::input::ControlCommand &raw) const
 {
     umas::input::ControlCommand scaled = raw;
-    const QMap<QString, double> sourceGains = inputAxisGains_.value(activeInputSourceName());
+    const QMap<QString, double> sourceGains =
+        inputModeAxisGains_.value(static_cast<int>(currentMode)).value(activeInputSourceName());
     scaled.yaw *= sourceGains.value("yaw", 1.0);
     scaled.march *= sourceGains.value("surge", 1.0);
     scaled.pitch *= sourceGains.value("pitch", 1.0);
@@ -1014,7 +1009,7 @@ void MainWindow::setupInputGainTab()
     auto *tab = new QWidget(ui->tabWidget);
     auto *layout = new QVBoxLayout(tab);
     layout->setContentsMargins(18, 18, 18, 18);
-    auto *groupsLayout = new QGridLayout();
+    auto *modeTabs = new QTabWidget(tab);
 
     const QMap<QString, QString> sourceTitles = {{"keyboard", QStringLiteral("Клавиатура")},
                                                  {"joystick", QStringLiteral("Джойстик")},
@@ -1025,41 +1020,59 @@ void MainWindow::setupInputGainTab()
                                                {"yaw", QStringLiteral("Курс")},
                                                {"pitch", QStringLiteral("Дифферент")},
                                                {"roll", QStringLiteral("Крен")}};
+    const QStringList modeTitles = {QStringLiteral("Медленно"), QStringLiteral("Средне"),
+                                    QStringLiteral("Быстро")};
 
-    for (int sourceIndex = 0; sourceIndex < inputSourceNames_.size(); ++sourceIndex)
+    for (int mode = 0; mode < modeTitles.size(); ++mode)
     {
-        const QString sourceName = inputSourceNames_[sourceIndex];
-        auto *group = new QGroupBox(sourceTitles.value(sourceName), tab);
-        auto *form = new QFormLayout(group);
-        form->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
-        const double defaultValue = sourceName == QStringLiteral("gamepad") ? 15.0 : 1.0;
+        auto *modePage = new QWidget(modeTabs);
+        auto *grid = new QGridLayout(modePage);
+        grid->setHorizontalSpacing(10);
+        grid->setVerticalSpacing(10);
 
-        for (const QString &axisName : gainNames)
+        for (int axisIndex = 0; axisIndex < gainNames.size(); ++axisIndex)
         {
-            auto *spinBox = new QDoubleSpinBox(group);
-            spinBox->setRange(0.0, 100.0);
-            spinBox->setDecimals(1);
-            spinBox->setSingleStep(0.5);
-            spinBox->setValue(defaultValue);
-            spinBox->setSuffix(QStringLiteral(" ×"));
-            spinBox->setKeyboardTracking(false);
-            spinBox->setToolTip(QStringLiteral("Множитель канала «%1» для источника «%2»")
-                                    .arg(axisTitles.value(axisName), sourceTitles.value(sourceName)));
-            inputAxisGainSpinBoxes_[sourceName][axisName] = spinBox;
-            controlGainSpinBoxes_.append(spinBox);
-            form->addRow(axisTitles.value(axisName), spinBox);
+            auto *header = new QLabel(axisTitles.value(gainNames[axisIndex]), modePage);
+            header->setAlignment(Qt::AlignCenter);
+            grid->addWidget(header, 0, axisIndex + 1);
         }
-        groupsLayout->addWidget(group, 0, sourceIndex);
+
+        for (int sourceIndex = 0; sourceIndex < inputSourceNames_.size(); ++sourceIndex)
+        {
+            const QString sourceName = inputSourceNames_[sourceIndex];
+            grid->addWidget(new QLabel(sourceTitles.value(sourceName), modePage), sourceIndex + 1,
+                            0);
+
+            for (int axisIndex = 0; axisIndex < gainNames.size(); ++axisIndex)
+            {
+                const QString axisName = gainNames[axisIndex];
+                auto *spinBox = new QDoubleSpinBox(modePage);
+                spinBox->setRange(0.0, 5000.0);
+                spinBox->setDecimals(1);
+                spinBox->setSingleStep(0.5);
+                spinBox->setSuffix(QStringLiteral(" ×"));
+                spinBox->setKeyboardTracking(false);
+                spinBox->setToolTip(
+                    QStringLiteral("Режим «%1»: канал «%2», источник «%3»")
+                        .arg(modeTitles[mode], axisTitles.value(axisName),
+                             sourceTitles.value(sourceName)));
+                inputModeAxisGainSpinBoxes_[mode][sourceName][axisName] = spinBox;
+                controlGainSpinBoxes_.append(spinBox);
+                grid->addWidget(spinBox, sourceIndex + 1, axisIndex + 1);
+            }
+        }
+        grid->setColumnStretch(0, 1);
+        modeTabs->addTab(modePage, modeTitles[mode]);
     }
 
     auto *hint = new QLabel(
-        QStringLiteral("Итоговая команда по каждой оси = воздействие устройства × отдельный "
-                       "коэффициент этой оси. Коэффициенты режима скорости дополнительно не "
-                       "умножаются. Изменения сохраняются сразу."),
+        QStringLiteral("Для каждого режима скорости задаётся отдельный конечный коэффициент "
+                       "устройства по каждой оси. Дополнительного перемножения коэффициентов нет. "
+                       "Изменения сохраняются сразу."),
         tab);
     hint->setWordWrap(true);
 
-    layout->addLayout(groupsLayout);
+    layout->addWidget(modeTabs);
     layout->addWidget(hint);
     layout->addStretch();
     ui->tabWidget->addTab(tab, QStringLiteral("Управление"));
@@ -1180,6 +1193,7 @@ void MainWindow::loadSettings()
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("InputAxisGains"));
+    QMap<QString, QMap<QString, double>> legacyAxisGains;
     for (const QString &sourceName : inputSourceNames_)
     {
         for (const QString &axisName : gainNames)
@@ -1187,8 +1201,29 @@ void MainWindow::loadSettings()
             const QString key = sourceName + QLatin1Char('_') + axisName;
             const double value =
                 qBound(0.0, settings.value(key, legacyInputGains[sourceName]).toDouble(), 100.0);
-            inputAxisGains_[sourceName][axisName] = value;
-            inputAxisGainSpinBoxes_[sourceName][axisName]->setValue(value);
+            legacyAxisGains[sourceName][axisName] = value;
+        }
+    }
+    settings.endGroup();
+
+    settings.beginGroup(QStringLiteral("InputModeAxisGains"));
+    for (int mode = 0; mode < 3; ++mode)
+    {
+        for (const QString &sourceName : inputSourceNames_)
+        {
+            for (const QString &axisName : gainNames)
+            {
+                const QString key = QStringLiteral("%1_%2_%3")
+                                        .arg(mode)
+                                        .arg(sourceName)
+                                        .arg(axisName);
+                const double migratedValue =
+                    legacyAxisGains[sourceName][axisName] * speedModeGains[mode][axisName];
+                const double value =
+                    qBound(0.0, settings.value(key, migratedValue).toDouble(), 5000.0);
+                inputModeAxisGains_[mode][sourceName][axisName] = value;
+                inputModeAxisGainSpinBoxes_[mode][sourceName][axisName]->setValue(value);
+            }
         }
     }
     settings.endGroup();
@@ -1198,63 +1233,28 @@ void MainWindow::saveSettings()
 {
     QSettings settings(settingsFilePath(), QSettings::IniFormat);
 
+    settings.setValue("CurrentSpeedMode", static_cast<int>(currentMode));
+    settings.beginGroup(QStringLiteral("InputModeAxisGains"));
     for (int mode = 0; mode < 3; ++mode)
     {
-        settings.beginGroup(QString("SpeedMode_%1").arg(mode));
-
-        for (int i = 0; i < gainNames.size(); ++i)
+        for (const QString &sourceName : inputSourceNames_)
         {
-            settings.setValue(gainNames[i], speedModeGains[mode][gainNames[i]]);
-        }
-
-        settings.endGroup();
-    }
-
-    settings.setValue("CurrentSpeedMode", static_cast<int>(currentMode));
-    settings.beginGroup(QStringLiteral("InputAxisGains"));
-    for (const QString &sourceName : inputSourceNames_)
-    {
-        for (const QString &axisName : gainNames)
-        {
-            settings.setValue(sourceName + QLatin1Char('_') + axisName,
-                              inputAxisGains_[sourceName][axisName]);
+            for (const QString &axisName : gainNames)
+            {
+                const QString key = QStringLiteral("%1_%2_%3")
+                                        .arg(mode)
+                                        .arg(sourceName)
+                                        .arg(axisName);
+                settings.setValue(key, inputModeAxisGains_[mode][sourceName][axisName]);
+            }
         }
     }
     settings.endGroup();
 }
 
-void MainWindow::saveCurrentModeGains()
-{
-    for (int i = 0; i < gainSpinBoxes.size(); ++i)
-    {
-        speedModeGains[static_cast<int>(currentMode)][gainNames[i]] = gainSpinBoxes[i]->value();
-    }
-    saveSettings();
-}
-
-void MainWindow::setSpinBoxValuesForCurrentMode()
-{
-    for (auto spinBox : gainSpinBoxes)
-    {
-        spinBox->blockSignals(true);
-    }
-
-    for (int i = 0; i < gainSpinBoxes.size(); ++i)
-    {
-        gainSpinBoxes[i]->setValue(speedModeGains[static_cast<int>(currentMode)][gainNames[i]]);
-    }
-
-    for (auto spinBox : gainSpinBoxes)
-    {
-        spinBox->blockSignals(false);
-    }
-}
-
 void MainWindow::setSpeedMode(SpeedMode mode)
 {
-    saveCurrentModeGains();
     currentMode = mode;
-    setSpinBoxValuesForCurrentMode();
 
     // Тема сама покрасит :checked в зелёный #00ff88
     ui->pushButton_speedFast->setChecked(mode == SpeedMode::Fast);
