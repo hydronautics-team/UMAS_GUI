@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "application_logger.h"
 #include "./ui_mainwindow.h"
 #include <QApplication>
 #include <QDateTime>
@@ -17,6 +18,7 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QStandardPaths>
+#include <QSysInfo>
 #include <QTabBar>
 #include <QTextCursor>
 #include <QToolButton>
@@ -256,6 +258,20 @@ static const QString DARK_THEME =
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
+    ApplicationLogger::initialize(QDir::current().filePath(QStringLiteral("logs")));
+    qInfo().noquote() << "Application UI starting"
+                      << "version=" << QCoreApplication::applicationVersion()
+                      << "architecture=" << QSysInfo::buildCpuArchitecture()
+                      << "kernel=" << QSysInfo::kernelType() << QSysInfo::kernelVersion()
+                      << "os=" << QSysInfo::prettyProductName()
+                      << "log_directory=" << ApplicationLogger::logDirectory();
+    connect(qApp, &QCoreApplication::aboutToQuit, this,
+            []()
+            {
+                qInfo() << "Application shutdown requested";
+                ApplicationLogger::shutdown();
+            });
+
     ui->setupUi(this);
     setWindowTitle(QStringLiteral("Hydronautics • UMAS Control Station"));
     harmonizeLegacyStyles();
@@ -622,7 +638,7 @@ void MainWindow::setConsole()
 void MainWindow::displayText(QString str)
 {
     QString currentTime = QTime::currentTime().toString("HH:mm:ss");
-    qInfo() << currentTime << str;
+    qInfo().noquote() << str;
     ui->textEdit_console->append(currentTime + " " + str);
     ui->textEdit_console->moveCursor(QTextCursor::End);
     ui->textEdit_console->ensureCursorVisible();
@@ -1785,4 +1801,9 @@ void MainWindow::setGripState(const QString &state)
     displayText(QString("Манипулятор: %1").arg(state));
 }
 
-MainWindow::~MainWindow() { delete ui; }
+MainWindow::~MainWindow()
+{
+    qInfo() << "Main window is being destroyed";
+    delete ui;
+    ApplicationLogger::shutdown();
+}
