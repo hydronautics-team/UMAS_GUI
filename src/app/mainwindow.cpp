@@ -103,13 +103,15 @@ static const QString LIGHT_THEME =
     "QLineEdit:focus, QSpinBox:focus, QComboBox:focus, QDoubleSpinBox:focus { border: 1px solid "
     "#159d93; background-color: #f7fbfa; }"
     "QSpinBox::up-button, QDoubleSpinBox::up-button { subcontrol-origin: border; "
-    "subcontrol-position: top right; width: 22px; background-color: #dceae8; border-left: 1px "
+    "subcontrol-position: top right; width: 30px; background-color: #dceae8; border-left: 1px "
     "solid #91b9b7; border-bottom: 1px solid #91b9b7; border-top-right-radius: 5px; }"
     "QSpinBox::down-button, QDoubleSpinBox::down-button { subcontrol-origin: border; "
-    "subcontrol-position: bottom right; width: 22px; background-color: #dceae8; border-left: 1px "
+    "subcontrol-position: bottom right; width: 30px; background-color: #dceae8; border-left: 1px "
     "solid #91b9b7; border-bottom-right-radius: 5px; }"
     "QSpinBox::up-button:hover, QSpinBox::down-button:hover, QDoubleSpinBox::up-button:hover, "
     "QDoubleSpinBox::down-button:hover { background-color: #bde9e5; }"
+    "QSpinBox::up-arrow, QSpinBox::down-arrow, QDoubleSpinBox::up-arrow, "
+    "QDoubleSpinBox::down-arrow { width: 14px; height: 14px; }"
     "QComboBox QAbstractItemView { background-color: #f2f8f7; border: 1px solid #91b9b7; color: "
     "#16383d; selection-background-color: #bde9e5; selection-color: #064d49; }"
     "QGroupBox { border: 1px solid #b5d2d0; border-radius: 9px; margin-top: 12px; padding-top: "
@@ -187,13 +189,15 @@ static const QString DARK_THEME =
     "QLineEdit:focus, QSpinBox:focus, QComboBox:focus, QDoubleSpinBox:focus { border: 1px solid "
     "#5de2d7; background-color: #0a2932; }"
     "QSpinBox::up-button, QDoubleSpinBox::up-button { subcontrol-origin: border; "
-    "subcontrol-position: top right; width: 22px; background-color: #124653; border-left: 1px "
+    "subcontrol-position: top right; width: 30px; background-color: #124653; border-left: 1px "
     "solid #397886; border-bottom: 1px solid #397886; border-top-right-radius: 5px; }"
     "QSpinBox::down-button, QDoubleSpinBox::down-button { subcontrol-origin: border; "
-    "subcontrol-position: bottom right; width: 22px; background-color: #124653; border-left: 1px "
+    "subcontrol-position: bottom right; width: 30px; background-color: #124653; border-left: 1px "
     "solid #397886; border-bottom-right-radius: 5px; }"
     "QSpinBox::up-button:hover, QSpinBox::down-button:hover, QDoubleSpinBox::up-button:hover, "
     "QDoubleSpinBox::down-button:hover { background-color: #176173; }"
+    "QSpinBox::up-arrow, QSpinBox::down-arrow, QDoubleSpinBox::up-arrow, "
+    "QDoubleSpinBox::down-arrow { width: 14px; height: 14px; }"
     "QComboBox QAbstractItemView { background-color: #09262e; border: 1px solid #247080; color: "
     "#d7f3f1; selection-background-color: #19b8aa; selection-color: #031416; }"
     "QGroupBox { border: 1px solid #174a56; border-radius: 9px; margin-top: 12px; padding-top: "
@@ -576,7 +580,7 @@ void MainWindow::ensureInteractiveTextFits()
     for (QAbstractSpinBox *spinBox : findChildren<QAbstractSpinBox *>())
     {
         spinBox->setButtonSymbols(QAbstractSpinBox::PlusMinus);
-        spinBox->setMinimumWidth(qMax(spinBox->minimumWidth(), 92));
+        spinBox->setMinimumWidth(qMax(spinBox->minimumWidth(), 104));
     }
 
     QTabBar *tabs = ui->tabWidget->tabBar();
@@ -1063,7 +1067,7 @@ void MainWindow::setupInputGainTab()
                 auto *spinBox = new QDoubleSpinBox(modeGroup);
                 spinBox->setRange(0.0, 5000.0);
                 spinBox->setDecimals(1);
-                spinBox->setSingleStep(0.5);
+                spinBox->setSingleStep(0.1);
                 spinBox->setButtonSymbols(QAbstractSpinBox::PlusMinus);
                 spinBox->setKeyboardTracking(false);
                 spinBox->setToolTip(QStringLiteral("Режим «%1»: канал «%2», источник «%3»")
@@ -1088,10 +1092,12 @@ void MainWindow::setupRightPanelManipulator()
 {
     auto *panel = new QWidget(ui->page_main);
     panel->setObjectName(QStringLiteral("panel_manipulator"));
+    panel->setStyleSheet(
+        QStringLiteral("QWidget#panel_manipulator { background: transparent; border: none; }"));
     auto *row = new QHBoxLayout(panel);
     row->setContentsMargins(0, 0, 0, 0);
     row->setSpacing(4);
-    ui->lbl_manip_title->setText(QStringLiteral("МАНИП.:"));
+    ui->lbl_manip_title->setText(QStringLiteral("Манипулятор:"));
     row->addWidget(ui->lbl_manip_title);
 
     ui->btn_manip_rotate_ccw->setText(QStringLiteral("↺"));
@@ -1107,6 +1113,7 @@ void MainWindow::setupRightPanelManipulator()
         button->setFixedSize(80, 32);
         row->addWidget(button);
     }
+    ui->btn_manip_release->setFixedWidth(100);
     row->addStretch();
 
     if (auto *cameraLayout = qobject_cast<QVBoxLayout *>(ui->tab_video->layout()))
