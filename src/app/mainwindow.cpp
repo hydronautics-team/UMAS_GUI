@@ -110,10 +110,6 @@ static const QString LIGHT_THEME =
     "solid #91b9b7; border-bottom-right-radius: 5px; }"
     "QSpinBox::up-button:hover, QSpinBox::down-button:hover, QDoubleSpinBox::up-button:hover, "
     "QDoubleSpinBox::down-button:hover { background-color: #bde9e5; }"
-    "QSpinBox::up-arrow, QDoubleSpinBox::up-arrow { image: url(:/controls/spin-up.svg); width: "
-    "12px; height: 8px; }"
-    "QSpinBox::down-arrow, QDoubleSpinBox::down-arrow { image: url(:/controls/spin-down.svg); "
-    "width: 12px; height: 8px; }"
     "QComboBox QAbstractItemView { background-color: #f2f8f7; border: 1px solid #91b9b7; color: "
     "#16383d; selection-background-color: #bde9e5; selection-color: #064d49; }"
     "QGroupBox { border: 1px solid #b5d2d0; border-radius: 9px; margin-top: 12px; padding-top: "
@@ -198,10 +194,6 @@ static const QString DARK_THEME =
     "solid #397886; border-bottom-right-radius: 5px; }"
     "QSpinBox::up-button:hover, QSpinBox::down-button:hover, QDoubleSpinBox::up-button:hover, "
     "QDoubleSpinBox::down-button:hover { background-color: #176173; }"
-    "QSpinBox::up-arrow, QDoubleSpinBox::up-arrow { image: url(:/controls/spin-up.svg); width: "
-    "12px; height: 8px; }"
-    "QSpinBox::down-arrow, QDoubleSpinBox::down-arrow { image: url(:/controls/spin-down.svg); "
-    "width: 12px; height: 8px; }"
     "QComboBox QAbstractItemView { background-color: #09262e; border: 1px solid #247080; color: "
     "#d7f3f1; selection-background-color: #19b8aa; selection-color: #031416; }"
     "QGroupBox { border: 1px solid #174a56; border-radius: 9px; margin-top: 12px; padding-top: "
@@ -362,6 +354,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     setTab();
     setupInputGainTab();
+    setupRightPanelManipulator();
     setupActuators();
 
     brightnessTimer_ = new QTimer(this);
@@ -580,7 +573,10 @@ void MainWindow::ensureInteractiveTextFits()
     ui->full_screen->setMinimumHeight(fullScreenMetrics.height() + 18);
 
     for (QAbstractSpinBox *spinBox : findChildren<QAbstractSpinBox *>())
+    {
+        spinBox->setButtonSymbols(QAbstractSpinBox::PlusMinus);
         spinBox->setMinimumWidth(qMax(spinBox->minimumWidth(), 92));
+    }
 
     QTabBar *tabs = ui->tabWidget->tabBar();
     QFont tabFont = tabs->font();
@@ -1016,9 +1012,16 @@ void MainWindow::setupInputGainTab()
     auto *layout = new QVBoxLayout(tab);
     layout->setContentsMargins(18, 18, 18, 18);
     auto *scrollArea = new QScrollArea(tab);
+    scrollArea->setObjectName(QStringLiteral("controlGainScroll"));
     scrollArea->setWidgetResizable(true);
     scrollArea->setFrameShape(QFrame::NoFrame);
+    scrollArea->setStyleSheet(QStringLiteral(
+        "QScrollArea#controlGainScroll { background: transparent; border: none; }"
+        "QScrollArea#controlGainScroll > QWidget > QWidget { background: transparent; }"));
+    scrollArea->viewport()->setAutoFillBackground(false);
     auto *content = new QWidget(scrollArea);
+    content->setObjectName(QStringLiteral("controlGainContent"));
+    content->setAttribute(Qt::WA_TranslucentBackground);
     auto *contentLayout = new QVBoxLayout(content);
     contentLayout->setContentsMargins(0, 0, 0, 0);
     contentLayout->setSpacing(14);
@@ -1062,6 +1065,7 @@ void MainWindow::setupInputGainTab()
                 spinBox->setRange(0.0, 5000.0);
                 spinBox->setDecimals(1);
                 spinBox->setSingleStep(0.5);
+                spinBox->setButtonSymbols(QAbstractSpinBox::PlusMinus);
                 spinBox->setKeyboardTracking(false);
                 spinBox->setToolTip(
                     QStringLiteral("Режим «%1»: канал «%2», источник «%3»")
@@ -1080,6 +1084,31 @@ void MainWindow::setupInputGainTab()
 
     layout->addWidget(scrollArea);
     ui->tabWidget->addTab(tab, QStringLiteral("Управление"));
+}
+
+void MainWindow::setupRightPanelManipulator()
+{
+    auto *group = new QGroupBox(QStringLiteral("Манипулятор"), ui->page_main);
+    group->setObjectName(QStringLiteral("groupBox_manipulator"));
+    auto *grid = new QGridLayout(group);
+    grid->setContentsMargins(10, 12, 10, 10);
+    grid->setHorizontalSpacing(8);
+    grid->setVerticalSpacing(8);
+
+    grid->addWidget(ui->btn_manip_compress, 0, 0);
+    grid->addWidget(ui->btn_manip_release, 0, 1);
+    grid->addWidget(ui->btn_manip_rotate_ccw, 1, 0);
+    grid->addWidget(ui->btn_manip_rotate_cw, 1, 1);
+    grid->addWidget(ui->btn_manip_stop, 2, 0, 1, 2);
+    grid->addWidget(ui->full_screen, 3, 0, 1, 2);
+
+    ui->lbl_manip_title->hide();
+    while (QLayoutItem *item = ui->horizontalLayout_manipulator->takeAt(0))
+        delete item;
+    ui->verticalLayout_4->removeItem(ui->horizontalLayout_manipulator);
+    delete ui->horizontalLayout_manipulator;
+
+    ui->verticalLayout_3->insertWidget(5, group);
 }
 
 void MainWindow::setupActuators()

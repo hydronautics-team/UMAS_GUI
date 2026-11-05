@@ -77,6 +77,7 @@ private:
     void setBottom_mode();
     void setTab();
     void setupInputGainTab();
+    void setupRightPanelManipulator();
     QString activeInputSourceName() const;
     void setUpdateUI();
     void setWidget();
