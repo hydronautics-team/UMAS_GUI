@@ -555,7 +555,9 @@ void MainWindow::ensureInteractiveTextFits()
     for (QPushButton *button : buttons)
     {
         if (button->text().isEmpty() || button == ui->btn_theme_toggle ||
-            button == ui->btn_killswitch_status)
+            button == ui->btn_killswitch_status || button == ui->btn_manip_compress ||
+            button == ui->btn_manip_release || button == ui->btn_manip_rotate_ccw ||
+            button == ui->btn_manip_rotate_cw || button == ui->btn_manip_stop)
             continue;
 
         const QFontMetrics metrics(button->font());
@@ -1102,11 +1104,10 @@ void MainWindow::setupRightPanelManipulator()
          {ui->btn_manip_compress, ui->btn_manip_release, ui->btn_manip_rotate_ccw,
           ui->btn_manip_rotate_cw, ui->btn_manip_stop})
     {
-        button->setMinimumSize(0, 30);
-        button->setMaximumSize(QWIDGETSIZE_MAX, 34);
-        button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        button->setFixedSize(80, 32);
         row->addWidget(button);
     }
+    row->addStretch();
 
     if (auto *cameraLayout = qobject_cast<QVBoxLayout *>(ui->tab_video->layout()))
         cameraLayout->insertWidget(0, ui->full_screen, 0, Qt::AlignRight);
