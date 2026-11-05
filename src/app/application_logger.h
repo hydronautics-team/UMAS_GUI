@@ -11,7 +11,6 @@
 #include <QMutexLocker>
 #include <QTextStream>
 #include <QThread>
-#include <QTime>
 #include <QUuid>
 
 #include <cstdio>
@@ -41,8 +40,13 @@ public:
 
         removeExpiredLogs(logDirectory);
         sessionId_ = QUuid::createUuid().toString(QUuid::WithoutBraces);
-        currentDate_ = QDate::currentDate();
-        if (!openLogFile(currentDate_))
+        const QDateTime startedAt = QDateTime::currentDateTime();
+        logFileBaseName_ =
+            QStringLiteral("umas-gui_%1_%2")
+                .arg(startedAt.toString(QStringLiteral("yyyy-MM-dd_HH-mm-ss-zzz")),
+                     sessionId_.left(8));
+        logFilePart_ = 1;
+        if (!openLogFile(QStringLiteral("SESSION_START")))
             return false;
 
         initialized_ = true;
@@ -100,20 +104,15 @@ private:
         return value;
     }
 
-    static bool openLogFile(const QDate &date)
+    static bool openLogFile(const QString &boundaryEvent)
     {
         if (logFile_.isOpen())
             logFile_.close();
 
-        const QString baseName = QStringLiteral("umas-gui_%1.log").arg(date.toString(Qt::ISODate));
-        QString filePath = QDir(logDirectory_).filePath(baseName);
-        if (QFileInfo(filePath).size() >= MaxLogFileSize)
-        {
-            filePath = QDir(logDirectory_)
-                           .filePath(QStringLiteral("umas-gui_%1_%2.log")
-                                         .arg(date.toString(Qt::ISODate),
-                                              QTime::currentTime().toString(QStringLiteral("HHmmss"))));
-        }
+        const QString partSuffix =
+            logFilePart_ == 1 ? QString() : QStringLiteral("_part-%1").arg(logFilePart_);
+        const QString filePath = QDir(logDirectory_)
+                                     .filePath(logFileBaseName_ + partSuffix + QStringLiteral(".log"));
 
         logFile_.setFileName(filePath);
         if (!logFile_.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
@@ -122,8 +121,7 @@ private:
             return false;
         }
 
-        currentDate_ = date;
-        writeSessionBoundary(QStringLiteral("SESSION_START"));
+        writeSessionBoundary(boundaryEvent);
         return true;
     }
 
@@ -142,9 +140,11 @@ private:
 
     static void rotateIfNeeded()
     {
-        const QDate today = QDate::currentDate();
-        if (today != currentDate_ || logFile_.size() >= MaxLogFileSize)
-            openLogFile(today);
+        if (logFile_.size() >= MaxLogFileSize)
+        {
+            ++logFilePart_;
+            openLogFile(QStringLiteral("SESSION_CONTINUE"));
+        }
     }
 
     static void removeExpiredLogs(const QDir &directory)
@@ -205,7 +205,8 @@ private:
     inline static QFile logFile_;
     inline static QString logDirectory_;
     inline static QString sessionId_;
-    inline static QDate currentDate_;
+    inline static QString logFileBaseName_;
+    inline static int logFilePart_ = 1;
     inline static QtMessageHandler previousHandler_ = nullptr;
     inline static bool initialized_ = false;
 };
