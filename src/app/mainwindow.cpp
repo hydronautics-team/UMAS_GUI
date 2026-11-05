@@ -102,6 +102,16 @@ static const QString LIGHT_THEME =
     "#42c6bc; selection-color: #052f2c; }"
     "QLineEdit:focus, QSpinBox:focus, QComboBox:focus, QDoubleSpinBox:focus { border: 1px solid "
     "#159d93; background-color: #f7fbfa; }"
+    "QSpinBox::up-button, QDoubleSpinBox::up-button { subcontrol-origin: border; "
+    "subcontrol-position: top right; width: 22px; background-color: #dceae8; border-left: 1px "
+    "solid #91b9b7; border-bottom: 1px solid #91b9b7; border-top-right-radius: 5px; }"
+    "QSpinBox::down-button, QDoubleSpinBox::down-button { subcontrol-origin: border; "
+    "subcontrol-position: bottom right; width: 22px; background-color: #dceae8; border-left: 1px "
+    "solid #91b9b7; border-bottom-right-radius: 5px; }"
+    "QSpinBox::up-button:hover, QSpinBox::down-button:hover, QDoubleSpinBox::up-button:hover, "
+    "QDoubleSpinBox::down-button:hover { background-color: #bde9e5; }"
+    "QSpinBox::up-arrow, QSpinBox::down-arrow, QDoubleSpinBox::up-arrow, "
+    "QDoubleSpinBox::down-arrow { width: 9px; height: 9px; }"
     "QComboBox QAbstractItemView { background-color: #f2f8f7; border: 1px solid #91b9b7; color: "
     "#16383d; selection-background-color: #bde9e5; selection-color: #064d49; }"
     "QGroupBox { border: 1px solid #b5d2d0; border-radius: 9px; margin-top: 12px; padding-top: "
@@ -178,6 +188,16 @@ static const QString DARK_THEME =
     "#20c7b8; selection-color: #031416; }"
     "QLineEdit:focus, QSpinBox:focus, QComboBox:focus, QDoubleSpinBox:focus { border: 1px solid "
     "#5de2d7; background-color: #0a2932; }"
+    "QSpinBox::up-button, QDoubleSpinBox::up-button { subcontrol-origin: border; "
+    "subcontrol-position: top right; width: 22px; background-color: #124653; border-left: 1px "
+    "solid #397886; border-bottom: 1px solid #397886; border-top-right-radius: 5px; }"
+    "QSpinBox::down-button, QDoubleSpinBox::down-button { subcontrol-origin: border; "
+    "subcontrol-position: bottom right; width: 22px; background-color: #124653; border-left: 1px "
+    "solid #397886; border-bottom-right-radius: 5px; }"
+    "QSpinBox::up-button:hover, QSpinBox::down-button:hover, QDoubleSpinBox::up-button:hover, "
+    "QDoubleSpinBox::down-button:hover { background-color: #176173; }"
+    "QSpinBox::up-arrow, QSpinBox::down-arrow, QDoubleSpinBox::up-arrow, "
+    "QDoubleSpinBox::down-arrow { width: 9px; height: 9px; }"
     "QComboBox QAbstractItemView { background-color: #09262e; border: 1px solid #247080; color: "
     "#d7f3f1; selection-background-color: #19b8aa; selection-color: #031416; }"
     "QGroupBox { border: 1px solid #174a56; border-radius: 9px; margin-top: 12px; padding-top: "
@@ -559,6 +579,9 @@ void MainWindow::ensureInteractiveTextFits()
                                      54);
     ui->full_screen->setMinimumHeight(fullScreenMetrics.height() + 18);
 
+    for (QAbstractSpinBox *spinBox : findChildren<QAbstractSpinBox *>())
+        spinBox->setMinimumWidth(qMax(spinBox->minimumWidth(), 92));
+
     QTabBar *tabs = ui->tabWidget->tabBar();
     QFont tabFont = tabs->font();
     tabFont.setWeight(QFont::DemiBold);
@@ -844,12 +867,12 @@ umas::input::ControlCommand MainWindow::applyGains(const umas::input::ControlCom
 {
     umas::input::ControlCommand scaled = raw;
     const QMap<QString, double> sourceGains = inputAxisGains_.value(activeInputSourceName());
-    scaled.yaw *= ui->spinBox_gain_yaw->value() * sourceGains.value("yaw", 1.0);
-    scaled.march *= ui->spinBox_gain_surge->value() * sourceGains.value("surge", 1.0);
-    scaled.pitch *= ui->spinBox_gain_pitch->value() * sourceGains.value("pitch", 1.0);
-    scaled.lag *= ui->spinBox_gain_sway->value() * sourceGains.value("sway", 1.0);
-    scaled.depth *= ui->spinBox_gain_depth->value() * sourceGains.value("depth", 1.0);
-    scaled.roll *= ui->spinBox_gain_roll->value() * sourceGains.value("roll", 1.0);
+    scaled.yaw *= sourceGains.value("yaw", 1.0);
+    scaled.march *= sourceGains.value("surge", 1.0);
+    scaled.pitch *= sourceGains.value("pitch", 1.0);
+    scaled.lag *= sourceGains.value("sway", 1.0);
+    scaled.depth *= sourceGains.value("depth", 1.0);
+    scaled.roll *= sourceGains.value("roll", 1.0);
     return scaled;
 }
 
@@ -1030,9 +1053,9 @@ void MainWindow::setupInputGainTab()
     }
 
     auto *hint = new QLabel(
-        QStringLiteral("Итоговая команда по каждой оси = воздействие устройства × коэффициент "
-                       "устройства для этой оси × коэффициент выбранного режима скорости. "
-                       "Изменения сохраняются сразу."),
+        QStringLiteral("Итоговая команда по каждой оси = воздействие устройства × отдельный "
+                       "коэффициент этой оси. Коэффициенты режима скорости дополнительно не "
+                       "умножаются. Изменения сохраняются сразу."),
         tab);
     hint->setWordWrap(true);
 
