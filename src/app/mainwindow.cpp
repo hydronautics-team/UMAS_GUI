@@ -1651,6 +1651,14 @@ void MainWindow::setupButtonStyles(bool dark)
             "QPushButton:hover { background-color: #ffcbd4; border-color: #d9435c; }"
             "QPushButton:pressed { background-color: #f4b9c3; color: #711426; }");
     }
+
+    const QString manipulatorHeightStyle =
+        QStringLiteral("QPushButton { min-height: 30px; max-height: 30px; "
+                       "padding-top: 0px; padding-bottom: 0px; }");
+    for (QPushButton *button :
+         {ui->btn_manip_compress, ui->btn_manip_release, ui->btn_manip_rotate_ccw,
+          ui->btn_manip_rotate_cw, ui->btn_manip_stop})
+        button->setStyleSheet(button->styleSheet() + manipulatorHeightStyle);
 }
 
 // ============================================================
