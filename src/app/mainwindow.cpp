@@ -2,7 +2,12 @@
 #include "./ui_mainwindow.h"
 #include <QApplication>
 #include <QDateTime>
+#include <QDir>
+#include <QFileInfo>
 #include <QFontMetrics>
+#include <QFormLayout>
+#include <QGridLayout>
+#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMenuBar>
@@ -12,9 +17,22 @@
 #include <QPushButton>
 #include <QTabBar>
 #include <QTextCursor>
+#include <QStandardPaths>
 #include <QtMath>
 #include <algorithm>
 #include <cmath>
+
+static QString settingsFilePath()
+{
+    const QString workspaceSettings = QStringLiteral("/UMAS_GUI/umas_settings.ini");
+    if (QFileInfo::exists(workspaceSettings))
+        return workspaceSettings;
+
+    const QString configDirectory =
+        QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    QDir().mkpath(configDirectory);
+    return QDir(configDirectory).filePath(QStringLiteral("umas_settings.ini"));
+}
 
 static QIcon makeSunIcon()
 {
@@ -319,6 +337,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->btn_theme_toggle, &QPushButton::clicked, this, &MainWindow::toggleTheme);
 
     setTab();
+    setupInputGainTab();
     setupActuators();
 
     brightnessTimer_ = new QTimer(this);
@@ -337,6 +356,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     gainSpinBoxes = {ui->spinBox_gain_surge, ui->spinBox_gain_sway,  ui->spinBox_gain_depth,
                      ui->spinBox_gain_yaw,   ui->spinBox_gain_pitch, ui->spinBox_gain_roll};
+    for (QSpinBox *spinBox : gainSpinBoxes)
+        controlGainSpinBoxes_.append(spinBox);
     qApp->installEventFilter(this);
 
     loadSettings();
@@ -348,7 +369,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                 [this]() { saveCurrentModeGains(); });
     }
 
-    setSpeedMode(SpeedMode::Medium);
+    for (const QString &sourceName : inputSourceNames_)
+    {
+        for (const QString &axisName : gainNames)
+        {
+            QDoubleSpinBox *spinBox = inputAxisGainSpinBoxes_[sourceName][axisName];
+            connect(spinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
+                    [this, sourceName, axisName](double value)
+                    {
+                        inputAxisGains_[sourceName][axisName] = value;
+                        saveSettings();
+                    });
+        }
+    }
+
+    setSpeedMode(currentMode);
 
     QButtonGroup *inputGroup = new QButtonGroup(this);
     inputGroup->addButton(ui->radioButton_useJoyStick);
@@ -808,13 +843,23 @@ void MainWindow::updateUi_fromControl()
 umas::input::ControlCommand MainWindow::applyGains(const umas::input::ControlCommand &raw) const
 {
     umas::input::ControlCommand scaled = raw;
-    scaled.yaw *= ui->spinBox_gain_yaw->value();
-    scaled.march *= ui->spinBox_gain_surge->value();
-    scaled.pitch *= ui->spinBox_gain_pitch->value();
-    scaled.lag *= ui->spinBox_gain_sway->value();
-    scaled.depth *= ui->spinBox_gain_depth->value();
-    scaled.roll *= ui->spinBox_gain_roll->value();
+    const QMap<QString, double> sourceGains = inputAxisGains_.value(activeInputSourceName());
+    scaled.yaw *= ui->spinBox_gain_yaw->value() * sourceGains.value("yaw", 1.0);
+    scaled.march *= ui->spinBox_gain_surge->value() * sourceGains.value("surge", 1.0);
+    scaled.pitch *= ui->spinBox_gain_pitch->value() * sourceGains.value("pitch", 1.0);
+    scaled.lag *= ui->spinBox_gain_sway->value() * sourceGains.value("sway", 1.0);
+    scaled.depth *= ui->spinBox_gain_depth->value() * sourceGains.value("depth", 1.0);
+    scaled.roll *= ui->spinBox_gain_roll->value() * sourceGains.value("roll", 1.0);
     return scaled;
+}
+
+QString MainWindow::activeInputSourceName() const
+{
+    if (activeInput == joyStick.get())
+        return QStringLiteral("joystick");
+    if (activeInput == gamepadInput.get())
+        return QStringLiteral("gamepad");
+    return QStringLiteral("keyboard");
 }
 
 void MainWindow::updateControlLabels(const umas::input::ControlCommand &scaled)
@@ -941,6 +986,62 @@ void MainWindow::setTab()
     ui->tabWidget->setCurrentIndex(0);
 }
 
+void MainWindow::setupInputGainTab()
+{
+    auto *tab = new QWidget(ui->tabWidget);
+    auto *layout = new QVBoxLayout(tab);
+    layout->setContentsMargins(18, 18, 18, 18);
+    auto *groupsLayout = new QGridLayout();
+
+    const QMap<QString, QString> sourceTitles = {{"keyboard", QStringLiteral("Клавиатура")},
+                                                 {"joystick", QStringLiteral("Джойстик")},
+                                                 {"gamepad", QStringLiteral("Геймпад")}};
+    const QMap<QString, QString> axisTitles = {{"surge", QStringLiteral("Марш")},
+                                               {"sway", QStringLiteral("Лаг")},
+                                               {"depth", QStringLiteral("Глубина")},
+                                               {"yaw", QStringLiteral("Курс")},
+                                               {"pitch", QStringLiteral("Дифферент")},
+                                               {"roll", QStringLiteral("Крен")}};
+
+    for (int sourceIndex = 0; sourceIndex < inputSourceNames_.size(); ++sourceIndex)
+    {
+        const QString sourceName = inputSourceNames_[sourceIndex];
+        auto *group = new QGroupBox(sourceTitles.value(sourceName), tab);
+        auto *form = new QFormLayout(group);
+        form->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+        const double defaultValue = sourceName == QStringLiteral("gamepad") ? 15.0 : 1.0;
+
+        for (const QString &axisName : gainNames)
+        {
+            auto *spinBox = new QDoubleSpinBox(group);
+            spinBox->setRange(0.0, 100.0);
+            spinBox->setDecimals(1);
+            spinBox->setSingleStep(0.5);
+            spinBox->setValue(defaultValue);
+            spinBox->setSuffix(QStringLiteral(" ×"));
+            spinBox->setKeyboardTracking(false);
+            spinBox->setToolTip(QStringLiteral("Множитель канала «%1» для источника «%2»")
+                                    .arg(axisTitles.value(axisName), sourceTitles.value(sourceName)));
+            inputAxisGainSpinBoxes_[sourceName][axisName] = spinBox;
+            controlGainSpinBoxes_.append(spinBox);
+            form->addRow(axisTitles.value(axisName), spinBox);
+        }
+        groupsLayout->addWidget(group, 0, sourceIndex);
+    }
+
+    auto *hint = new QLabel(
+        QStringLiteral("Итоговая команда по каждой оси = воздействие устройства × коэффициент "
+                       "устройства для этой оси × коэффициент выбранного режима скорости. "
+                       "Изменения сохраняются сразу."),
+        tab);
+    hint->setWordWrap(true);
+
+    layout->addLayout(groupsLayout);
+    layout->addWidget(hint);
+    layout->addStretch();
+    ui->tabWidget->addTab(tab, QStringLiteral("Управление"));
+}
+
 void MainWindow::setupActuators()
 {
     // === Кнопки режимов света ===
@@ -1016,7 +1117,7 @@ void MainWindow::setUpdateUI()
 
 void MainWindow::loadSettings()
 {
-    QSettings settings("/UMAS_GUI/umas_settings.ini", QSettings::IniFormat);
+    QSettings settings(settingsFilePath(), QSettings::IniFormat);
 
     for (int mode = 0; mode < 3; ++mode)
     {
@@ -1041,12 +1142,38 @@ void MainWindow::loadSettings()
     }
 
     int savedMode = settings.value("CurrentSpeedMode", static_cast<int>(SpeedMode::Medium)).toInt();
+    if (savedMode < static_cast<int>(SpeedMode::Slow) ||
+        savedMode > static_cast<int>(SpeedMode::Fast))
+        savedMode = static_cast<int>(SpeedMode::Medium);
     currentMode = static_cast<SpeedMode>(savedMode);
+
+    settings.beginGroup(QStringLiteral("InputGains"));
+    QMap<QString, double> legacyInputGains;
+    for (const QString &sourceName : inputSourceNames_)
+    {
+        const double defaultValue = sourceName == QStringLiteral("gamepad") ? 15.0 : 1.0;
+        legacyInputGains[sourceName] = settings.value(sourceName, defaultValue).toDouble();
+    }
+    settings.endGroup();
+
+    settings.beginGroup(QStringLiteral("InputAxisGains"));
+    for (const QString &sourceName : inputSourceNames_)
+    {
+        for (const QString &axisName : gainNames)
+        {
+            const QString key = sourceName + QLatin1Char('_') + axisName;
+            const double value =
+                qBound(0.0, settings.value(key, legacyInputGains[sourceName]).toDouble(), 100.0);
+            inputAxisGains_[sourceName][axisName] = value;
+            inputAxisGainSpinBoxes_[sourceName][axisName]->setValue(value);
+        }
+    }
+    settings.endGroup();
 }
 
 void MainWindow::saveSettings()
 {
-    QSettings settings("/UMAS_GUI/umas_settings.ini", QSettings::IniFormat);
+    QSettings settings(settingsFilePath(), QSettings::IniFormat);
 
     for (int mode = 0; mode < 3; ++mode)
     {
@@ -1061,6 +1188,16 @@ void MainWindow::saveSettings()
     }
 
     settings.setValue("CurrentSpeedMode", static_cast<int>(currentMode));
+    settings.beginGroup(QStringLiteral("InputAxisGains"));
+    for (const QString &sourceName : inputSourceNames_)
+    {
+        for (const QString &axisName : gainNames)
+        {
+            settings.setValue(sourceName + QLatin1Char('_') + axisName,
+                              inputAxisGains_[sourceName][axisName]);
+        }
+    }
+    settings.endGroup();
 }
 
 void MainWindow::saveCurrentModeGains()
@@ -1100,8 +1237,6 @@ void MainWindow::setSpeedMode(SpeedMode mode)
     ui->pushButton_speedFast->setChecked(mode == SpeedMode::Fast);
     ui->pushButton_speedMedium->setChecked(mode == SpeedMode::Medium);
     ui->pushButton_speedSlow->setChecked(mode == SpeedMode::Slow);
-
-    saveSettings();
 
     saveSettings();
 }
@@ -1262,7 +1397,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         QWidget *focusedWidget = QApplication::focusWidget();
         QWidget *clickedWidget = qobject_cast<QWidget *>(watched);
 
-        for (QSpinBox *spinBox : gainSpinBoxes)
+        for (QAbstractSpinBox *spinBox : controlGainSpinBoxes_)
         {
             const bool ownsFocus =
                 focusedWidget && (focusedWidget == spinBox || spinBox->isAncestorOf(focusedWidget));
