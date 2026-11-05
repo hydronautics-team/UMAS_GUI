@@ -1013,6 +1013,16 @@ void MainWindow::setTab()
     ui->tabWidget->setTabText(2, "Контроль сообщений");
     ui->tabWidget->setTabText(3, "Режимы питания");
     ui->tabWidget->setTabText(4, "Исполнительные устройства");
+
+    auto *logsTab = new QWidget(ui->tabWidget);
+    logsTab->setObjectName(QStringLiteral("tab_logs"));
+    auto *logsLayout = new QVBoxLayout(logsTab);
+    logsLayout->setContentsMargins(10, 10, 10, 10);
+    ui->horizontalLayout_4->removeWidget(ui->textEdit_console);
+    ui->textEdit_console->setParent(logsTab);
+    logsLayout->addWidget(ui->textEdit_console);
+    ui->tabWidget->addTab(logsTab, QStringLiteral("Логи"));
+
     ui->tabWidget->setCurrentIndex(0);
 }
 
