@@ -1095,11 +1095,16 @@ void MainWindow::setupRightPanelManipulator()
     grid->setHorizontalSpacing(8);
     grid->setVerticalSpacing(8);
 
-    grid->addWidget(ui->btn_manip_compress, 0, 0);
-    grid->addWidget(ui->btn_manip_release, 0, 1);
-    grid->addWidget(ui->btn_manip_rotate_ccw, 1, 0);
-    grid->addWidget(ui->btn_manip_rotate_cw, 1, 1);
-    grid->addWidget(ui->btn_manip_stop, 2, 0, 1, 2);
+    for (QPushButton *button : {ui->btn_manip_compress, ui->btn_manip_release,
+                                ui->btn_manip_rotate_ccw, ui->btn_manip_rotate_cw,
+                                ui->btn_manip_stop})
+        button->setFixedSize(100, 32);
+
+    grid->addWidget(ui->btn_manip_compress, 0, 0, Qt::AlignCenter);
+    grid->addWidget(ui->btn_manip_release, 0, 1, Qt::AlignCenter);
+    grid->addWidget(ui->btn_manip_rotate_ccw, 1, 0, Qt::AlignCenter);
+    grid->addWidget(ui->btn_manip_rotate_cw, 1, 1, Qt::AlignCenter);
+    grid->addWidget(ui->btn_manip_stop, 2, 0, 1, 2, Qt::AlignCenter);
     grid->addWidget(ui->full_screen, 3, 0, 1, 2);
 
     ui->lbl_manip_title->hide();
@@ -1109,6 +1114,34 @@ void MainWindow::setupRightPanelManipulator()
     delete ui->horizontalLayout_manipulator;
 
     ui->verticalLayout_3->insertWidget(5, group);
+
+    auto *impactGroup = new QGroupBox(QStringLiteral("Текущее воздействие"), ui->page_main);
+    auto *impactGrid = new QGridLayout(impactGroup);
+    impactGrid->setContentsMargins(10, 12, 10, 10);
+    impactGrid->setHorizontalSpacing(8);
+    impactGrid->setVerticalSpacing(6);
+
+    const QList<QPair<QLabel *, QLabel *>> impacts = {
+        {ui->label_4, ui->label_controlMarch}, {ui->label_10, ui->label_controlLag},
+        {ui->label_12, ui->label_controlDepth}, {ui->label_7, ui->label_controlYaw},
+        {ui->label_11, ui->label_controlDif},   {ui->label_13, ui->label_controlKren}};
+    for (int index = 0; index < impacts.size(); ++index)
+    {
+        const int row = index % 3;
+        const int column = (index / 3) * 2;
+        impactGrid->addWidget(impacts[index].first, row, column);
+        impactGrid->addWidget(impacts[index].second, row, column + 1);
+    }
+
+    for (QSpinBox *spinBox : {ui->spinBox_gain_surge, ui->spinBox_gain_sway,
+                              ui->spinBox_gain_depth, ui->spinBox_gain_yaw,
+                              ui->spinBox_gain_pitch, ui->spinBox_gain_roll})
+        spinBox->hide();
+    while (QLayoutItem *item = ui->verticalLayout_11->takeAt(0))
+        delete item;
+    ui->horizontalLayout_5->removeItem(ui->verticalLayout_11);
+    delete ui->verticalLayout_11;
+    ui->horizontalLayout_5->addWidget(impactGroup);
 }
 
 void MainWindow::setupActuators()
