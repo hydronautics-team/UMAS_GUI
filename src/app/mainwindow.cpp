@@ -9,6 +9,7 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLineEdit>
 #include <QMenuBar>
 #include <QPainter>
 #include <QPainterPath>
@@ -1090,22 +1091,28 @@ void MainWindow::setupInputGainTab()
                 minusButton->setFixedSize(26, 28);
                 minusButton->setAutoRepeat(true);
                 minusButton->setFocusPolicy(Qt::NoFocus);
+                controlGainStepButtons_.append(minusButton);
                 auto *plusButton = new QToolButton(editor);
                 plusButton->setText(QStringLiteral("+"));
                 plusButton->setObjectName(QStringLiteral("spinStepButton"));
                 plusButton->setFixedSize(26, 28);
                 plusButton->setAutoRepeat(true);
                 plusButton->setFocusPolicy(Qt::NoFocus);
+                controlGainStepButtons_.append(plusButton);
                 connect(minusButton, &QToolButton::clicked, spinBox,
                         [spinBox]()
                         {
                             spinBox->stepDown();
+                            if (QLineEdit *editor = spinBox->findChild<QLineEdit *>())
+                                editor->deselect();
                             spinBox->clearFocus();
                         });
                 connect(plusButton, &QToolButton::clicked, spinBox,
                         [spinBox]()
                         {
                             spinBox->stepUp();
+                            if (QLineEdit *editor = spinBox->findChild<QLineEdit *>())
+                                editor->deselect();
                             spinBox->clearFocus();
                         });
                 editorLayout->addWidget(minusButton);
@@ -1523,6 +1530,11 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
             if (ownsFocus && !clickedInside)
             {
+                if (QLineEdit *editor = spinBox->findChild<QLineEdit *>())
+                {
+                    editor->deselect();
+                    editor->clearFocus();
+                }
                 focusedWidget->clearFocus();
                 spinBox->clearFocus();
                 break;
@@ -1536,6 +1548,20 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 void MainWindow::applyTheme(bool dark)
 {
     setStyleSheet(dark ? DARK_THEME : LIGHT_THEME);
+
+    const QString gainStepButtonStyle =
+        dark ? QStringLiteral(
+                   "QToolButton { background-color: #124653; color: #74eee3; border: 1px solid "
+                   "#397886; border-radius: 5px; font-size: 17px; font-weight: 700; padding: 0px; }"
+                   "QToolButton:hover { background-color: #176173; border-color: #74eee3; }"
+                   "QToolButton:pressed { background-color: #0b3039; }")
+             : QStringLiteral(
+                   "QToolButton { background-color: #dceae8; color: #075e58; border: 1px solid "
+                   "#91b9b7; border-radius: 5px; font-size: 17px; font-weight: 700; padding: 0px; }"
+                   "QToolButton:hover { background-color: #bde9e5; border-color: #159d93; }"
+                   "QToolButton:pressed { background-color: #9edbd5; }");
+    for (QToolButton *button : controlGainStepButtons_)
+        button->setStyleSheet(gainStepButtonStyle);
 
     ui->stackedWidget_mode->setStyleSheet(
         dark ? "background-color: #09262e; border: 1px solid #174a56; border-radius: 9px;"

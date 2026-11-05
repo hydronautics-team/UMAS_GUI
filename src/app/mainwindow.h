@@ -34,6 +34,7 @@ QT_END_NAMESPACE
 
 class VideoPlayerWidget;
 class FullscreenVideoWindow;
+class QToolButton;
 
 class MainWindow : public QMainWindow
 {
@@ -63,6 +64,7 @@ private:
     QMap<int, QMap<QString, QMap<QString, double>>> inputModeAxisGains_;
     QMap<int, QMap<QString, QMap<QString, QDoubleSpinBox *>>> inputModeAxisGainSpinBoxes_;
     QVector<QAbstractSpinBox *> controlGainSpinBoxes_;
+    QVector<QToolButton *> controlGainStepButtons_;
     const QStringList inputSourceNames_ = {"keyboard", "joystick", "gamepad"};
 
     void saveSettings();
