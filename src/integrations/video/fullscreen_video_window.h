@@ -45,10 +45,11 @@ private slots:
 
 private:
     void updateOrientation(const UVState::ImuData &imu);
+    void layoutSecondaryCamera();   // <-- новый хелпер, чтобы не дублировать геометрию
 
     UVState *uvState_;
-    QLabel *fullscreenVideoLabel_;   // Холст для видео
-    QWidget *videoPlayer_ = nullptr; // Указатель на видео-плеер
+    QLabel *fullscreenVideoLabel_;
+    QWidget *videoPlayer_ = nullptr;
     QFrame *secondaryCameraFrame_;
     QLabel *secondaryCameraTitle_;
     VideoPlayerWidget *secondaryVideoPlayer_;

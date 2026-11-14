@@ -16,13 +16,18 @@
 #include <algorithm>
 #include <cmath>
 
+namespace
+{
+constexpr const char *kSecondaryPort = "5001";
+}
+
 FullscreenVideoWindow::FullscreenVideoWindow(UVState *uvState, QWidget *parent)
     : QWidget(parent), uvState_(uvState), videoPlayer_(nullptr)
 {
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     setStyleSheet("background-color: black;");
 
-    // СЛОЙ 1: Создаем единый главный холст под видеоряд
+           // СЛОЙ 1: единый холст под видеоряд
     fullscreenVideoLabel_ = new QLabel(this);
     fullscreenVideoLabel_->setAlignment(Qt::AlignCenter);
     fullscreenVideoLabel_->setStyleSheet("background-color: black;");
@@ -47,6 +52,7 @@ FullscreenVideoWindow::FullscreenVideoWindow(UVState *uvState, QWidget *parent)
         "color: white; font-size: 18px; font-weight: bold;"
         "background-color: rgba(5, 12, 18, 170); border-radius: 6px; padding: 4px;");
 
+           // --- Вторая камера: фрейм + плеер + кнопка ---
     secondaryCameraFrame_ = new QFrame(fullscreenVideoLabel_);
     secondaryCameraFrame_->setObjectName("secondaryCameraFrame");
     secondaryCameraFrame_->setStyleSheet(
@@ -229,13 +235,54 @@ void FullscreenVideoWindow::updateHudData()
     wasStable_ = stable;
 }
 
+void FullscreenVideoWindow::layoutSecondaryCamera()
+{
+    const int w = width();
+    const int h = height();
+    const int secondaryWidth = qBound(300, w / 4, 420);
+    const int secondaryHeight = secondaryWidth * 9 / 16 + 34;
+    const int secondaryTop = h - secondaryHeight - 94;
+
+    if (secondaryCameraFrame_)
+    {
+        secondaryCameraFrame_->setGeometry(30, secondaryTop, secondaryWidth, secondaryHeight);
+        if (secondaryCameraTitle_)
+            secondaryCameraTitle_->setGeometry(10, 5, secondaryWidth - 20, 24);
+        if (secondaryVideoPlayer_)
+            secondaryVideoPlayer_->setGeometry(4, 32, secondaryWidth - 8, secondaryHeight - 36);
+    }
+
+           // Кнопка всегда над фреймом, когда он показан, иначе — у нижнего края.
+    if (secondaryCameraButton_)
+    {
+        const int btnY = (secondaryCameraFrame_ && secondaryCameraFrame_->isVisible())
+                             ? secondaryTop - 34
+                             : h - 60;
+        secondaryCameraButton_->setGeometry(30, btnY, 140, 26);
+    }
+
+    if (notificationStack_)
+    {
+        const int notificationBottom =
+            (secondaryCameraFrame_ && secondaryCameraFrame_->isVisible()) ? secondaryTop - 16
+                                                                          : h - 138;
+        notificationStack_->setGeometry(30, 30, qBound(300, w / 4, 430),
+                                        qMax(120, notificationBottom - 30));
+    }
+}
+
 void FullscreenVideoWindow::setSecondaryCameraEnabled(bool enabled)
 {
+    if (!secondaryVideoPlayer_ || !secondaryCameraFrame_ || !secondaryCameraButton_)
+        return;
+
     if (enabled)
     {
-        secondaryVideoPlayer_->startStream("5001");
+        // startStream уже защищён от повторного запуска внутри плеера,
+        // но проверим явно, чтобы не дёргать GStreamer зря.
+        secondaryVideoPlayer_->startStream(kSecondaryPort);
         secondaryCameraFrame_->show();
-        secondaryCameraButton_->setText("СКРЫТЬ");
+        secondaryCameraButton_->setText("КАМЕРА 2 ✓");
     }
     else
     {
@@ -246,9 +293,7 @@ void FullscreenVideoWindow::setSecondaryCameraEnabled(bool enabled)
 
     secondaryCameraFrame_->raise();
     secondaryCameraButton_->raise();
-    const int notificationBottom = enabled ? secondaryCameraFrame_->y() - 16 : height() - 138;
-    notificationStack_->setGeometry(30, 30, qBound(300, width() / 4, 430),
-                                    qMax(120, notificationBottom - 30));
+    layoutSecondaryCamera();
 }
 
 void FullscreenVideoWindow::keyPressEvent(QKeyEvent *event)
@@ -266,15 +311,12 @@ void FullscreenVideoWindow::keyPressEvent(QKeyEvent *event)
 void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
-    int w = event->size().width();
-    int h = event->size().height();
+    const int w = event->size().width();
+    const int h = event->size().height();
 
-    // Растягиваем холст видео на 100% экрана
     if (fullscreenVideoLabel_)
     {
         fullscreenVideoLabel_->setGeometry(0, 0, w, h);
-
-        // Растягиваем видео-плеер внутри холста
         if (videoPlayer_)
         {
             videoPlayer_->setGeometry(0, 0, w, h);
@@ -282,7 +324,6 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
         }
     }
 
-    // Выставляем точные координаты для надписей телеметрии
     if (motionLabel_)
         motionLabel_->setGeometry(w - 606, h - 84, 310, 48);
     if (batteryStatusWidget_)
@@ -290,24 +331,7 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
     if (alertOverlay_)
         alertOverlay_->setGeometry(0, 0, w, h);
 
-    const int secondaryWidth = qBound(300, w / 4, 420);
-    const int secondaryHeight = secondaryWidth * 9 / 16 + 34;
-    const int secondaryTop = h - secondaryHeight - 94;
-    if (secondaryCameraFrame_)
-    {
-        secondaryCameraFrame_->setGeometry(30, secondaryTop, secondaryWidth, secondaryHeight);
-        secondaryCameraTitle_->setGeometry(10, 5, secondaryWidth - 20, 24);
-        secondaryVideoPlayer_->setGeometry(4, 32, secondaryWidth - 8, secondaryHeight - 36);
-    }
-    if (secondaryCameraButton_)
-        secondaryCameraButton_->setGeometry(30, h - 60, 110, 24);
-    if (notificationStack_)
-    {
-        const int notificationBottom =
-            secondaryCameraFrame_->isVisible() ? secondaryTop - 16 : h - 138;
-        notificationStack_->setGeometry(30, 30, qBound(300, w / 4, 430),
-                                        qMax(120, notificationBottom - 30));
-    }
+    layoutSecondaryCamera();
 
     const int instrumentSize = qBound(140, qMin(w, h) / 5, 240);
     const int margin = 30;
@@ -331,7 +355,7 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
     if (orientationLabel_)
         orientationLabel_->setGeometry((w - 560) / 2, margin, 560, 42);
 
-    // Выводим надписи на передний план
+           // Порядок raise(): сначала видео, потом HUD, поверх — PiP и кнопка.
     if (alertOverlay_)
         alertOverlay_->raise();
     if (motionLabel_)
@@ -356,7 +380,9 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
 
 void FullscreenVideoWindow::closeEvent(QCloseEvent *event)
 {
-    secondaryVideoPlayer_->stopStream();
+    // Всегда гасим вторичный поток, чтобы не оставлять открытым UDP-порт.
+    if (secondaryVideoPlayer_)
+        secondaryVideoPlayer_->stopStream();
     if (auto *player = qobject_cast<VideoPlayerWidget *>(videoPlayer_))
         player->setFullscreenPresentation(false);
     emit windowClosed();
