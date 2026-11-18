@@ -37,7 +37,7 @@ void RosBridge::run()
     const auto healthPingService =
         node_->declare_parameter<std::string>("health_ping_service", "/stingray_core/health/ping");
 
-    twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/control/data", 10);
+    twist_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/control/data", rclcpp::SensorDataQoS());
 
     odometry_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
         "/core/state/odometry", rclcpp::QoS(10).reliable(),
@@ -229,6 +229,9 @@ void RosBridge::run()
     // manipulator_timer_ = node_->create_wall_timer(std::chrono::milliseconds(50),
     //                                               [this]() { updateManipulatorCommand(); });
 
+    kill_switch_state_pub_ =
+        node_->create_publisher<std_msgs::msg::Bool>("/stingray_core/safety/kill_switch", 10);
+
     is_ready_ = true;
 
     while (rclcpp::ok() && !isInterruptionRequested())
@@ -371,7 +374,7 @@ void RosBridge::updateManipulatorCommand()
 
     // Кодируем состояние в число: turn * 10 + grip
     // turn: 0=stop, 1=left, 2=right
-    // grip: 0=stop, 1=close, 2=open
+    // grip: 3=stop, 4=close, 5=open
     int turn_code = 0;
     if (turn_state_ == "left")
         turn_code = 1;
@@ -398,4 +401,14 @@ void RosBridge::updateManipulatorCommand()
                  << ", grip:" << grip_state_ << ")";
         last_command = command;
     }
+}
+
+void RosBridge::publishKillSwitchState(bool engaged)
+{
+    if (!is_ready_ || !kill_switch_state_pub_)
+        return;
+
+    std_msgs::msg::Bool msg;
+    msg.data = engaged;
+    kill_switch_state_pub_->publish(msg);
 }

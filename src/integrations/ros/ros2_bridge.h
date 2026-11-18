@@ -8,6 +8,7 @@
 #include <mutex>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/qos.hpp>
 #include <sensor_msgs/msg/battery_state.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <std_msgs/msg/bool.hpp>
@@ -59,6 +60,7 @@ public slots:
     void setControlModeInternal(uint8_t mode);
     void publishLightsMode(unsigned mode);
     void publishLightsBrightness(unsigned value);
+    void publishKillSwitchState(bool engaged);
 
 private:
     rclcpp::Node::SharedPtr node_;
@@ -79,7 +81,7 @@ private:
     rclcpp::TimerBase::SharedPtr health_ping_timer_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr lights_mode_pub_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr lights_brightness_pub_;
-
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr kill_switch_state_pub_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr manipulator_pwm_pub_;
     rclcpp::TimerBase::SharedPtr manipulator_timer_;
 

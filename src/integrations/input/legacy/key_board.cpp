@@ -107,6 +107,9 @@ void KeyBoard::keyReleaseEvent(QKeyEvent *event)
     case Qt::Key_Semicolon:
         command_.lag = 0;
         break;
+    case Qt::Key_Bar:
+        command_.lag = 0;
+        break;
     }
     dirty_ = true;
 }

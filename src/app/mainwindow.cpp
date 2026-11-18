@@ -13,6 +13,7 @@
 #include <QTabBar>
 #include <QTextCursor>
 #include <QtMath>
+#include <QShortcut>
 #include <algorithm>
 #include <cmath>
 
@@ -225,6 +226,28 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     rosBridge = new RosBridge(this);
     rosBridge->start();
+
+    // '\' -> отправить 1 (true) в /stingray_core/safety/kill_switch
+    auto *killOnShortcut = new QShortcut(QKeySequence(Qt::Key_Backslash), this);
+    killOnShortcut->setContext(Qt::ApplicationShortcut);
+    killOnShortcut->setAutoRepeat(false);
+    connect(killOnShortcut, &QShortcut::activated, this,
+            [this]()
+            {
+                rosBridge->publishKillSwitchState(true);
+                displayText("KillSwitch: 1 (Активен)");
+            });
+
+    // '|' (Shift + '\') -> отправить 0 (false) в /stingray_core/safety/kill_switch
+    auto *killOffShortcut = new QShortcut(QKeySequence(Qt::Key_Bar), this);
+    killOffShortcut->setContext(Qt::ApplicationShortcut);
+    killOffShortcut->setAutoRepeat(false);
+    connect(killOffShortcut, &QShortcut::activated, this,
+            [this]()
+            {
+                rosBridge->publishKillSwitchState(false);
+                displayText("KillSwitch: 0 (Снят)");
+            });
 
     connect(this, &MainWindow::publishTwistRequested, rosBridge, &RosBridge::publishTwistInternal,
             Qt::QueuedConnection);
