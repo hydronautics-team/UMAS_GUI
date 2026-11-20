@@ -27,6 +27,7 @@ public:
     ~FullscreenVideoWindow();
 
     void setVideoWidget(QWidget *widget);
+    void setSelectedSpeedMode(const QString &modeName);
 
 public slots:
     void drawFrame(const QPixmap &pixmap);
@@ -55,6 +56,10 @@ private:
     QPushButton *secondaryCameraButton_;
 
     QLabel *motionLabel_;
+    QLabel *contourLabels_[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+    bool contourStates_[6] = {false, false, false, false, false, false};
+    bool contourStateKnown_[6] = {false, false, false, false, false, false};
+    QLabel *selectedSpeedModeLabel_;
     Compass *compass_;
     AttitudeIndicator *attitudeIndicator_;
     DepthGauge *depthGauge_;

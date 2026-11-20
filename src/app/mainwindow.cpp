@@ -393,6 +393,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                     {
                         //  полноэкранное окно
                         fullscreenWindow_ = new FullscreenVideoWindow(uvState, this);
+                        const QString speedModeName =
+                            currentMode == SpeedMode::Slow   ? QStringLiteral("СЛАБЫЙ")
+                            : currentMode == SpeedMode::Fast ? QStringLiteral("БЫСТРЫЙ")
+                                                             : QStringLiteral("СРЕДНИЙ");
+                        fullscreenWindow_->setSelectedSpeedMode(speedModeName);
 
                         //  плеер в полноэкранное окно
                         videoPlayer_->setParent(fullscreenWindow_);
@@ -1117,6 +1122,13 @@ void MainWindow::setSpeedMode(SpeedMode mode)
 {
     saveCurrentModeGains();
     currentMode = mode;
+    if (fullscreenWindow_)
+    {
+        const QString speedModeName = mode == SpeedMode::Slow   ? QStringLiteral("СЛАБЫЙ")
+                                      : mode == SpeedMode::Fast ? QStringLiteral("БЫСТРЫЙ")
+                                                                : QStringLiteral("СРЕДНИЙ");
+        fullscreenWindow_->setSelectedSpeedMode(speedModeName);
+    }
     setSpinBoxValuesForCurrentMode();
 
     // Тема сама покрасит :checked в зелёный #00ff88

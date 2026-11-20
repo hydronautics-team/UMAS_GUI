@@ -7,9 +7,11 @@
 #include "hud_notification_stack.h"
 #include "video_player_widget.h"
 #include <QCloseEvent>
+#include <QColor>
 #include <QDateTime>
 #include <QDebug>
 #include <QFrame>
+#include <QGraphicsDropShadowEffect>
 #include <QPalette>
 #include <QPushButton>
 #include <QResizeEvent>
@@ -33,6 +35,28 @@ FullscreenVideoWindow::FullscreenVideoWindow(UVState *uvState, QWidget *parent)
                                    "border-radius: 8px; padding: 7px 12px;";
     motionLabel_ = new QLabel("СКОРОСТЬ: N/A", fullscreenVideoLabel_);
     motionLabel_->setStyleSheet(dataPanelStyle);
+
+    const QString contourStyle =
+        "QLabel { color: #d7f3f1; font-size: 14px; font-weight: 600;"
+        "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #124653, stop:1 #0a303a);"
+        "border: 1px solid #236574; border-radius: 8px; padding: 6px 12px; }";
+    for (QLabel *&label : contourLabels_)
+    {
+        label = new QLabel(fullscreenVideoLabel_);
+        label->setAlignment(Qt::AlignCenter);
+    }
+    contourLabels_[0]->setText("МАРШ");
+    contourLabels_[1]->setText("ЛАГ");
+    contourLabels_[2]->setText("ГЛУБИНА");
+    contourLabels_[3]->setText("КУРС");
+    contourLabels_[4]->setText("ДИФФЕРЕНТ");
+    contourLabels_[5]->setText("КРЕН");
+    for (QLabel *label : contourLabels_)
+        label->setStyleSheet(contourStyle);
+    selectedSpeedModeLabel_ = new QLabel(fullscreenVideoLabel_);
+    selectedSpeedModeLabel_->setAlignment(Qt::AlignCenter);
+    selectedSpeedModeLabel_->setStyleSheet(dataPanelStyle);
+    setSelectedSpeedMode("СРЕДНИЙ");
 
     compass_ = new Compass(fullscreenVideoLabel_);
     attitudeIndicator_ = new AttitudeIndicator(fullscreenVideoLabel_);
@@ -113,6 +137,11 @@ void FullscreenVideoWindow::setVideoWidget(QWidget *widget)
     }
 }
 
+void FullscreenVideoWindow::setSelectedSpeedMode(const QString &modeName)
+{
+    selectedSpeedModeLabel_->setText(QStringLiteral("РЕЖИМ: %1").arg(modeName));
+}
+
 void FullscreenVideoWindow::drawFrame(const QPixmap &pixmap)
 {
     if (fullscreenVideoLabel_ && !pixmap.isNull())
@@ -141,6 +170,37 @@ void FullscreenVideoWindow::updateHudData()
     const UVState::Pose pose = uvState_->pose();
     const UVState::BatteryData battery = uvState_->battery();
     const UVState::ImuData imu = uvState_->imu();
+    const std::uint8_t flags = uvState_->controlFlags();
+    const unsigned contourBits[] = {0, 1, 2, 3, 4, 5};
+    for (int i = 0; i < 6; ++i)
+    {
+        const bool closed = (flags & (1u << contourBits[i])) != 0;
+        if (contourStateKnown_[i] && contourStates_[i] == closed)
+            continue;
+        contourStateKnown_[i] = true;
+        contourStates_[i] = closed;
+        contourLabels_[i]->setStyleSheet(
+            closed
+                ? "QLabel { color: #031416; font-size: 14px; font-weight: 700;"
+                  "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #74eee3, stop:1 #20b9ad);"
+                  "border: 1px solid #a7fff7; border-radius: 8px; padding: 6px 12px; }"
+                : "QLabel { color: #d7f3f1; font-size: 14px; font-weight: 600;"
+                  "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #124653, stop:1 #0a303a);"
+                  "border: 1px solid #236574; border-radius: 8px; padding: 6px 12px; }");
+
+        if (closed)
+        {
+            auto *glow = new QGraphicsDropShadowEffect(contourLabels_[i]);
+            glow->setColor(QColor(93, 226, 215, 220));
+            glow->setBlurRadius(18.0);
+            glow->setOffset(0.0);
+            contourLabels_[i]->setGraphicsEffect(glow);
+        }
+        else
+        {
+            contourLabels_[i]->setGraphicsEffect(nullptr);
+        }
+    }
     const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
     constexpr qint64 odometryTimeoutMs = 1000;
     constexpr qint64 imuTimeoutMs = 1000;
@@ -285,6 +345,18 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
     // Выставляем точные координаты для надписей телеметрии
     if (motionLabel_)
         motionLabel_->setGeometry(w - 606, h - 84, 310, 48);
+    const int contourWidths[] = {96, 96, 138, 96, 138, 96};
+    int contourX = 30;
+    for (int i = 0; i < 6; ++i)
+    {
+        if (i == 3)
+            contourX = 30;
+        const int rowY = i < 3 ? 92 : 142;
+        contourLabels_[i]->setGeometry(contourX, rowY, contourWidths[i], 42);
+        contourX += contourWidths[i] + 8;
+    }
+    if (selectedSpeedModeLabel_)
+        selectedSpeedModeLabel_->setGeometry(30, 196, 220, 44);
     if (batteryStatusWidget_)
         batteryStatusWidget_->setGeometry(w - 280, h - 146, 250, 110);
     if (alertOverlay_)
@@ -352,6 +424,10 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
         attitudeIndicator_->raise();
     if (orientationLabel_)
         orientationLabel_->raise();
+    for (QLabel *label : contourLabels_)
+        label->raise();
+    if (selectedSpeedModeLabel_)
+        selectedSpeedModeLabel_->raise();
 }
 
 void FullscreenVideoWindow::closeEvent(QCloseEvent *event)

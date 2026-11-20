@@ -20,6 +20,13 @@ std::uint64_t now_ms()
 GamepadInputSource::GamepadInputSource(Gamepad *gamepad, QObject *parent)
     : QObject(parent), gamepad_(gamepad)
 {
+    connect(gamepad_, &Gamepad::connectionLost, this,
+            [this]()
+            {
+                march_ = yaw_ = pitch_ = roll_ = depth_ = lag_ = 0.f;
+                markDirty();
+            });
+
     // Стики: -100..100 -> -1..1
     connect(gamepad_, &Gamepad::leftStickYMoved, this,
             [this](float v)

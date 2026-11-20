@@ -76,6 +76,7 @@ signals:
     void button11Released();
     void button12Pressed();
     void button12Released();
+    void connectionLost();
 
 private slots:
     void onJoystickEvent(); // слот для чтения событий

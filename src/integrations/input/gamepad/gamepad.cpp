@@ -57,19 +57,25 @@ bool Gamepad::isConnected() const { return m_connected && m_fd >= 0; }
 void Gamepad::onJoystickEvent()
 {
     struct js_event e;
-    int bytesRead = read(m_fd, &e, sizeof(e));
-    if (bytesRead != sizeof(e))
+    while (m_fd >= 0)
     {
-        if (bytesRead < 0 && errno != EAGAIN)
+        const ssize_t bytesRead = read(m_fd, &e, sizeof(e));
+        if (bytesRead < 0 && errno == EAGAIN)
         {
-            qWarning() << "Ошибка чтения из джойстика:" << strerror(errno);
+            return;
+        }
+        if (bytesRead != static_cast<ssize_t>(sizeof(e)))
+        {
+            qWarning() << "Ошибка чтения из джойстика:"
+                       << (bytesRead == 0 ? "устройство закрыто" : strerror(errno));
             m_connected = false;
-            m_notifier->setEnabled(false);
+            if (m_notifier)
+                m_notifier->setEnabled(false);
             close(m_fd);
             m_fd = -1;
+            emit connectionLost();
+            return;
         }
-        return;
-    }
 
     // ===== DEBUG: сырое событие от геймпада =====
     const char *typeStr = (e.type & JS_EVENT_BUTTON) ? "BUTTON"
@@ -84,7 +90,7 @@ void Gamepad::onJoystickEvent()
     // INIT-события игнорируем
     if (e.type & JS_EVENT_INIT)
     {
-        return;
+        continue;
     }
 
     // ============================================================
@@ -286,6 +292,7 @@ void Gamepad::onJoystickEvent()
                 }
             }
         }
+    }
     }
 }
 
