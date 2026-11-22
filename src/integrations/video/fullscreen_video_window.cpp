@@ -36,23 +36,30 @@ FullscreenVideoWindow::FullscreenVideoWindow(UVState *uvState, QWidget *parent)
     motionLabel_ = new QLabel("СКОРОСТЬ: N/A", fullscreenVideoLabel_);
     motionLabel_->setStyleSheet(dataPanelStyle);
 
-    const QString contourStyle =
-        "QLabel { color: #d7f3f1; font-size: 14px; font-weight: 600;"
+    const QString contourButtonStyle =
+        "QPushButton { color: #d7f3f1; font-size: 14px; font-weight: 600;"
         "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #124653, stop:1 #0a303a);"
-        "border: 1px solid #236574; border-radius: 8px; padding: 6px 12px; }";
-    for (QLabel *&label : contourLabels_)
+        "border: 1px solid #236574; border-radius: 8px; padding: 6px 12px; }"
+        "QPushButton:hover { border-color: #74eee3; color: #ffffff; }"
+        "QPushButton:checked { color: #031416; font-weight: 700;"
+        "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #74eee3, stop:1 #20b9ad);"
+        "border: 1px solid #a7fff7; }";
+    for (int i = 0; i < 6; ++i)
     {
-        label = new QLabel(fullscreenVideoLabel_);
-        label->setAlignment(Qt::AlignCenter);
+        contourButtons_[i] = new QPushButton(fullscreenVideoLabel_);
+        contourButtons_[i]->setCheckable(true);
+        contourButtons_[i]->setFocusPolicy(Qt::NoFocus);
+        contourButtons_[i]->setStyleSheet(contourButtonStyle);
+        connect(contourButtons_[i], &QPushButton::clicked, this,
+                [this, i](bool checked)
+                { emit controlFlagRequested(static_cast<std::uint8_t>(i), checked); });
     }
-    contourLabels_[0]->setText("МАРШ");
-    contourLabels_[1]->setText("ЛАГ");
-    contourLabels_[2]->setText("ГЛУБИНА");
-    contourLabels_[3]->setText("КУРС");
-    contourLabels_[4]->setText("ДИФФЕРЕНТ");
-    contourLabels_[5]->setText("КРЕН");
-    for (QLabel *label : contourLabels_)
-        label->setStyleSheet(contourStyle);
+    contourButtons_[0]->setText("МАРШ");
+    contourButtons_[1]->setText("ЛАГ");
+    contourButtons_[2]->setText("ГЛУБИНА");
+    contourButtons_[3]->setText("КУРС");
+    contourButtons_[4]->setText("ДИФФЕРЕНТ");
+    contourButtons_[5]->setText("КРЕН");
     selectedSpeedModeLabel_ = new QLabel(fullscreenVideoLabel_);
     selectedSpeedModeLabel_->setAlignment(Qt::AlignCenter);
     selectedSpeedModeLabel_->setStyleSheet(dataPanelStyle);
@@ -175,30 +182,23 @@ void FullscreenVideoWindow::updateHudData()
     for (int i = 0; i < 6; ++i)
     {
         const bool closed = (flags & (1u << contourBits[i])) != 0;
+        contourButtons_[i]->setChecked(closed);
         if (contourStateKnown_[i] && contourStates_[i] == closed)
             continue;
         contourStateKnown_[i] = true;
         contourStates_[i] = closed;
-        contourLabels_[i]->setStyleSheet(
-            closed
-                ? "QLabel { color: #031416; font-size: 14px; font-weight: 700;"
-                  "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #74eee3, stop:1 #20b9ad);"
-                  "border: 1px solid #a7fff7; border-radius: 8px; padding: 6px 12px; }"
-                : "QLabel { color: #d7f3f1; font-size: 14px; font-weight: 600;"
-                  "background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #124653, stop:1 #0a303a);"
-                  "border: 1px solid #236574; border-radius: 8px; padding: 6px 12px; }");
 
         if (closed)
         {
-            auto *glow = new QGraphicsDropShadowEffect(contourLabels_[i]);
+            auto *glow = new QGraphicsDropShadowEffect(contourButtons_[i]);
             glow->setColor(QColor(93, 226, 215, 220));
             glow->setBlurRadius(18.0);
             glow->setOffset(0.0);
-            contourLabels_[i]->setGraphicsEffect(glow);
+            contourButtons_[i]->setGraphicsEffect(glow);
         }
         else
         {
-            contourLabels_[i]->setGraphicsEffect(nullptr);
+            contourButtons_[i]->setGraphicsEffect(nullptr);
         }
     }
     const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
@@ -352,7 +352,7 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
         if (i == 3)
             contourX = 30;
         const int rowY = i < 3 ? 92 : 142;
-        contourLabels_[i]->setGeometry(contourX, rowY, contourWidths[i], 42);
+        contourButtons_[i]->setGeometry(contourX, rowY, contourWidths[i], 42);
         contourX += contourWidths[i] + 8;
     }
     if (selectedSpeedModeLabel_)
@@ -424,8 +424,8 @@ void FullscreenVideoWindow::resizeEvent(QResizeEvent *event)
         attitudeIndicator_->raise();
     if (orientationLabel_)
         orientationLabel_->raise();
-    for (QLabel *label : contourLabels_)
-        label->raise();
+    for (QPushButton *button : contourButtons_)
+        button->raise();
     if (selectedSpeedModeLabel_)
         selectedSpeedModeLabel_->raise();
 }

@@ -10,6 +10,7 @@
 #include <QPainterPath>
 #include <QPixmap>
 #include <QPushButton>
+#include <QSignalBlocker>
 #include <QTabBar>
 #include <QTextCursor>
 #include <QtMath>
@@ -328,6 +329,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     connect(rosBridge, &RosBridge::controlFlagsPublished, uvState, &UVState::setControlFlags,
             Qt::QueuedConnection);
+    connect(uvState, &UVState::controlFlagsUpdated, this,
+            [this](std::uint8_t flags)
+            {
+                const struct
+                {
+                    QPushButton *button;
+                    unsigned bit;
+                } controls[] = {{ui->pushButton_modeAutomated_surge, 0},
+                                {ui->pushButton_modeAutomated_sway, 1},
+                                {ui->pushButton_modeAutomated_depth, 2},
+                                {ui->pushButton_modeAutomated_yaw, 3},
+                                {ui->pushButton_modeAutomated_pitch, 4},
+                                {ui->pushButton_modeAutomated_roll, 5},
+                                {ui->pushButton_sumControlImpacts, 6}};
+                for (const auto &control : controls)
+                {
+                    const QSignalBlocker blocker(control.button);
+                    control.button->setChecked((flags & (1u << control.bit)) != 0);
+                }
+            });
 
     setWidget();
     setConsole();
@@ -393,6 +414,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                     {
                         //  полноэкранное окно
                         fullscreenWindow_ = new FullscreenVideoWindow(uvState, this);
+                        connect(fullscreenWindow_, &FullscreenVideoWindow::controlFlagRequested,
+                                this, &MainWindow::controlFlagRequested);
                         const QString speedModeName =
                             currentMode == SpeedMode::Slow   ? QStringLiteral("СЛАБЫЙ")
                             : currentMode == SpeedMode::Fast ? QStringLiteral("БЫСТРЫЙ")

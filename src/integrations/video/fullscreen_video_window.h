@@ -34,6 +34,7 @@ public slots:
 
 signals:
     void windowClosed();
+    void controlFlagRequested(std::uint8_t bit, bool value);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -56,7 +57,7 @@ private:
     QPushButton *secondaryCameraButton_;
 
     QLabel *motionLabel_;
-    QLabel *contourLabels_[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+    QPushButton *contourButtons_[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
     bool contourStates_[6] = {false, false, false, false, false, false};
     bool contourStateKnown_[6] = {false, false, false, false, false, false};
     QLabel *selectedSpeedModeLabel_;
