@@ -448,6 +448,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
             }
         }
     }
+    for (int mode = 0; mode < 3; ++mode)
+        for (const QString &sourceName : inputSourceNames_)
+            for (const QString &axisName : gainNames)
+                connect(closedInputModeAxisGainSpinBoxes_[mode][sourceName][axisName],
+                        QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
+                        [this, mode, sourceName, axisName](double value)
+                        {
+                            closedInputModeAxisGains_[mode][sourceName][axisName] = value;
+                            saveSettings();
+                        });
 
     setSpeedMode(currentMode);
 
@@ -931,6 +941,15 @@ umas::input::ControlCommand MainWindow::applyGains(const umas::input::ControlCom
     scaled.lag *= sourceGains.value("sway", 1.0);
     scaled.depth *= sourceGains.value("depth", 1.0);
     scaled.roll *= sourceGains.value("roll", 1.0);
+    const quint8 flags = uvState->controlFlags();
+    const QMap<QString, double> closedGains =
+        closedInputModeAxisGains_.value(static_cast<int>(currentMode)).value(activeInputSourceName());
+    if (flags & (1u << 0)) scaled.march = raw.march * closedGains.value("surge", 1.0);
+    if (flags & (1u << 1)) scaled.lag = raw.lag * closedGains.value("sway", 1.0);
+    if (flags & (1u << 2)) scaled.depth = raw.depth * closedGains.value("depth", 1.0);
+    if (flags & (1u << 3)) scaled.yaw = raw.yaw * closedGains.value("yaw", 1.0);
+    if (flags & (1u << 4)) scaled.pitch = raw.pitch * closedGains.value("pitch", 1.0);
+    if (flags & (1u << 5)) scaled.roll = raw.roll * closedGains.value("roll", 1.0);
     return scaled;
 }
 
@@ -1175,6 +1194,61 @@ void MainWindow::setupInputGainTab()
         grid->setColumnStretch(0, 1);
         contentLayout->addWidget(modeGroup);
     }
+    for (int mode = 0; mode < modeTitles.size(); ++mode)
+    {
+        auto *modeGroup = new QGroupBox(modeTitles[mode] + QStringLiteral(" — замкнутый контур"), content);
+        auto *grid = new QGridLayout(modeGroup);
+        grid->setHorizontalSpacing(10);
+        grid->setVerticalSpacing(10);
+        for (int axisIndex = 0; axisIndex < gainNames.size(); ++axisIndex)
+        {
+            auto *header = new QLabel(axisTitles.value(gainNames[axisIndex]), modeGroup);
+            header->setAlignment(Qt::AlignCenter);
+            grid->addWidget(header, 0, axisIndex + 1);
+        }
+        for (int sourceIndex = 0; sourceIndex < inputSourceNames_.size(); ++sourceIndex)
+        {
+            const QString sourceName = inputSourceNames_[sourceIndex];
+            grid->addWidget(new QLabel(sourceTitles.value(sourceName), modeGroup), sourceIndex + 1, 0);
+            for (int axisIndex = 0; axisIndex < gainNames.size(); ++axisIndex)
+            {
+                const QString axisName = gainNames[axisIndex];
+                auto *spinBox = new QDoubleSpinBox(modeGroup);
+                spinBox->setRange(0.0, 5000.0);
+                spinBox->setDecimals(1);
+                spinBox->setSingleStep(0.1);
+                spinBox->setButtonSymbols(QAbstractSpinBox::NoButtons);
+                spinBox->setKeyboardTracking(false);
+                closedInputModeAxisGainSpinBoxes_[mode][sourceName][axisName] = spinBox;
+                auto *editor = new QWidget(modeGroup);
+                auto *editorLayout = new QHBoxLayout(editor);
+                editorLayout->setContentsMargins(0, 0, 0, 0);
+                editorLayout->setSpacing(3);
+                auto *minus = new QToolButton(editor);
+                minus->setText(QStringLiteral("−"));
+                minus->setObjectName(QStringLiteral("spinStepButton"));
+                minus->setFixedSize(26, 28);
+                minus->setAutoRepeat(true);
+                minus->setFocusPolicy(Qt::NoFocus);
+                controlGainStepButtons_.append(minus);
+                auto *plus = new QToolButton(editor);
+                plus->setText(QStringLiteral("+"));
+                plus->setObjectName(QStringLiteral("spinStepButton"));
+                plus->setFixedSize(26, 28);
+                plus->setAutoRepeat(true);
+                plus->setFocusPolicy(Qt::NoFocus);
+                controlGainStepButtons_.append(plus);
+                connect(minus, &QToolButton::clicked, spinBox, [spinBox]() { spinBox->stepDown(); });
+                connect(plus, &QToolButton::clicked, spinBox, [spinBox]() { spinBox->stepUp(); });
+                editorLayout->addWidget(minus);
+                editorLayout->addWidget(spinBox, 1);
+                editorLayout->addWidget(plus);
+                grid->addWidget(editor, sourceIndex + 1, axisIndex + 1);
+            }
+        }
+        grid->setColumnStretch(0, 1);
+        contentLayout->addWidget(modeGroup);
+    }
     contentLayout->addStretch();
     scrollArea->setWidget(content);
 
@@ -1381,6 +1455,19 @@ void MainWindow::loadSettings()
         }
     }
     settings.endGroup();
+
+    settings.beginGroup(QStringLiteral("ClosedInputModeAxisGains"));
+    for (int mode = 0; mode < 3; ++mode)
+        for (const QString &sourceName : inputSourceNames_)
+            for (const QString &axisName : gainNames)
+            {
+                const QString key = QStringLiteral("%1_%2_%3").arg(mode).arg(sourceName).arg(axisName);
+                const double openValue = inputModeAxisGains_[mode][sourceName][axisName];
+                const double value = qBound(0.0, settings.value(key, openValue).toDouble(), 5000.0);
+                closedInputModeAxisGains_[mode][sourceName][axisName] = value;
+                closedInputModeAxisGainSpinBoxes_[mode][sourceName][axisName]->setValue(value);
+            }
+    settings.endGroup();
 }
 
 void MainWindow::saveSettings()
@@ -1401,6 +1488,16 @@ void MainWindow::saveSettings()
             }
         }
     }
+    settings.endGroup();
+
+    settings.beginGroup(QStringLiteral("ClosedInputModeAxisGains"));
+    for (int mode = 0; mode < 3; ++mode)
+        for (const QString &sourceName : inputSourceNames_)
+            for (const QString &axisName : gainNames)
+            {
+                const QString key = QStringLiteral("%1_%2_%3").arg(mode).arg(sourceName).arg(axisName);
+                settings.setValue(key, closedInputModeAxisGains_[mode][sourceName][axisName]);
+            }
     settings.endGroup();
 }
 

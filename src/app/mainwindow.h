@@ -63,6 +63,8 @@ private:
     QStringList gainNames = {"surge", "sway", "depth", "yaw", "pitch", "roll"};
     QMap<int, QMap<QString, QMap<QString, double>>> inputModeAxisGains_;
     QMap<int, QMap<QString, QMap<QString, QDoubleSpinBox *>>> inputModeAxisGainSpinBoxes_;
+    QMap<int, QMap<QString, QMap<QString, double>>> closedInputModeAxisGains_;
+    QMap<int, QMap<QString, QMap<QString, QDoubleSpinBox *>>> closedInputModeAxisGainSpinBoxes_;
     QVector<QAbstractSpinBox *> controlGainSpinBoxes_;
     QVector<QToolButton *> controlGainStepButtons_;
     const QStringList inputSourceNames_ = {"keyboard", "joystick", "gamepad"};
