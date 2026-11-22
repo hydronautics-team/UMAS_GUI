@@ -2,21 +2,41 @@
 #include "./ui_mainwindow.h"
 #include <QApplication>
 #include <QDateTime>
+#include <QDir>
+#include <QFileInfo>
 #include <QFontMetrics>
+#include <QGridLayout>
+#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLineEdit>
 #include <QMenuBar>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPixmap>
 #include <QPushButton>
 #include <QSignalBlocker>
+#include <QScrollArea>
+#include <QStandardPaths>
 #include <QTabBar>
 #include <QTextCursor>
+#include <QToolButton>
 #include <QtMath>
 #include <QShortcut>
 #include <algorithm>
 #include <cmath>
+
+static QString settingsFilePath()
+{
+    const QString workspaceSettings = QStringLiteral("/UMAS_GUI/umas_settings.ini");
+    if (QFileInfo::exists(workspaceSettings))
+        return workspaceSettings;
+
+    const QString configDirectory =
+        QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    QDir().mkpath(configDirectory);
+    return QDir(configDirectory).filePath(QStringLiteral("umas_settings.ini"));
+}
 
 static QIcon makeSunIcon()
 {
@@ -86,6 +106,18 @@ static const QString LIGHT_THEME =
     "#42c6bc; selection-color: #052f2c; }"
     "QLineEdit:focus, QSpinBox:focus, QComboBox:focus, QDoubleSpinBox:focus { border: 1px solid "
     "#159d93; background-color: #f7fbfa; }"
+    "QSpinBox::up-button, QDoubleSpinBox::up-button { subcontrol-origin: border; "
+    "subcontrol-position: top right; width: 30px; background-color: #dceae8; border-left: 1px "
+    "solid #91b9b7; border-bottom: 1px solid #91b9b7; border-top-right-radius: 5px; }"
+    "QSpinBox::down-button, QDoubleSpinBox::down-button { subcontrol-origin: border; "
+    "subcontrol-position: bottom right; width: 30px; background-color: #dceae8; border-left: 1px "
+    "solid #91b9b7; border-bottom-right-radius: 5px; }"
+    "QSpinBox::up-button:hover, QSpinBox::down-button:hover, QDoubleSpinBox::up-button:hover, "
+    "QDoubleSpinBox::down-button:hover { background-color: #bde9e5; }"
+    "QToolButton#spinStepButton { background-color: #dceae8; color: #075e58; border: 1px "
+    "solid #91b9b7; border-radius: 5px; font-size: 17px; font-weight: 700; padding: 0px; }"
+    "QToolButton#spinStepButton:hover { background-color: #bde9e5; border-color: #159d93; }"
+    "QToolButton#spinStepButton:pressed { background-color: #9edbd5; }"
     "QComboBox QAbstractItemView { background-color: #f2f8f7; border: 1px solid #91b9b7; color: "
     "#16383d; selection-background-color: #bde9e5; selection-color: #064d49; }"
     "QGroupBox { border: 1px solid #b5d2d0; border-radius: 9px; margin-top: 12px; padding-top: "
@@ -162,6 +194,18 @@ static const QString DARK_THEME =
     "#20c7b8; selection-color: #031416; }"
     "QLineEdit:focus, QSpinBox:focus, QComboBox:focus, QDoubleSpinBox:focus { border: 1px solid "
     "#5de2d7; background-color: #0a2932; }"
+    "QSpinBox::up-button, QDoubleSpinBox::up-button { subcontrol-origin: border; "
+    "subcontrol-position: top right; width: 30px; background-color: #124653; border-left: 1px "
+    "solid #397886; border-bottom: 1px solid #397886; border-top-right-radius: 5px; }"
+    "QSpinBox::down-button, QDoubleSpinBox::down-button { subcontrol-origin: border; "
+    "subcontrol-position: bottom right; width: 30px; background-color: #124653; border-left: 1px "
+    "solid #397886; border-bottom-right-radius: 5px; }"
+    "QSpinBox::up-button:hover, QSpinBox::down-button:hover, QDoubleSpinBox::up-button:hover, "
+    "QDoubleSpinBox::down-button:hover { background-color: #176173; }"
+    "QToolButton#spinStepButton { background-color: #124653; color: #74eee3; border: 1px "
+    "solid #397886; border-radius: 5px; font-size: 17px; font-weight: 700; padding: 0px; }"
+    "QToolButton#spinStepButton:hover { background-color: #176173; border-color: #74eee3; }"
+    "QToolButton#spinStepButton:pressed { background-color: #0b3039; }"
     "QComboBox QAbstractItemView { background-color: #09262e; border: 1px solid #247080; color: "
     "#d7f3f1; selection-background-color: #19b8aa; selection-color: #031416; }"
     "QGroupBox { border: 1px solid #174a56; border-radius: 9px; margin-top: 12px; padding-top: "
@@ -363,6 +407,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->btn_theme_toggle, &QPushButton::clicked, this, &MainWindow::toggleTheme);
 
     setTab();
+    setupInputGainTab();
+    setupRightPanelManipulator();
     setupActuators();
 
     brightnessTimer_ = new QTimer(this);
@@ -379,20 +425,31 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     setUpdateUI();
 
-    gainSpinBoxes = {ui->spinBox_gain_surge, ui->spinBox_gain_sway,  ui->spinBox_gain_depth,
-                     ui->spinBox_gain_yaw,   ui->spinBox_gain_pitch, ui->spinBox_gain_roll};
+    for (QSpinBox *spinBox : {ui->spinBox_gain_surge, ui->spinBox_gain_sway, ui->spinBox_gain_depth,
+                              ui->spinBox_gain_yaw, ui->spinBox_gain_pitch, ui->spinBox_gain_roll})
+        spinBox->hide();
     qApp->installEventFilter(this);
 
     loadSettings();
-    setSpinBoxValuesForCurrentMode();
 
-    for (auto spinBox : gainSpinBoxes)
+    for (int mode = 0; mode < 3; ++mode)
     {
-        connect(spinBox, QOverload<int>::of(&QSpinBox::valueChanged), this,
-                [this]() { saveCurrentModeGains(); });
+        for (const QString &sourceName : inputSourceNames_)
+        {
+            for (const QString &axisName : gainNames)
+            {
+                QDoubleSpinBox *spinBox = inputModeAxisGainSpinBoxes_[mode][sourceName][axisName];
+                connect(spinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
+                        [this, mode, sourceName, axisName](double value)
+                        {
+                            inputModeAxisGains_[mode][sourceName][axisName] = value;
+                            saveSettings();
+                        });
+            }
+        }
     }
 
-    setSpeedMode(SpeedMode::Medium);
+    setSpeedMode(currentMode);
 
     QButtonGroup *inputGroup = new QButtonGroup(this);
     inputGroup->addButton(ui->radioButton_useJoyStick);
@@ -559,7 +616,9 @@ void MainWindow::ensureInteractiveTextFits()
     for (QPushButton *button : buttons)
     {
         if (button->text().isEmpty() || button == ui->btn_theme_toggle ||
-            button == ui->btn_killswitch_status)
+            button == ui->btn_killswitch_status || button == ui->btn_manip_compress ||
+            button == ui->btn_manip_release || button == ui->btn_manip_rotate_ccw ||
+            button == ui->btn_manip_rotate_cw || button == ui->btn_manip_stop)
             continue;
 
         const QFontMetrics metrics(button->font());
@@ -574,6 +633,11 @@ void MainWindow::ensureInteractiveTextFits()
     ui->full_screen->setMinimumWidth(fullScreenMetrics.horizontalAdvance(ui->full_screen->text()) +
                                      54);
     ui->full_screen->setMinimumHeight(fullScreenMetrics.height() + 18);
+
+    for (QAbstractSpinBox *spinBox : findChildren<QAbstractSpinBox *>())
+    {
+        spinBox->setMinimumWidth(qMax(spinBox->minimumWidth(), 104));
+    }
 
     QTabBar *tabs = ui->tabWidget->tabBar();
     QFont tabFont = tabs->font();
@@ -859,13 +923,24 @@ void MainWindow::updateUi_fromControl()
 umas::input::ControlCommand MainWindow::applyGains(const umas::input::ControlCommand &raw) const
 {
     umas::input::ControlCommand scaled = raw;
-    scaled.yaw *= ui->spinBox_gain_yaw->value();
-    scaled.march *= ui->spinBox_gain_surge->value();
-    scaled.pitch *= ui->spinBox_gain_pitch->value();
-    scaled.lag *= ui->spinBox_gain_sway->value();
-    scaled.depth *= ui->spinBox_gain_depth->value();
-    scaled.roll *= ui->spinBox_gain_roll->value();
+    const QMap<QString, double> sourceGains =
+        inputModeAxisGains_.value(static_cast<int>(currentMode)).value(activeInputSourceName());
+    scaled.yaw *= sourceGains.value("yaw", 1.0);
+    scaled.march *= sourceGains.value("surge", 1.0);
+    scaled.pitch *= sourceGains.value("pitch", 1.0);
+    scaled.lag *= sourceGains.value("sway", 1.0);
+    scaled.depth *= sourceGains.value("depth", 1.0);
+    scaled.roll *= sourceGains.value("roll", 1.0);
     return scaled;
+}
+
+QString MainWindow::activeInputSourceName() const
+{
+    if (activeInput == joyStick.get())
+        return QStringLiteral("joystick");
+    if (activeInput == gamepadInput.get())
+        return QStringLiteral("gamepad");
+    return QStringLiteral("keyboard");
 }
 
 void MainWindow::updateControlLabels(const umas::input::ControlCommand &scaled)
@@ -992,6 +1067,173 @@ void MainWindow::setTab()
     ui->tabWidget->setCurrentIndex(0);
 }
 
+void MainWindow::setupInputGainTab()
+{
+    auto *tab = new QWidget(ui->tabWidget);
+    auto *layout = new QVBoxLayout(tab);
+    layout->setContentsMargins(18, 18, 18, 18);
+    auto *scrollArea = new QScrollArea(tab);
+    scrollArea->setObjectName(QStringLiteral("controlGainScroll"));
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setFrameShape(QFrame::NoFrame);
+    scrollArea->setStyleSheet(QStringLiteral(
+        "QScrollArea#controlGainScroll { background: transparent; border: none; }"
+        "QScrollArea#controlGainScroll > QWidget > QWidget { background: transparent; }"));
+    scrollArea->viewport()->setAutoFillBackground(false);
+    auto *content = new QWidget(scrollArea);
+    content->setObjectName(QStringLiteral("controlGainContent"));
+    content->setAttribute(Qt::WA_TranslucentBackground);
+    auto *contentLayout = new QVBoxLayout(content);
+    contentLayout->setContentsMargins(0, 0, 0, 0);
+    contentLayout->setSpacing(14);
+
+    const QMap<QString, QString> sourceTitles = {{"keyboard", QStringLiteral("Клавиатура")},
+                                                 {"joystick", QStringLiteral("Джойстик")},
+                                                 {"gamepad", QStringLiteral("Геймпад")}};
+    const QMap<QString, QString> axisTitles = {
+        {"surge", QStringLiteral("Марш")},      {"sway", QStringLiteral("Лаг")},
+        {"depth", QStringLiteral("Глубина")},   {"yaw", QStringLiteral("Курс")},
+        {"pitch", QStringLiteral("Дифферент")}, {"roll", QStringLiteral("Крен")}};
+    const QStringList modeTitles = {QStringLiteral("Медленный"), QStringLiteral("Средний"),
+                                    QStringLiteral("Быстрый")};
+
+    for (int mode = 0; mode < modeTitles.size(); ++mode)
+    {
+        auto *modeGroup = new QGroupBox(modeTitles[mode], content);
+        auto *grid = new QGridLayout(modeGroup);
+        grid->setHorizontalSpacing(10);
+        grid->setVerticalSpacing(10);
+
+        for (int axisIndex = 0; axisIndex < gainNames.size(); ++axisIndex)
+        {
+            auto *header = new QLabel(axisTitles.value(gainNames[axisIndex]), modeGroup);
+            header->setAlignment(Qt::AlignCenter);
+            grid->addWidget(header, 0, axisIndex + 1);
+        }
+
+        for (int sourceIndex = 0; sourceIndex < inputSourceNames_.size(); ++sourceIndex)
+        {
+            const QString sourceName = inputSourceNames_[sourceIndex];
+            grid->addWidget(new QLabel(sourceTitles.value(sourceName), modeGroup), sourceIndex + 1,
+                            0);
+
+            for (int axisIndex = 0; axisIndex < gainNames.size(); ++axisIndex)
+            {
+                const QString axisName = gainNames[axisIndex];
+                auto *spinBox = new QDoubleSpinBox(modeGroup);
+                spinBox->setRange(0.0, 5000.0);
+                spinBox->setDecimals(1);
+                spinBox->setSingleStep(0.1);
+                spinBox->setButtonSymbols(QAbstractSpinBox::NoButtons);
+                spinBox->setKeyboardTracking(false);
+                spinBox->setToolTip(QStringLiteral("Режим «%1»: канал «%2», источник «%3»")
+                                        .arg(modeTitles[mode], axisTitles.value(axisName),
+                                             sourceTitles.value(sourceName)));
+                inputModeAxisGainSpinBoxes_[mode][sourceName][axisName] = spinBox;
+                controlGainSpinBoxes_.append(spinBox);
+
+                auto *editor = new QWidget(modeGroup);
+                auto *editorLayout = new QHBoxLayout(editor);
+                editorLayout->setContentsMargins(0, 0, 0, 0);
+                editorLayout->setSpacing(3);
+                auto *minusButton = new QToolButton(editor);
+                minusButton->setText(QStringLiteral("−"));
+                minusButton->setObjectName(QStringLiteral("spinStepButton"));
+                minusButton->setFixedSize(26, 28);
+                minusButton->setAutoRepeat(true);
+                minusButton->setFocusPolicy(Qt::NoFocus);
+                controlGainStepButtons_.append(minusButton);
+                auto *plusButton = new QToolButton(editor);
+                plusButton->setText(QStringLiteral("+"));
+                plusButton->setObjectName(QStringLiteral("spinStepButton"));
+                plusButton->setFixedSize(26, 28);
+                plusButton->setAutoRepeat(true);
+                plusButton->setFocusPolicy(Qt::NoFocus);
+                controlGainStepButtons_.append(plusButton);
+                connect(minusButton, &QToolButton::clicked, spinBox,
+                        [spinBox]()
+                        {
+                            spinBox->stepDown();
+                            if (QLineEdit *editor = spinBox->findChild<QLineEdit *>())
+                                editor->deselect();
+                            spinBox->clearFocus();
+                        });
+                connect(plusButton, &QToolButton::clicked, spinBox,
+                        [spinBox]()
+                        {
+                            spinBox->stepUp();
+                            if (QLineEdit *editor = spinBox->findChild<QLineEdit *>())
+                                editor->deselect();
+                            spinBox->clearFocus();
+                        });
+                editorLayout->addWidget(minusButton);
+                editorLayout->addWidget(spinBox, 1);
+                editorLayout->addWidget(plusButton);
+                grid->addWidget(editor, sourceIndex + 1, axisIndex + 1);
+            }
+        }
+        grid->setColumnStretch(0, 1);
+        contentLayout->addWidget(modeGroup);
+    }
+    contentLayout->addStretch();
+    scrollArea->setWidget(content);
+
+    layout->addWidget(scrollArea);
+    ui->tabWidget->addTab(tab, QStringLiteral("Управление"));
+}
+
+void MainWindow::setupRightPanelManipulator()
+{
+    auto *panel = new QWidget(ui->page_main);
+    panel->setObjectName(QStringLiteral("panel_manipulator"));
+    panel->setStyleSheet(
+        QStringLiteral("QWidget#panel_manipulator { background: transparent; border: none; }"));
+    auto *row = new QHBoxLayout(panel);
+    row->setContentsMargins(0, 0, 0, 0);
+    row->setSpacing(4);
+    ui->lbl_manip_title->setText(QStringLiteral("Манипулятор:"));
+    row->addWidget(ui->lbl_manip_title);
+
+    ui->btn_manip_rotate_ccw->setText(QStringLiteral("↺"));
+    ui->btn_manip_rotate_ccw->setToolTip(QStringLiteral("Повернуть манипулятор влево"));
+    ui->btn_manip_rotate_cw->setText(QStringLiteral("↻"));
+    ui->btn_manip_rotate_cw->setToolTip(QStringLiteral("Повернуть манипулятор вправо"));
+    ui->btn_manip_stop->setText(QStringLiteral("Стоп"));
+
+    for (QPushButton *button :
+         {ui->btn_manip_compress, ui->btn_manip_release, ui->btn_manip_rotate_ccw,
+          ui->btn_manip_rotate_cw, ui->btn_manip_stop})
+    {
+        button->setFixedSize(80, 32);
+        row->addWidget(button);
+    }
+    ui->btn_manip_release->setFixedWidth(100);
+    row->addStretch();
+
+    if (auto *cameraLayout = qobject_cast<QVBoxLayout *>(ui->tab_video->layout()))
+        cameraLayout->insertWidget(0, ui->full_screen, 0, Qt::AlignRight);
+
+    ui->lbl_manip_title->show();
+    while (QLayoutItem *item = ui->horizontalLayout_manipulator->takeAt(0))
+        delete item;
+    ui->verticalLayout_4->removeItem(ui->horizontalLayout_manipulator);
+    delete ui->horizontalLayout_manipulator;
+
+    ui->verticalLayout_3->insertWidget(5, panel);
+
+    for (QSpinBox *spinBox : {ui->spinBox_gain_surge, ui->spinBox_gain_sway, ui->spinBox_gain_depth,
+                              ui->spinBox_gain_yaw, ui->spinBox_gain_pitch, ui->spinBox_gain_roll})
+        spinBox->hide();
+    for (QLabel *label : {ui->label_4, ui->label_controlMarch, ui->label_10, ui->label_controlLag,
+                          ui->label_12, ui->label_controlDepth, ui->label_7, ui->label_controlYaw,
+                          ui->label_11, ui->label_controlDif, ui->label_13, ui->label_controlKren})
+        label->hide();
+    while (QLayoutItem *item = ui->verticalLayout_11->takeAt(0))
+        delete item;
+    ui->horizontalLayout_5->removeItem(ui->verticalLayout_11);
+    delete ui->verticalLayout_11;
+}
+
 void MainWindow::setupActuators()
 {
     // === Кнопки режимов света ===
@@ -1067,7 +1309,7 @@ void MainWindow::setUpdateUI()
 
 void MainWindow::loadSettings()
 {
-    QSettings settings("/UMAS_GUI/umas_settings.ini", QSettings::IniFormat);
+    QSettings settings(settingsFilePath(), QSettings::IniFormat);
 
     for (int mode = 0; mode < 3; ++mode)
     {
@@ -1092,58 +1334,78 @@ void MainWindow::loadSettings()
     }
 
     int savedMode = settings.value("CurrentSpeedMode", static_cast<int>(SpeedMode::Medium)).toInt();
+    if (savedMode < static_cast<int>(SpeedMode::Slow) ||
+        savedMode > static_cast<int>(SpeedMode::Fast))
+        savedMode = static_cast<int>(SpeedMode::Medium);
     currentMode = static_cast<SpeedMode>(savedMode);
+
+    settings.beginGroup(QStringLiteral("InputGains"));
+    QMap<QString, double> legacyInputGains;
+    for (const QString &sourceName : inputSourceNames_)
+    {
+        const double defaultValue = sourceName == QStringLiteral("gamepad") ? 15.0 : 1.0;
+        legacyInputGains[sourceName] = settings.value(sourceName, defaultValue).toDouble();
+    }
+    settings.endGroup();
+
+    settings.beginGroup(QStringLiteral("InputAxisGains"));
+    QMap<QString, QMap<QString, double>> legacyAxisGains;
+    for (const QString &sourceName : inputSourceNames_)
+    {
+        for (const QString &axisName : gainNames)
+        {
+            const QString key = sourceName + QLatin1Char('_') + axisName;
+            const double value =
+                qBound(0.0, settings.value(key, legacyInputGains[sourceName]).toDouble(), 100.0);
+            legacyAxisGains[sourceName][axisName] = value;
+        }
+    }
+    settings.endGroup();
+
+    settings.beginGroup(QStringLiteral("InputModeAxisGains"));
+    for (int mode = 0; mode < 3; ++mode)
+    {
+        for (const QString &sourceName : inputSourceNames_)
+        {
+            for (const QString &axisName : gainNames)
+            {
+                const QString key =
+                    QStringLiteral("%1_%2_%3").arg(mode).arg(sourceName).arg(axisName);
+                const double migratedValue =
+                    legacyAxisGains[sourceName][axisName] * speedModeGains[mode][axisName];
+                const double value =
+                    qBound(0.0, settings.value(key, migratedValue).toDouble(), 5000.0);
+                inputModeAxisGains_[mode][sourceName][axisName] = value;
+                inputModeAxisGainSpinBoxes_[mode][sourceName][axisName]->setValue(value);
+            }
+        }
+    }
+    settings.endGroup();
 }
 
 void MainWindow::saveSettings()
 {
-    QSettings settings("/UMAS_GUI/umas_settings.ini", QSettings::IniFormat);
-
-    for (int mode = 0; mode < 3; ++mode)
-    {
-        settings.beginGroup(QString("SpeedMode_%1").arg(mode));
-
-        for (int i = 0; i < gainNames.size(); ++i)
-        {
-            settings.setValue(gainNames[i], speedModeGains[mode][gainNames[i]]);
-        }
-
-        settings.endGroup();
-    }
+    QSettings settings(settingsFilePath(), QSettings::IniFormat);
 
     settings.setValue("CurrentSpeedMode", static_cast<int>(currentMode));
-}
-
-void MainWindow::saveCurrentModeGains()
-{
-    for (int i = 0; i < gainSpinBoxes.size(); ++i)
+    settings.beginGroup(QStringLiteral("InputModeAxisGains"));
+    for (int mode = 0; mode < 3; ++mode)
     {
-        speedModeGains[static_cast<int>(currentMode)][gainNames[i]] = gainSpinBoxes[i]->value();
+        for (const QString &sourceName : inputSourceNames_)
+        {
+            for (const QString &axisName : gainNames)
+            {
+                const QString key =
+                    QStringLiteral("%1_%2_%3").arg(mode).arg(sourceName).arg(axisName);
+                settings.setValue(key, inputModeAxisGains_[mode][sourceName][axisName]);
+            }
+        }
     }
-    saveSettings();
-}
-
-void MainWindow::setSpinBoxValuesForCurrentMode()
-{
-    for (auto spinBox : gainSpinBoxes)
-    {
-        spinBox->blockSignals(true);
-    }
-
-    for (int i = 0; i < gainSpinBoxes.size(); ++i)
-    {
-        gainSpinBoxes[i]->setValue(speedModeGains[static_cast<int>(currentMode)][gainNames[i]]);
-    }
-
-    for (auto spinBox : gainSpinBoxes)
-    {
-        spinBox->blockSignals(false);
-    }
+    settings.endGroup();
 }
 
 void MainWindow::setSpeedMode(SpeedMode mode)
 {
-    saveCurrentModeGains();
     currentMode = mode;
     if (fullscreenWindow_)
     {
@@ -1152,14 +1414,11 @@ void MainWindow::setSpeedMode(SpeedMode mode)
                                                                 : QStringLiteral("СРЕДНИЙ");
         fullscreenWindow_->setSelectedSpeedMode(speedModeName);
     }
-    setSpinBoxValuesForCurrentMode();
 
     // Тема сама покрасит :checked в зелёный #00ff88
     ui->pushButton_speedFast->setChecked(mode == SpeedMode::Fast);
     ui->pushButton_speedMedium->setChecked(mode == SpeedMode::Medium);
     ui->pushButton_speedSlow->setChecked(mode == SpeedMode::Slow);
-
-    saveSettings();
 
     saveSettings();
 }
@@ -1320,7 +1579,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         QWidget *focusedWidget = QApplication::focusWidget();
         QWidget *clickedWidget = qobject_cast<QWidget *>(watched);
 
-        for (QSpinBox *spinBox : gainSpinBoxes)
+        for (QAbstractSpinBox *spinBox : controlGainSpinBoxes_)
         {
             const bool ownsFocus =
                 focusedWidget && (focusedWidget == spinBox || spinBox->isAncestorOf(focusedWidget));
@@ -1329,6 +1588,12 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
             if (ownsFocus && !clickedInside)
             {
+                if (QLineEdit *editor = spinBox->findChild<QLineEdit *>())
+                {
+                    editor->deselect();
+                    editor->clearFocus();
+                }
+                focusedWidget->clearFocus();
                 spinBox->clearFocus();
                 break;
             }
@@ -1341,6 +1606,20 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 void MainWindow::applyTheme(bool dark)
 {
     setStyleSheet(dark ? DARK_THEME : LIGHT_THEME);
+
+    const QString gainStepButtonStyle =
+        dark ? QStringLiteral(
+                   "QToolButton { background-color: #124653; color: #74eee3; border: 1px solid "
+                   "#397886; border-radius: 5px; font-size: 17px; font-weight: 700; padding: 0px; }"
+                   "QToolButton:hover { background-color: #176173; border-color: #74eee3; }"
+                   "QToolButton:pressed { background-color: #0b3039; }")
+             : QStringLiteral(
+                   "QToolButton { background-color: #dceae8; color: #075e58; border: 1px solid "
+                   "#91b9b7; border-radius: 5px; font-size: 17px; font-weight: 700; padding: 0px; }"
+                   "QToolButton:hover { background-color: #bde9e5; border-color: #159d93; }"
+                   "QToolButton:pressed { background-color: #9edbd5; }");
+    for (QToolButton *button : controlGainStepButtons_)
+        button->setStyleSheet(gainStepButtonStyle);
 
     ui->stackedWidget_mode->setStyleSheet(
         dark ? "background-color: #09262e; border: 1px solid #174a56; border-radius: 9px;"
@@ -1448,6 +1727,9 @@ void MainWindow::setupButtonStyles(bool dark)
                " border: 1px solid #07847c; font-weight: 700; }";
     for (auto *b : {ui->pushButton_speedFast, ui->pushButton_speedMedium, ui->pushButton_speedSlow})
         b->setStyleSheet(speedStyle);
+    for (auto *b : {ui->btn_manip_compress, ui->btn_manip_release, ui->btn_manip_rotate_ccw,
+                    ui->btn_manip_rotate_cw, ui->btn_manip_stop})
+        b->setStyleSheet(speedStyle);
 
     const QString modeStyle =
         dark ? "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #124653, "
@@ -1497,6 +1779,14 @@ void MainWindow::setupButtonStyles(bool dark)
             "QPushButton:hover { background-color: #ffcbd4; border-color: #d9435c; }"
             "QPushButton:pressed { background-color: #f4b9c3; color: #711426; }");
     }
+
+    const QString manipulatorHeightStyle =
+        QStringLiteral("QPushButton { min-height: 30px; max-height: 30px; "
+                       "padding-top: 0px; padding-bottom: 0px; }");
+    for (QPushButton *button :
+         {ui->btn_manip_compress, ui->btn_manip_release, ui->btn_manip_rotate_ccw,
+          ui->btn_manip_rotate_cw, ui->btn_manip_stop})
+        button->setStyleSheet(button->styleSheet() + manipulatorHeightStyle);
 }
 
 // ============================================================

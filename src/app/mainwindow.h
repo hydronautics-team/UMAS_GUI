@@ -1,7 +1,9 @@
 #pragma once
 
+#include <QAbstractSpinBox>
 #include <QButtonGroup>
 #include <QDebug>
+#include <QDoubleSpinBox>
 #include <QKeyEvent>
 #include <QMainWindow>
 #include <QProcess>
@@ -32,6 +34,7 @@ QT_END_NAMESPACE
 
 class VideoPlayerWidget;
 class FullscreenVideoWindow;
+class QToolButton;
 
 class MainWindow : public QMainWindow
 {
@@ -57,11 +60,13 @@ private:
     SpeedMode currentMode;
 
     QMap<int, QMap<QString, double>> speedModeGains;
-    QVector<QSpinBox *> gainSpinBoxes;
     QStringList gainNames = {"surge", "sway", "depth", "yaw", "pitch", "roll"};
+    QMap<int, QMap<QString, QMap<QString, double>>> inputModeAxisGains_;
+    QMap<int, QMap<QString, QMap<QString, QDoubleSpinBox *>>> inputModeAxisGainSpinBoxes_;
+    QVector<QAbstractSpinBox *> controlGainSpinBoxes_;
+    QVector<QToolButton *> controlGainStepButtons_;
+    const QStringList inputSourceNames_ = {"keyboard", "joystick", "gamepad"};
 
-    void saveCurrentModeGains();
-    void setSpinBoxValuesForCurrentMode();
     void saveSettings();
     void loadSettings();
     void useGamepad();
@@ -73,6 +78,9 @@ private:
     void ensureInteractiveTextFits();
     void setBottom_mode();
     void setTab();
+    void setupInputGainTab();
+    void setupRightPanelManipulator();
+    QString activeInputSourceName() const;
     void setUpdateUI();
     void setWidget();
     void setInterface();
